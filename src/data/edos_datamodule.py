@@ -6,8 +6,8 @@ from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 
 from src.data.components.Dataset import GenericDataset
-from src.data.file_preprocessing import FilePreprocessor
 from src.data.text_processing import SpacyTokenizer, TextPreprocessor
+from src.utils.interim_preprocessing import FilePreprocessor
 from src.utils.raw_data_downloader import GoogleDriveDownloader
 
 

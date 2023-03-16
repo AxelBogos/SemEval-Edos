@@ -2,16 +2,12 @@ from pathlib import Path
 from typing import Tuple
 
 import pandas as pd
-import pyrootutils
 
 
-class FilePreprocessor:
-    def __init__(self, data_root=None):
-        if data_root is None:
-            pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
-            self.data_root = Path(pyrootutils.find_root(), "data", "edos_raw").resolve().as_posix()
-        else:
-            self.data_root = data_root
+class InterimProcessor:
+    def __init__(self, raw_data_dir, interim_output_dir):
+        self.raw_data_dir = raw_data_dir
+        self.interim_output_dir = interim_output_dir
 
     def run(self) -> None:
         """
@@ -25,9 +21,9 @@ class FilePreprocessor:
         :return: Nothing, but it does write out the data to disk
         """
 
-        full_data = pd.read_csv(Path(self.data_root, "edos_labelled_aggregated.csv"))
+        full_data = pd.read_csv(Path(self.raw_data_dir, "edos_labelled_aggregated.csv"))
 
-        train_all_tasks, dev_sets, test_sets = self.load_data(self.data_root)
+        train_all_tasks, dev_sets, test_sets = self.load_data(self.raw_data_dir)
 
         # Merge dev sets
         dev_sets_labelled = self.merge_labels_wrapper(dev_sets, full_data)
@@ -54,14 +50,14 @@ class FilePreprocessor:
 
         # Save encoded train set
         train_all_tasks_encoded.to_csv(
-            Path(self.data_root, "train_all_tasks_target_encoded.csv"), index=False
+            Path(self.interim_output_dir, "train_all_tasks_target_encoded.csv"), index=False
         )
 
         # Save merged dev tests
-        self.save_csv_wrapper(dev_sets_labelled, "dev", self.data_root)
+        self.save_csv_wrapper(dev_sets_labelled, "dev", self.interim_output_dir)
 
         # Save merged test sets
-        self.save_csv_wrapper(test_sets_labelled, "test", self.data_root)
+        self.save_csv_wrapper(test_sets_labelled, "test", self.interim_output_dir)
 
     @staticmethod
     def merge(feature_df: pd.DataFrame, labels_df: pd.DataFrame, label_col: str) -> pd.DataFrame:
@@ -107,18 +103,18 @@ class FilePreprocessor:
         return task_a_labelled, task_b_labelled, task_c_labelled
 
     @staticmethod
-    def save_csv_wrapper(all_tasks_data, set_prefix: str, data_root: str) -> None:
+    def save_csv_wrapper(all_tasks_data, set_prefix: str, output_dir: str) -> None:
         """The save_csv_wrapper function saves the dataframes in all_tasks_data to csv files.
 
         :param all_tasks_data: Store the dataframes for each task
         :param set_prefix:str: a string that is used as part of the filename when saving the csv file. "dev" or "test".
-        :param data_root:str: Specify the path to where the data should be saved
+        :param output_dir:str: Specify the path to where the data should be saved
         :return: None
         """
         task_a_set, task_b_set, task_c_set = all_tasks_data
-        task_a_set.to_csv(Path(data_root, f"{set_prefix}_task_a_labelled.csv"), index=False)
-        task_b_set.to_csv(Path(data_root, f"{set_prefix}_task_b_labelled.csv"), index=False)
-        task_c_set.to_csv(Path(data_root, f"{set_prefix}_task_c_labelled.csv"), index=False)
+        task_a_set.to_csv(Path(output_dir, f"{set_prefix}_task_a_labelled.csv"), index=False)
+        task_b_set.to_csv(Path(output_dir, f"{set_prefix}_task_b_labelled.csv"), index=False)
+        task_c_set.to_csv(Path(output_dir, f"{set_prefix}_task_c_labelled.csv"), index=False)
 
     @staticmethod
     def encode_target(
@@ -239,7 +235,3 @@ class FilePreprocessor:
             "4.2 supporting systemic discrimination against women as a group": 10,
             "none": -1,
         }
-
-
-if __name__ == "__main__":
-    FilePreprocessor().run()

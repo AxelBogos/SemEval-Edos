@@ -1,7 +1,10 @@
+import logging
 import os
 from pathlib import Path
 
 import gdown
+
+from src.utils import setup_logging
 
 
 class GoogleDriveDownloader:
@@ -31,7 +34,7 @@ class GoogleDriveDownloader:
         attributes that are common to all instances of the class.
 
         :param self: Reference the object instance
-        :param output_dir:str=&quot;edos_raw&quot;: Specify the name of the folder where all data will be downloaded
+        :param output_dir:str: Specify the name of the folder where all data will be downloaded
         :param download_unlabeled:bool=False: Download the unlabeled data
         :param links_dict:dict=None: Pass a dictionary of links to the class
         :param : Define the output directory
@@ -47,6 +50,10 @@ class GoogleDriveDownloader:
         else:
             self.links_dict = links_dict
 
+        setup_logging._setup_python_logging()
+        logger = logging.getLogger(__name__)
+        self.logger = logger
+
     def download(self) -> None:
         """The download function downloads the data from the links specified in the links_dict. It
         then saves them to a folder self.output_dir. If you wish to download unlabeled data, set
@@ -61,7 +68,7 @@ class GoogleDriveDownloader:
             self._download_file_helper(file_name, url)
 
         if not self.download_unlabeled:
-            print(
+            self.logger.info(
                 'Please set "download_unlabeled" arg to True if you wish to download unlabeled data ('
                 "~180MB).\nDownload Done."
             )
@@ -69,7 +76,7 @@ class GoogleDriveDownloader:
 
         for file_name, url in self.unlabeled_links_dict.items():
             self._download_file_helper(file_name, url)
-        print("Download done.")
+        self.logger.info("Download done.")
 
     def _download_file_helper(self, file_name: str, url: str) -> None:
         """The _download_file_helper function downloads a file from the given url to the specified
@@ -83,7 +90,7 @@ class GoogleDriveDownloader:
         """
         output_path = Path(self.output_dir, file_name).resolve().as_posix()
         if os.path.isfile(output_path):
-            print(f"{file_name} already exists in {self.output_dir}. Continuing.")
+            self.logger.info(f"{file_name} already exists in {self.output_dir}. Continuing.")
             return
         gdown.download(url, output_path, quiet=False, fuzzy=True)
 
@@ -96,10 +103,10 @@ class GoogleDriveDownloader:
         :return: None
         """
         if os.path.isdir(self.output_dir):
-            print(f"Directory {self.output_dir} already exists. Continuing.")
+            self.logger.info(f"Directory {self.output_dir} already exists. Continuing.")
         else:
             os.mkdir(self.output_dir)
-            print(f"Directory {self.output_dir} created. Continuing.")
+            self.logger.info(f"Directory {self.output_dir} created. Continuing.")
 
     @property
     def _get_default_file_links(self):
@@ -135,8 +142,3 @@ class GoogleDriveDownloader:
             "reddit_1M_unlabelled.csv": "https://drive.google.com/file/d/1LGpUv7bBHepmdu5E5JlICOf47wQJy3IZ/view?usp=share_link",
         }
         return default_unlabeled_file_links
-
-
-if __name__ == "__main__":
-    downloader = GoogleDriveDownloader()
-    downloader.download()

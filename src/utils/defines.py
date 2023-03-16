@@ -4,5 +4,9 @@ import pyrootutils
 
 ROOT_PATH = pyrootutils.find_root(search_from=__file__, indicator=".project-root")
 DATA_DIR = Path(ROOT_PATH, "data")
+EXTERNAL_DATA_DIR = Path(ROOT_PATH, "data", "external")
+INTERIM_DATA_DIR = Path(ROOT_PATH, "data", "interim")
+PROCESSED_DATA_DIR = Path(ROOT_PATH, "data", "processed")
+RAW_DATA_DIR = Path(ROOT_PATH, "data", "raw")
 DOTENV_FILE = Path(ROOT_PATH, ".env")
 LOG_DIR = Path(ROOT_PATH, "logs")
