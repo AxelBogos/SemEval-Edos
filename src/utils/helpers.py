@@ -3,6 +3,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+from src.data import edos_datamodule
+from src.models import lstm_module
 from src.utils import defines
 
 
@@ -58,4 +60,5 @@ def get_model(args):
 
 
 def get_data_module(args):
-    pass
+    datamodule = edos_datamodule.EDOSDataModule(args)
+    return datamodule

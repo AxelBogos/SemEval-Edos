@@ -58,6 +58,8 @@ def parse_args():
 
     parser.add_argument("--batch_size", default=64, type=int, help="Mini batch size")
 
+    parser.add_argument("--max_length", default=128, type=int, help="Max Sequence Length")
+
     parser.add_argument("--num_epoch", default=80, type=int, help="Number of epoch to train")
 
     parser.add_argument(
@@ -65,6 +67,13 @@ def parse_args():
         default=5,
         type=int,
         help="Early Stopping parameter: Maximum number of epochs to run without validation loss improvements.",
+    )
+
+    parser.add_argument(
+        "--num_workers",
+        default=1,
+        type=int,
+        help="Number workers",
     )
 
     # I/O dirs

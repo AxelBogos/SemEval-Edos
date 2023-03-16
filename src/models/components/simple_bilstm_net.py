@@ -34,7 +34,3 @@ class SimpleBiLstmNet(nn.Module):
         out = self.dropout(pooled)
         out = self.fc(out)
         return out
-
-
-if __name__ == "__main__":
-    _ = SimpleBiLstmNet()
