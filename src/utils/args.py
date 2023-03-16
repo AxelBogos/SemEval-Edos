@@ -1,6 +1,5 @@
 import argparse
-import logging
-import pprint
+from pathlib import Path
 
 from src.utils import defines
 
@@ -63,20 +62,28 @@ def parse_args():
 
     # I/O dirs
     parser.add_argument(
-        "--logs_dir", default=defines.LOG_DIR, help="Directory to write trained models to"
+        "--logs_dir",
+        default=defines.LOG_DIR,
+        type=Path,
+        help="Directory to write trained models to",
     )
 
     parser.add_argument(
-        "--raw_data_dir", default=defines.RAW_DATA_DIR, help="Raw data directory with all datasets"
+        "--raw_data_dir",
+        default=defines.RAW_DATA_DIR,
+        type=Path,
+        help="Raw data directory with all datasets",
     )
     parser.add_argument(
         "--interim_data_dir",
         default=defines.INTERIM_DATA_DIR,
+        type=Path,
         help="Interim data directory with all datasets",
     )
     parser.add_argument(
         "--processed_data_dir",
         default=defines.PROCESSED_DATA_DIR,
+        type=Path,
         help="Processed data directory with all datasets",
     )
 

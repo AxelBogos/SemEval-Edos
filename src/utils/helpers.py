@@ -51,3 +51,7 @@ def make_log_dir() -> Path:
     log_dir_path = Path(defines.LOG_DIR, _get_time())
     os.mkdir(log_dir_path)
     return log_dir_path
+
+
+def get_model(args):
+    pass

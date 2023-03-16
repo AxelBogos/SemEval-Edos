@@ -119,7 +119,3 @@ class EDOSDataModule(LightningDataModule):
             return 3
         elif self.hparams.task == "c":
             return 4
-
-
-if __name__ == "__main__":
-    _ = EDOSDataModule()

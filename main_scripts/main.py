@@ -15,7 +15,7 @@ def main():
     args.log_dir = log_dir
 
     logger = logging.getLogger(__name__)
-    logger.info(f"Run Arguments are:\n {pprint.pformat(vars(args),sort_dicts=False)}")
+    logger.info(f"Run Arguments are:\n {pprint.pformat(vars(args), sort_dicts=False)}")
 
 
 if __name__ == "__main__":
