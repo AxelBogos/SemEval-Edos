@@ -49,6 +49,13 @@ def parse_args():
         help="Name of the run to load weights from",
     )
 
+    parser.add_argument(
+        "--preprocessing_mode",
+        default="standard",
+        type=str,
+        help="Type of preprocessing to apply",
+    )
+
     parser.add_argument("--batch_size", default=64, type=int, help="Mini batch size")
 
     parser.add_argument("--num_epoch", default=80, type=int, help="Number of epoch to train")

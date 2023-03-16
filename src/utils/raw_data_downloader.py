@@ -5,7 +5,6 @@ from pathlib import Path
 import gdown
 
 import src.utils.helpers
-from src.utils import setup_logging
 
 
 class GoogleDriveDownloader:

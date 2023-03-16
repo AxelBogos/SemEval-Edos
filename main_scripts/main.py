@@ -17,6 +17,9 @@ def main():
     logger = logging.getLogger(__name__)
     logger.info(f"Run Arguments are:\n {pprint.pformat(vars(args), sort_dicts=False)}")
 
+    data_module = helpers.get_data_module(args)
+    model = helpers.get_model(args)
+
 
 if __name__ == "__main__":
     main()

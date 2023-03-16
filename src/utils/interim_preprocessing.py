@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 from typing import Tuple
 
@@ -51,7 +50,7 @@ class InterimProcessor:
 
         # Save encoded train set
         train_all_tasks_encoded.to_csv(
-            Path(self.interim_output_dir, "train_all_tasks_target_encoded.csv"), index=False
+            Path(self.interim_output_dir, "train_all_tasks.csv"), index=False
         )
 
         # Save merged dev tests
@@ -113,9 +112,9 @@ class InterimProcessor:
         :return: None
         """
         task_a_set, task_b_set, task_c_set = all_tasks_data
-        task_a_set.to_csv(Path(output_dir, f"{set_prefix}_task_a_labelled.csv"), index=False)
-        task_b_set.to_csv(Path(output_dir, f"{set_prefix}_task_b_labelled.csv"), index=False)
-        task_c_set.to_csv(Path(output_dir, f"{set_prefix}_task_c_labelled.csv"), index=False)
+        task_a_set.to_csv(Path(output_dir, f"{set_prefix}_task_a_entries.csv"), index=False)
+        task_b_set.to_csv(Path(output_dir, f"{set_prefix}_task_b_entries.csv"), index=False)
+        task_c_set.to_csv(Path(output_dir, f"{set_prefix}_task_c_entries.csv"), index=False)
 
     @staticmethod
     def encode_target(

@@ -55,3 +55,7 @@ def make_log_dir() -> Path:
 
 def get_model(args):
     pass
+
+
+def get_data_module(args):
+    pass
