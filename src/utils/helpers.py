@@ -14,6 +14,23 @@ from src.models.components import simple_bilstm_net
 from src.utils import defines
 
 
+def make_data_dirs() -> None:
+    """The make_data_dirs function creates the data directories if they do not already exist.
+
+    :return: None
+    """
+    if not defines.DATA_DIR.is_dir():
+        os.mkdir(defines.DATA_DIR)
+    if not defines.RAW_DATA_DIR.is_dir():
+        os.mkdir(defines.RAW_DATA_DIR)
+    if not defines.INTERIM_DATA_DIR.is_dir():
+        os.mkdir(defines.INTERIM_DATA_DIR)
+    if not defines.PROCESSED_DATA_DIR.is_dir():
+        os.mkdir(defines.PROCESSED_DATA_DIR)
+    if not defines.EXTERNAL_DATA_DIR.is_dir():
+        os.mkdir(defines.EXTERNAL_DATA_DIR)
+
+
 def setup_python_logging(log_dir: Path = None) -> None:
     """The setup_python_logging function configures the Python logging module to log messages to a
     file and also to the console.  The function takes an optional argument, log_dir, which is a

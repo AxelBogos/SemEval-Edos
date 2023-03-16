@@ -4,6 +4,7 @@ from src.utils import defines, helpers, interim_preprocessing, raw_data_download
 
 
 def main():
+    helpers.make_data_dirs()
     helpers.setup_python_logging()
     logger = logging.getLogger(__name__)
 
