@@ -1,11 +1,10 @@
 import logging
 
-import src.utils.helpers
-from src.utils import defines, interim_preprocessing, raw_data_downloader
+from src.utils import defines, helpers, interim_preprocessing, raw_data_downloader
 
 
 def main():
-    src.utils.helpers.setup_python_logging()
+    helpers.setup_python_logging()
     logger = logging.getLogger(__name__)
 
     # Download data
