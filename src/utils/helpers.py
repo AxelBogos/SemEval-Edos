@@ -46,6 +46,8 @@ def setup_python_logging(log_dir: Path = None) -> None:
         logging.basicConfig(level=logging.INFO, format=log_fmt)
     else:
         # log to file
+        if not log_dir.is_dir():
+            os.mkdir(log_dir)
         logging.basicConfig(level=logging.INFO, format=log_fmt, filename=Path(log_dir, "logs.txt"))
 
         # log to console
