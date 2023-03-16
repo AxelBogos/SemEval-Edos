@@ -35,4 +35,4 @@ python-dotenv   # .env file handling
 # sh            # for running bash commands in some tests (linux/macos only)
 
 # local package
-# -e .
+ -e .
