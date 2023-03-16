@@ -16,6 +16,8 @@ def parse_args():
     """
     parser = argparse.ArgumentParser()
 
+    # --------------- Run Definition Arguments ---------------
+
     parser.add_argument(
         "--train",
         default=False,
@@ -30,6 +32,15 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--task",
+        default="a",
+        type=str,
+        help="Task name; available tasks: {a, b, c}",
+    )
+
+    # --------------- Model Definition Arguments ---------------
+
+    parser.add_argument(
         "--model",
         default="bilstm",
         type=str,
@@ -37,23 +48,10 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--task",
-        default="a",
-        type=str,
-        help="Task name; available tasks: {a, b, c}",
-    )
-    parser.add_argument(
         "--optimizer",
         default="Adam",
         type=str,
         help="Optimizer name; available tasks: {Adam, AdamW, SGD}",
-    )
-
-    parser.add_argument(
-        "--load_weights_from",
-        default=None,
-        type=str,
-        help="Name of the run to load weights from",
     )
 
     parser.add_argument(
@@ -63,11 +61,33 @@ def parse_args():
         help="Type of preprocessing to apply. Choices as {'standard', 'none'}. Standard preprocessing is not meant for transformers models.",
     )
 
-    parser.add_argument("--batch_size", default=64, type=int, help="Mini batch size")
-
     parser.add_argument("--max_length", default=128, type=int, help="Max Sequence Length")
 
-    parser.add_argument("--num_epoch", default=80, type=int, help="Number of epoch to train")
+    parser.add_argument("--dropout", default=0.1, type=int, help="Dropout rate")
+
+    # --------------- LSTM Config Arguments ---------------
+
+    parser.add_argument("--embedding_dim", default=300, type=int, help="Embedding Dimension size")
+
+    parser.add_argument("--hidden_dim", default=128, type=int, help="Hidden Dimension size")
+
+    parser.add_argument("--num_layers", default=2, type=int, help="Number of bilstm layers")
+    parser.add_argument(
+        "--bidirectional", default=True, type=bool, help="bool for bidirectional LSTM"
+    )
+
+    # --------------- Training Config Arguments ---------------
+
+    parser.add_argument(
+        "--load_weights_from",
+        default=None,
+        type=str,
+        help="Name of the run to load weights from",
+    )
+
+    parser.add_argument("--batch_size", default=64, type=int, help="Mini batch size")
+
+    parser.add_argument("--max_epoch", default=80, type=int, help="Number of epoch to train")
 
     parser.add_argument(
         "--patience",
@@ -83,7 +103,8 @@ def parse_args():
         help="Number workers",
     )
 
-    # I/O dirs
+    # --------------- IO Arguments ---------------
+
     parser.add_argument(
         "--logs_dir",
         default=defines.LOG_DIR,
@@ -110,6 +131,8 @@ def parse_args():
         help="Processed data directory with all datasets",
     )
 
+    # --------------- Utils Arguments ---------------
+
     parser.add_argument(
         "--random_seed", default=3454572, type=int, help="Random seed to use throughout run."
     )
@@ -121,7 +144,6 @@ def parse_args():
 
 
 def _args_sanity_check(args) -> bool:
-
     """The _args_sanity_check function performs a series of checks on the command line arguments
     passed to the main function. It returns True if all checks pass, and False otherwise.
 

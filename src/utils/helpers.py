@@ -3,10 +3,14 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+import torch.optim
 import torch.optim as optim
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
+from pytorch_lightning.loggers import WandbLogger
 
 from src.data import edos_datamodule
 from src.models import lstm_module
+from src.models.components import simple_bilstm_net
 from src.utils import defines
 
 
@@ -35,8 +39,25 @@ def setup_python_logging(log_dir: Path = None) -> None:
         logging.getLogger().addHandler(console)
 
 
-def setup_wandb():
-    pass
+def setup_wandb(args):
+    wandb_logger = WandbLogger(
+        project=os.getenv("WANDB_PROJECT"),
+        save_dir=args.log_dir,
+        log_model=True,
+        group=args.model,
+        tags=args.model,
+    )
+    return wandb_logger
+
+
+def get_lightning_callbacks(args):
+    callbacks = list()
+    callbacks.append(ModelSummary())
+    callbacks.append(
+        ModelCheckpoint(dirpath=args.log_dir, monitor="val/loss", save_top_k=1, mode="min")
+    )
+    callbacks.append(EarlyStopping(monitor="val/loss", patience=args.patience))
+    return callbacks
 
 
 def _get_time():
@@ -59,8 +80,16 @@ def make_log_dir() -> Path:
     return log_dir_path
 
 
-def get_model(args):
-    pass
+def get_model(
+    args, optimizer: torch.optim.Optimizer = None, scheduler: torch.optim.lr_scheduler = None
+):
+    if args.model == "bilstm":
+        net = simple_bilstm_net.SimpleBiLstmNet(args)
+        return lstm_module.LSTMModule(net, optimizer, scheduler)
+    if args.model == "gnb":
+        pass  # TODO
+    if args.model == "distillbert":
+        pass  # TODO
 
 
 def get_data_module(args):
@@ -68,18 +97,21 @@ def get_data_module(args):
     return datamodule
 
 
-def get_optimizer(args, params):
-    has_specific_params = args.params is not None
+def get_optimizer(args):
+    """The get_optimizer function takes in the args object and returns an optimizer.
+
+    :param args: Pass in the arguments from the command line
+    :return: An optimizer
+    """
     if args.optimizer == "Adam":
-        optimizer = optim.Adam(params, *args.params) if has_specific_params else optim.Adam(params)
+        optimizer = optim.Adam
     if args.optimizer == "AdamW":
-        optimizer = (
-            optim.AdamW(params, *args.params) if has_specific_params else optim.AdamW(params)
-        )
+        optimizer = optim.AdamW
     if args.optimizer == "SGD":
-        optimizer = optim.SGD(params, *args.params) if has_specific_params else optim.SGD(params)
+        optimizer = optim.SGD
+
     return optimizer
 
 
 def get_scheduler(args):
-    pass
+    return None  # TODO

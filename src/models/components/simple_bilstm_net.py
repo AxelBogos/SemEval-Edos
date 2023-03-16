@@ -3,28 +3,20 @@ from torch import nn
 
 
 class SimpleBiLstmNet(nn.Module):
-    def __init__(
-        self,
-        vocab_size: int,
-        embedding_dim: int = 300,
-        hidden_dim: int = 128,
-        num_layers: int = 2,
-        bidirectional: bool = True,
-        dropout: float = 0.1,
-    ):
+    def __init__(self, args):
         super().__init__()
 
         # self.embedding = nn.Embedding(vocab_size, embedding_dim)
         self.lstm = nn.LSTM(
-            input_size=embedding_dim,
-            hidden_size=hidden_dim,
-            num_layers=num_layers,
-            bidirectional=bidirectional,
+            input_size=args.embedding_dim,
+            hidden_size=args.hidden_dim,
+            num_layers=args.num_layers,
+            bidirectional=args.bidirectional,
             batch_first=True,
-            dropout=dropout,
+            dropout=args.dropout,
         )
-        self.dropout = nn.Dropout(p=dropout)
-        self.fc = nn.Linear(hidden_dim * 2 if bidirectional else hidden_dim, 1)
+        self.dropout = nn.Dropout(p=args.dropout)
+        self.fc = nn.Linear(args.hidden_dim * 2 if args.bidirectional else args.hidden_dim, 1)
 
     def forward(self, x):
         # embedded = self.embedding(x)

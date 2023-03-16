@@ -11,11 +11,12 @@ class LSTMModule(pl.LightningModule):
         self,
         net: torch.nn.Module,
         optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler,
+        scheduler: torch.optim.lr_scheduler = None,
     ):
         super().__init__()
-        self.save_hyperparameters(logger=False)
         self.net = net
+        self.optimizer = optimizer
+        self.scheduler = scheduler
 
         # loss function
         self.criterion = torch.nn.BCEWithLogitsLoss()
@@ -93,9 +94,9 @@ class LSTMModule(pl.LightningModule):
         return {"loss": loss, "preds": preds, "targets": targets}
 
     def configure_optimizers(self):
-        optimizer = self.hparams.optimizer(params=self.parameters())
-        if self.hparams.scheduler is not None:
-            scheduler = self.hparams.scheduler(optimizer=optimizer)
+        optimizer = self.optimizer(params=self.parameters())
+        if self.scheduler is not None:
+            scheduler = self.scheduler(optimizer=optimizer)
             return {
                 "optimizer": optimizer,
                 "lr_scheduler": {
