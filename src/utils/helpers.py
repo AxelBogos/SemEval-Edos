@@ -3,6 +3,8 @@ import os
 from datetime import datetime
 from pathlib import Path
 
+import torch.optim as optim
+
 from src.data import edos_datamodule
 from src.models import lstm_module
 from src.utils import defines
@@ -27,7 +29,9 @@ def setup_python_logging(log_dir: Path = None) -> None:
 
         # log to console
         console = logging.StreamHandler()
+        formatter = logging.Formatter(log_fmt)
         console.setLevel(logging.INFO)
+        console.setFormatter(formatter)
         logging.getLogger().addHandler(console)
 
 
@@ -62,3 +66,20 @@ def get_model(args):
 def get_data_module(args):
     datamodule = edos_datamodule.EDOSDataModule(args)
     return datamodule
+
+
+def get_optimizer(args, params):
+    has_specific_params = args.params is not None
+    if args.optimizer == "Adam":
+        optimizer = optim.Adam(params, *args.params) if has_specific_params else optim.Adam(params)
+    if args.optimizer == "AdamW":
+        optimizer = (
+            optim.AdamW(params, *args.params) if has_specific_params else optim.AdamW(params)
+        )
+    if args.optimizer == "SGD":
+        optimizer = optim.SGD(params, *args.params) if has_specific_params else optim.SGD(params)
+    return optimizer
+
+
+def get_scheduler(args):
+    pass

@@ -46,7 +46,7 @@ class EDOSDataModule(LightningDataModule):
                 self.args.max_length,
             )
         if not self.data_val:
-            val_path = Path(self.args.interim_data_dir, f"dev_task_{self.args.task}.csv")
+            val_path = Path(self.args.interim_data_dir, f"dev_task_{self.args.task}_entries.csv")
             raw_data_val = pd.read_csv(val_path).to_numpy()
             self.data_val = GenericDataset(
                 raw_data_val[:, [1, 2]],
@@ -55,7 +55,7 @@ class EDOSDataModule(LightningDataModule):
                 self.args.max_length,
             )
         if not self.data_test:
-            test_path = Path(self.args.interim_data_dir, f"test_task_{self.args.task}.csv")
+            test_path = Path(self.args.interim_data_dir, f"test_task_{self.args.task}_entries.csv")
             raw_data_test = pd.read_csv(test_path).to_numpy()
             self.data_test = GenericDataset(
                 raw_data_test[:, [1, 2]],

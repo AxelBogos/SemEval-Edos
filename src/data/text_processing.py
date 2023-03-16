@@ -9,6 +9,8 @@ import spacy
 import torch
 from torchtext.vocab import GloVe
 
+from src.utils import defines
+
 
 class TextPreprocessor:
     """Preprocessing wrapper class. It implements the following:
@@ -103,7 +105,7 @@ class SpacyTokenizer:
         self.global_vectors = GloVe(
             name="840B",
             dim=embed_length,
-            cache=Path(pyrootutils.find_root(), "data", ".vector_cache"),
+            cache=Path(defines.EXTERNAL_DATA_DIR, ".vector_cache"),
         )
 
     def encode_plus(
