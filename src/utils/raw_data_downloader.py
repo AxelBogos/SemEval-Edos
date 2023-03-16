@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 
 import gdown
-import pyrootutils
 
 
 class GoogleDriveDownloader:
@@ -24,7 +23,7 @@ class GoogleDriveDownloader:
 
     def __init__(
         self,
-        output_dir: str = None,
+        output_dir,
         download_unlabeled: bool = False,
         links_dict: dict = None,
     ) -> None:
@@ -38,14 +37,10 @@ class GoogleDriveDownloader:
         :param : Define the output directory
         :return: None
         """
-        # Default output dir
-        if output_dir is None:
-            pyrootutils.setup_root(__file__, indicator=".project-root", pythonpath=True)
-            self.output_dir = Path(pyrootutils.find_root(), "data", "edos_raw")
-        else:
-            self.output_dir = output_dir
 
+        self.output_dir = output_dir
         self.download_unlabeled = download_unlabeled
+
         if links_dict is None:
             self.links_dict = self._get_default_file_links
             self.unlabeled_links_dict = self._get_default_unlabeled_file_links
