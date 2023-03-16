@@ -1,5 +1,6 @@
 import argparse
 import logging
+import pprint
 
 from src.utils import defines
 
@@ -44,21 +45,14 @@ def parse_args():
 
     parser.add_argument(
         "--load_weights_from",
+        default=None,
         type=str,
         help="Name of the run to load weights from",
     )
 
-    parser.add_argument(
-        "--name",
-        type=str,
-        help="Name of the run",
-    )
-
     parser.add_argument("--batch_size", default=64, type=int, help="Mini batch size")
 
-    parser.add_argument(
-        "--num_epoch", default=80, type=int, help="Number of epoch to train. Geirhos uses 80."
-    )
+    parser.add_argument("--num_epoch", default=80, type=int, help="Number of epoch to train")
 
     parser.add_argument(
         "--patience",
@@ -91,6 +85,4 @@ def parse_args():
     )
 
     args = parser.parse_args()
-    logger = logging.getLogger(__name__)
-    logger.info(f"Arguments are: {args}")
     return args

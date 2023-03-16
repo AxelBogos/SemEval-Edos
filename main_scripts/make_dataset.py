@@ -1,7 +1,7 @@
 import logging
 
 import src.utils.helpers
-from src.utils import defines, interim_preprocessing, raw_data_downloader, setup_logging
+from src.utils import defines, interim_preprocessing, raw_data_downloader
 
 
 def main():
