@@ -1,7 +1,5 @@
-# Imports
 import argparse
 import logging
-import os.path
 
 from src.utils import defines
 
@@ -75,7 +73,17 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--data_dir", default=defines.DATA_DIR, help="Root directory with all datasets"
+        "--raw_data_dir", default=defines.RAW_DATA_DIR, help="Raw data directory with all datasets"
+    )
+    parser.add_argument(
+        "--interim_data_dir",
+        default=defines.INTERIM_DATA_DIR,
+        help="Interim data directory with all datasets",
+    )
+    parser.add_argument(
+        "--processed_data_dir",
+        default=defines.PROCESSED_DATA_DIR,
+        help="Processed data directory with all datasets",
     )
 
     parser.add_argument(

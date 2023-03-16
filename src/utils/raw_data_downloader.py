@@ -4,6 +4,7 @@ from pathlib import Path
 
 import gdown
 
+import src.utils.helpers
 from src.utils import setup_logging
 
 
@@ -50,7 +51,7 @@ class GoogleDriveDownloader:
         else:
             self.links_dict = links_dict
 
-        setup_logging._setup_python_logging()
+        src.utils.helpers._setup_python_logging()
         logger = logging.getLogger(__name__)
         self.logger = logger
 
