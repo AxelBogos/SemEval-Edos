@@ -51,7 +51,7 @@ class GoogleDriveDownloader:
         else:
             self.links_dict = links_dict
 
-        src.utils.helpers._setup_python_logging()
+        src.utils.helpers.setup_python_logging()
         logger = logging.getLogger(__name__)
         self.logger = logger
 

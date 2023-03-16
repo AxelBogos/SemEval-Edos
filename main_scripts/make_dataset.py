@@ -5,7 +5,7 @@ from src.utils import defines, interim_preprocessing, raw_data_downloader, setup
 
 
 def main():
-    src.utils.helpers._setup_python_logging()
+    src.utils.helpers.setup_python_logging()
     logger = logging.getLogger(__name__)
 
     # Download data
