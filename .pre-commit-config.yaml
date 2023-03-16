@@ -97,7 +97,7 @@ repos:
     hooks:
       - id: codespell
         args:
-          - --skip=logs/**,data/**,*.ipynb,LICENSE
+          - --skip=logs/**,data/**,*.ipynb,LICENSE,docs/conf.py
           - --ignore-words-list=Bogos,
 
   # jupyter notebook cell output clearing

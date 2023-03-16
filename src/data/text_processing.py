@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
-import pyrootutils
 import spacy
 import torch
 from torchtext.vocab import GloVe
