@@ -43,6 +43,12 @@ class EDOSDataModule(LightningDataModule):
         """
 
         def _helper_yield_tokens(train_dataset):
+            """The _helper_yield_tokens function is a generator that yields the tokens from each
+            row in the train_dataset.
+
+            :param train_dataset: Pass in the dataset that we want to tokenize
+            :return: A generator object
+            """
             for row in train_dataset:
                 yield row[1]
 
