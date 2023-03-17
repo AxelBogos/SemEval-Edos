@@ -23,6 +23,15 @@ class TextPreprocessor:
     """
 
     def __init__(self, preprocessing_mode: str = "standard") -> None:
+
+        """The __init__ function is the constructor for a class. It is called when an object of
+        that class is instantiated, and it sets up the attributes of that object. In this case, we
+        are setting up the attributes for our Preprocessor object.
+
+        :param self: Represent the instance of the class
+        :param preprocessing_mode: str: Set the preprocessing flags
+        :return: None
+        """
         self.nlp = spacy.load("en_core_web_sm")
         self.stop_words = spacy.lang.en.stop_words.STOP_WORDS
 
@@ -106,49 +115,3 @@ class TextPreprocessor:
             self.remove_handles_and_urls = False
             self.remove_stop_words = False
             self.lemmatize = False
-
-
-class SpacyTokenizer:
-    def __init__(self, embed_length=300, cache=Path):
-        self.embed_length = embed_length
-        self.nlp = spacy.load("en_core_web_sm")
-        self.global_vectors = GloVe(
-            name="840B",
-            dim=embed_length,
-            cache=Path(defines.EXTERNAL_DATA_DIR, ".vector_cache"),
-        )
-
-    def encode_plus(
-        self,
-        input_str: str,
-        max_length: int,
-        lemmatize: bool = True,
-        truncation: bool = True,
-        padding: str = "max_length",
-        return_attention_mask: bool = True,
-        return_tensors: Any = None,
-    ) -> dict:
-        """
-        The encode_plus function is a tokenizing function that uses Spacy but follows the exepcted arguments of
-         BertTokenizer.encode_plus:
-
-        :param self: Access the variables and methods of the class in python
-        :param input_str:str: Pass in the text that needs to be encoded
-        :param max_length:int: Specify the maximum number of tokens that should be returned
-        :param lemmatize:bool=True: Lemmatize the input string
-        :param truncation:bool=True: Determine if the input string should be truncated or not
-        :param padding:str="max_length": Specify the padding strategy. Useless, mimics Bert.tokenizer.
-        :param return_attention_mask:bool=True: Return the attention mask (a binary tensor) along with the input_ids. Useless, mimics Bert.tokenizer.
-        :param return_tensors:Any=None: Return the tensors in the format specified. Useless, mimics Bert.tokenizer.
-        :return: A dictionary with the input_ids and attention_mask as keys
-        """
-        tokens = [token.lemma_ if lemmatize else token for token in self.nlp(input_str)]
-        X_tensor = torch.zeros(max_length, self.embed_length)
-        if truncation:
-            tokens = tokens[:max_length]
-        if len(tokens) < max_length:
-            tokens = tokens + ["<pad>"] * (max_length - len(tokens))
-        for idx, token in enumerate(tokens):
-            X_tensor[idx] = self.global_vectors.get_vecs_by_tokens(token, lower_case_backup=True)
-        attention_mask = [1] * len(tokens) + [0] * (max_length - len(tokens))
-        return {"input_ids": X_tensor, "attention_mask": attention_mask}

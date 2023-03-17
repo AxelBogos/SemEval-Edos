@@ -6,6 +6,15 @@ import pandas as pd
 
 class InterimProcessor:
     def __init__(self, raw_data_dir, interim_output_dir):
+
+        """The __init__ function is called when the class is instantiated. It sets up the instance
+        variables for this particular object.
+
+        :param self: Represent the instance of the class
+        :param raw_data_dir: Specify the directory where the raw data is stored
+        :param interim_output_dir: Specify the directory where the interim output files will be stored
+        :return: Nothing
+        """
         self.raw_data_dir = raw_data_dir
         self.interim_output_dir = interim_output_dir
 

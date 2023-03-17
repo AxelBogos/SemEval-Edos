@@ -10,7 +10,6 @@ from pytorch_lightning.loggers import WandbLogger
 
 from src.data import edos_datamodule
 from src.models import lstm_module
-from src.models.components import simple_bilstm_net
 from src.utils import defines
 
 
@@ -134,6 +133,13 @@ def get_model(
 
 
 def get_data_module(args):
+    """The get_data_module function is used to create a data module object. The data module object
+    is responsible for loading the dataset and creating the dataloaders. It also contains any other
+    functions that are needed to process the dataset, such as normalization or augmentation.
+
+    :param args: Pass in the arguments from the command line
+    :return: The data module
+    """
     datamodule = edos_datamodule.EDOSDataModule(args)
     return datamodule
 
@@ -155,6 +161,15 @@ def get_optimizer(args):
 
 
 def get_scheduler(args):
+
+    """
+    The get_scheduler function takes in the args object and returns a scheduler.
+        Args:
+            args (object): The arguments object containing all of the command line arguments.
+
+    :param args: Pass the arguments from the command line to this function
+    :return: An object of the class optim
+    """
     if args.scheduler == "stepLR":
         scheduler = optim.lr_scheduler.StepLR
     return scheduler
