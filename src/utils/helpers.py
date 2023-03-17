@@ -66,8 +66,8 @@ def setup_wandb(args):
         project=os.getenv("WANDB_PROJECT"),
         save_dir=args.log_dir,
         log_model=True,
-        group=args.model,
-        tags=args.model,
+        group=args.task,
+        tags=[args.model],
     )
     return wandb_logger
 
