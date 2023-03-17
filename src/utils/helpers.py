@@ -155,4 +155,6 @@ def get_optimizer(args):
 
 
 def get_scheduler(args):
-    return None  # TODO
+    if args.scheduler == "stepLR":
+        scheduler = optim.lr_scheduler
+    return scheduler

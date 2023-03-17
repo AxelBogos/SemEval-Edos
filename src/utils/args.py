@@ -49,9 +49,16 @@ def parse_args():
 
     parser.add_argument(
         "--optimizer",
-        default="Adam",
+        default="AdamW",
         type=str,
         help="Optimizer name; available tasks: {Adam, AdamW, SGD}",
+    )
+
+    parser.add_argument(
+        "--scheduler",
+        default="stepLR",
+        type=str,
+        help="Scheduler name; available tasks: {stepLR}",
     )
 
     parser.add_argument(
@@ -61,10 +68,11 @@ def parse_args():
         help="Type of preprocessing to apply. Choices as {'standard', 'none'}. Standard preprocessing is not meant for transformers models.",
     )
 
-    parser.add_argument("--max_length", default=128, type=int, help="Max Sequence Length")
+    parser.add_argument("--max_length", default=256, type=int, help="Max Sequence Length")
 
     parser.add_argument("--dropout", default=0.1, type=int, help="Dropout rate")
-    parser.add_argument("--lr", default=0.1, type=int, help="Learning rate")
+    parser.add_argument("--lr", default=0.001, type=float, help="Learning rate")
+    parser.add_argument("--step_scheduler", default=5, type=int, help="Scheduler rate")
 
     # --------------- LSTM Config Arguments ---------------
 
@@ -72,7 +80,7 @@ def parse_args():
 
     parser.add_argument("--hidden_dim", default=32, type=int, help="Hidden Dimension size")
 
-    parser.add_argument("--num_layers", default=1, type=int, help="Number of bilstm layers")
+    parser.add_argument("--num_layers", default=2, type=int, help="Number of bilstm layers")
     parser.add_argument(
         "--bidirectional", default=True, type=bool, help="bool for bidirectional LSTM"
     )
@@ -92,7 +100,7 @@ def parse_args():
 
     parser.add_argument(
         "--patience",
-        default=5,
+        default=3,
         type=int,
         help="Early Stopping parameter: Maximum number of epochs to run without validation loss improvements.",
     )
