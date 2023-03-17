@@ -2,11 +2,13 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
+import torch
 from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
+from torchtext.vocab import build_vocab_from_iterator
 
 from src.data.components.Dataset import GenericDataset
-from src.data.text_processing import SpacyTokenizer, TextPreprocessor
+from src.data.text_processing import TextPreprocessor
 
 
 class EDOSDataModule(LightningDataModule):
@@ -19,9 +21,13 @@ class EDOSDataModule(LightningDataModule):
 
         self.args = args
 
+        self.vocab = None
+        self.collator = None
+        self.pad_idx = None
+
         # data preparation handlers
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)
-        self.tokenizer = SpacyTokenizer()
+        # self.tokenizer = SpacyTokenizer()
 
     def prepare_data(self):
         pass
@@ -36,32 +42,48 @@ class EDOSDataModule(LightningDataModule):
         :return: A tuple of the train, val and test datasets
         """
 
+        def _helper_yield_tokens(train_dataset):
+            for row in train_dataset:
+                yield row[1]
+
         if not self.data_train:
             train_path = Path(self.args.interim_data_dir, "train_all_tasks.csv")
-            raw_data_train = pd.read_csv(train_path).to_numpy()
-            self.data_train = GenericDataset(
-                raw_data_train[:, [1, self._train_target_index]],
-                self.tokenizer,
-                self.text_preprocessor,
-                self.args.max_length,
+            raw_data_train = pd.read_csv(train_path)
+            raw_data_train["text"] = self.text_preprocessor.transform_series(
+                raw_data_train["text"]
             )
+            raw_data_train = raw_data_train.to_numpy()
+
+            self.vocab = build_vocab_from_iterator(
+                _helper_yield_tokens(raw_data_train), specials=["<unk>", "<pad>"], min_freq=5
+            )
+            self.vocab.set_default_index(self.vocab["<unk>"])
+            self.collator = Collator(pad_idx=self.vocab["<pad>"])
+            self.pad_idx = self.vocab["<pad>"]
+            self.data_train = GenericDataset(
+                text=raw_data_train[:, 1],
+                label=raw_data_train[:, self._train_target_index],
+                vocab=self.vocab,
+            )
+
         if not self.data_val:
             val_path = Path(self.args.interim_data_dir, f"dev_task_{self.args.task}_entries.csv")
-            raw_data_val = pd.read_csv(val_path).to_numpy()
+            raw_data_val = pd.read_csv(val_path)
+            raw_data_val["text"] = self.text_preprocessor.transform_series(raw_data_val["text"])
+
+            raw_data_val = raw_data_val.to_numpy()
+
             self.data_val = GenericDataset(
-                raw_data_val[:, [1, 2]],
-                self.tokenizer,
-                self.text_preprocessor,
-                self.args.max_length,
+                text=raw_data_val[:, 1], label=raw_data_val[:, 2], vocab=self.vocab
             )
+
         if not self.data_test:
             test_path = Path(self.args.interim_data_dir, f"test_task_{self.args.task}_entries.csv")
-            raw_data_test = pd.read_csv(test_path).to_numpy()
+            raw_data_test = pd.read_csv(test_path)
+            raw_data_test["text"] = self.text_preprocessor.transform_series(raw_data_test["text"])
+            raw_data_test = raw_data_test.to_numpy()
             self.data_test = GenericDataset(
-                raw_data_test[:, [1, 2]],
-                self.tokenizer,
-                self.text_preprocessor,
-                self.args.max_length,
+                text=raw_data_test[:, 1], label=raw_data_test[:, 2], vocab=self.vocab
             )
 
     def train_dataloader(self):
@@ -70,6 +92,7 @@ class EDOSDataModule(LightningDataModule):
             batch_size=self.args.batch_size,
             num_workers=self.args.num_workers,
             shuffle=True,
+            collate_fn=self.collator.collate,
         )
 
     def val_dataloader(self):
@@ -78,6 +101,7 @@ class EDOSDataModule(LightningDataModule):
             batch_size=self.args.batch_size,
             num_workers=self.args.num_workers,
             shuffle=False,
+            collate_fn=self.collator.collate,
         )
 
     def test_dataloader(self):
@@ -86,6 +110,7 @@ class EDOSDataModule(LightningDataModule):
             batch_size=self.args.batch_size,
             num_workers=self.args.num_workers,
             shuffle=False,
+            collate_fn=self.collator.collate,
         )
 
     @property
@@ -118,3 +143,14 @@ class EDOSDataModule(LightningDataModule):
             return 3
         elif self.args.task == "c":
             return 4
+
+
+class Collator:
+    def __init__(self, pad_idx):
+        self.pad_idx = pad_idx
+
+    def collate(self, batch):
+        text, labels = zip(*batch)
+        labels = torch.LongTensor(labels)
+        text = torch.nn.utils.rnn.pad_sequence(text, padding_value=self.pad_idx, batch_first=True)
+        return text, labels

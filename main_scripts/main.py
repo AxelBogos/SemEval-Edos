@@ -19,6 +19,10 @@ def main():
     logger.info(f"Run Arguments are:\n {pprint.pformat(vars(args), sort_dicts=False)}")
 
     data_module = helpers.get_data_module(args)
+    data_module.setup()
+    args.len_vocab = len(data_module.vocab)
+    args.num_target_class = data_module._num_classes
+    args.pad_idx = data_module.pad_idx
     optimizer = helpers.get_optimizer(args)
     scheduler = helpers.get_scheduler(args)
     model = helpers.get_model(args, optimizer, scheduler)
