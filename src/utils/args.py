@@ -44,7 +44,7 @@ def parse_args():
         "--model",
         default="bilstm",
         type=str,
-        help="Model name; available models: {'gnb','bilstm','distillbert'}",
+        help="Model name; available models: {'bilstm','distillbert'}",
     )
 
     parser.add_argument(

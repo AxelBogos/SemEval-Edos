@@ -8,7 +8,7 @@ import torch.optim as optim
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
 from pytorch_lightning.loggers import WandbLogger
 
-from src.data import edos_datamodule
+from src.data import edos_datamodule_lstm
 from src.models import lstm_module
 from src.utils import defines
 
@@ -140,7 +140,7 @@ def get_data_module(args):
     :param args: Pass in the arguments from the command line
     :return: The data module
     """
-    datamodule = edos_datamodule.EDOSDataModule(args)
+    datamodule = edos_datamodule_lstm.EDOSDataModule(args)
     return datamodule
 
 

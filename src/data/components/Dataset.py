@@ -3,7 +3,7 @@ import torch
 from torch.utils.data import Dataset
 
 
-class GenericDataset(Dataset):
+class GenericDatasetLSTM(Dataset):
     def __init__(self, text: np.array, label: np.array, vocab=None):
         self.text = text
         self.label = label

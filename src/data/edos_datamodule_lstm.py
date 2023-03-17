@@ -7,7 +7,7 @@ from pytorch_lightning import LightningDataModule
 from torch.utils.data import DataLoader, Dataset
 from torchtext.vocab import build_vocab_from_iterator
 
-from src.data.components.Dataset import GenericDataset
+from src.data.components.Dataset import GenericDatasetLSTM
 from src.data.text_processing import TextPreprocessor
 
 
@@ -67,7 +67,7 @@ class EDOSDataModule(LightningDataModule):
             self.vocab.set_default_index(self.vocab["<unk>"])
             self.collator = Collator(pad_idx=self.vocab["<pad>"])
             self.pad_idx = self.vocab["<pad>"]
-            self.data_train = GenericDataset(
+            self.data_train = GenericDatasetLSTM(
                 text=raw_data_train[:, 1],
                 label=raw_data_train[:, self._train_target_index],
                 vocab=self.vocab,
@@ -80,7 +80,7 @@ class EDOSDataModule(LightningDataModule):
 
             raw_data_val = raw_data_val.to_numpy()
 
-            self.data_val = GenericDataset(
+            self.data_val = GenericDatasetLSTM(
                 text=raw_data_val[:, 1], label=raw_data_val[:, 2], vocab=self.vocab
             )
 
@@ -89,7 +89,7 @@ class EDOSDataModule(LightningDataModule):
             raw_data_test = pd.read_csv(test_path)
             raw_data_test["text"] = self.text_preprocessor.transform_series(raw_data_test["text"])
             raw_data_test = raw_data_test.to_numpy()
-            self.data_test = GenericDataset(
+            self.data_test = GenericDatasetLSTM(
                 text=raw_data_test[:, 1], label=raw_data_test[:, 2], vocab=self.vocab
             )
 
