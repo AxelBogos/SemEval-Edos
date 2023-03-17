@@ -46,8 +46,6 @@ def setup_python_logging(log_dir: Path = None) -> None:
         logging.basicConfig(level=logging.INFO, format=log_fmt)
     else:
         # log to file
-        if not log_dir.is_dir():
-            os.mkdir(log_dir)
         logging.basicConfig(level=logging.INFO, format=log_fmt, filename=Path(log_dir, "logs.txt"))
 
         # log to console
@@ -109,6 +107,8 @@ def make_log_dir() -> Path:
     :return: A path to a new directory
     """
     log_dir_path = Path(defines.LOG_DIR, _get_time())
+    if not defines.LOG_DIR.is_dir():
+        os.mkdir(defines.LOG_DIR)
     os.mkdir(log_dir_path)
     return log_dir_path
 
