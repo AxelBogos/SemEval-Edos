@@ -52,6 +52,7 @@ class EDOSDataModule(LightningDataModule):
             raw_data_train["text"] = self.text_preprocessor.transform_series(
                 raw_data_train["text"]
             )
+            raw_data_train = raw_data_train[raw_data_train[self._train_target_index] != -1]
             raw_data_train = raw_data_train.to_numpy()
 
             self.vocab = build_vocab_from_iterator(
