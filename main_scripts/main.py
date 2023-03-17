@@ -2,7 +2,7 @@ import logging
 import pprint
 
 from dotenv import load_dotenv
-from pytorch_lightning import Trainer
+from pytorch_lightning import Trainer, seed_everything
 
 from src.utils import defines, helpers
 from src.utils.args import parse_args
@@ -17,7 +17,7 @@ def main():
 
     logger = logging.getLogger(__name__)
     logger.info(f"Run Arguments are:\n {pprint.pformat(vars(args), sort_dicts=False)}")
-
+    seed_everything(args.seed)
     data_module = helpers.get_data_module(args)
     data_module.setup()
     args.len_vocab = len(data_module.vocab)

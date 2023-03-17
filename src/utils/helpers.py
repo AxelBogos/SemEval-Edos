@@ -126,7 +126,7 @@ def get_model(
     :return: A model object that is a torch.nn.Module
     """
     if args.model == "bilstm":
-        return lstm_module.LSTMModule(args, optimizer, scheduler)
+        return lstm_module.LSTMModule(args=args, optimizer=optimizer, scheduler=scheduler)
     if args.model == "gnb":
         pass  # TODO
     if args.model == "distillbert":

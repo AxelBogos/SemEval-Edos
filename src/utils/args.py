@@ -64,14 +64,15 @@ def parse_args():
     parser.add_argument("--max_length", default=128, type=int, help="Max Sequence Length")
 
     parser.add_argument("--dropout", default=0.1, type=int, help="Dropout rate")
+    parser.add_argument("--lr", default=0.1, type=int, help="Learning rate")
 
     # --------------- LSTM Config Arguments ---------------
 
     parser.add_argument("--embedding_dim", default=300, type=int, help="Embedding Dimension size")
 
-    parser.add_argument("--hidden_dim", default=128, type=int, help="Hidden Dimension size")
+    parser.add_argument("--hidden_dim", default=32, type=int, help="Hidden Dimension size")
 
-    parser.add_argument("--num_layers", default=2, type=int, help="Number of bilstm layers")
+    parser.add_argument("--num_layers", default=1, type=int, help="Number of bilstm layers")
     parser.add_argument(
         "--bidirectional", default=True, type=bool, help="bool for bidirectional LSTM"
     )
