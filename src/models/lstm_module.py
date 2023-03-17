@@ -9,22 +9,41 @@ from torchmetrics.classification import MulticlassF1Score
 class LSTMModule(pl.LightningModule):
     def __init__(
         self,
-        net: torch.nn.Module,
+        args,
         optimizer: torch.optim.Optimizer,
         scheduler: torch.optim.lr_scheduler = None,
     ):
         super().__init__()
-        self.net = net
+        self.args = args
         self.optimizer = optimizer
         self.scheduler = scheduler
 
+        # Embedding
+        self.embedding_layer = torch.nn.Embedding(
+            num_embeddings=args.len_vocab,
+            embedding_dim=args.embedding_dim,
+            padding_idx=args.pad_idx,
+        )
+
+        # Main network
+        self.lstm = torch.nn.LSTM(
+            input_size=args.embedding_dim,
+            hidden_size=args.hidden_dim,
+            num_layers=args.num_layers,
+            batch_first=True,
+            bidirectional=True,
+        )
+        self.dropout = torch.nn.Dropout(args.dropout)
+        fc_input_dim = 2 * args.hidden_dim if args.bidirectional else args.hidden_dim
+        self.fc = torch.nn.Linear(fc_input_dim, args.num_target_class)
+
         # loss function
-        self.criterion = torch.nn.BCEWithLogitsLoss()
+        self.criterion = torch.nn.CrossEntropyLoss()
 
         # metric objects for calculating and macro f1 across batches
-        self.train_f1 = MulticlassF1Score(num_classes=2, average="macro")
-        self.val_f1 = MulticlassF1Score(num_classes=2, average="macro")
-        self.test_f1 = MulticlassF1Score(num_classes=2, average="macro")
+        self.train_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
+        self.val_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
+        self.test_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
 
         # for averaging loss across batches
         self.train_loss = MeanMetric()
@@ -35,7 +54,9 @@ class LSTMModule(pl.LightningModule):
         self.val_f1_best = MaxMetric()
 
     def forward(self, x):
-        return self.net(x)
+        embeddings = self.embedding_layer(x)
+        output, _ = self.lstm(embeddings)
+        return self.fc(output[:, -1])
 
     def on_train_start(self):
         # by default lightning executes validation step sanity checks before training starts,
@@ -43,11 +64,10 @@ class LSTMModule(pl.LightningModule):
         self.val_f1_best.reset()
 
     def model_step(self, batch: Any):
-        x, attention_mask, y = batch
+        x, y = batch
         logits = self.forward(x)
         loss = self.criterion(logits, y)
         preds = torch.argmax(logits, dim=1)
-        preds = torch.unsqueeze(preds, -1)
         return loss, preds, y
 
     def training_step(self, batch: Any, batch_idx: int):
@@ -94,9 +114,9 @@ class LSTMModule(pl.LightningModule):
         return {"loss": loss, "preds": preds, "targets": targets}
 
     def configure_optimizers(self):
-        optimizer = self.optimizer(params=self.parameters())
+        optimizer = self.optimizer(self.parameters(), lr=self.args.lr)
         if self.scheduler is not None:
-            scheduler = self.scheduler(optimizer=optimizer)
+            scheduler = self.scheduler(step_size=self.args.step_scheduler, optimizer=optimizer)
             return {
                 "optimizer": optimizer,
                 "lr_scheduler": {

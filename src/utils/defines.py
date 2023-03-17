@@ -14,3 +14,4 @@ VALID_MODEL_CHOICES = ("gnb", "bilstm", "distillbert")
 VALID_TASK_CHOICES = ("a", "b", "c")
 VALID_PREPROCESSING_MODE = ("standard", "none")
 VALID_OPTIMIZERS = ("Adam", "AdamW", "SGD")
+VALID_SCHEDULERS = "stepLR"

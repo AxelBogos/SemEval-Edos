@@ -32,12 +32,11 @@ class TextPreprocessor:
         self.remove_punc = False
         self.remove_handles_and_urls = False
         self.remove_stop_words = False
-        self.tokenize = False
         self.lemmatize = False
 
         self.set_preprocessing_flags(preprocessing_mode)
 
-    def transform(self, x: str) -> str:
+    def transform(self, x: str) -> list:
         """The transform function takes a string as input and returns a modified string. The
         transform function will:
 
@@ -48,7 +47,7 @@ class TextPreprocessor:
 
         :param self: Allow the function to refer to and modify the attributes of the class
         :param x: String to be modified.
-        :return: Modified string
+        :return: list of tokens
         """
         if self.lower_case:
             x = x.lower()
@@ -60,6 +59,16 @@ class TextPreprocessor:
             x = re.sub("[" + string.punctuation + "]", "", x)
         if self.remove_stop_words:
             x = " ".join([word for word in x.split() if word not in self.stop_words])
+
+        if self.lemmatize:
+            # TODO testing
+            # x = [token.lemma_ for token in self.nlp(x)]
+            x = x.split()
+        else:
+            # TODO testing
+            # x = [token for token in self.nlp(x)]
+            x = x.split()
+
         return x
 
     def transform_series(self, series_col: pd.Series):
@@ -88,13 +97,15 @@ class TextPreprocessor:
             self.remove_punc = True
             self.remove_handles_and_urls = True
             self.remove_stop_words = True
+            self.lemmatize = True
 
-        if preprocessing_mode == "bert":
+        if preprocessing_mode == "none":
             self.lower_case = False
             self.remove_multispace = False
             self.remove_punc = False
-            self.remove_handles_and_urls = True
-            self.remove_stop_words = True
+            self.remove_handles_and_urls = False
+            self.remove_stop_words = False
+            self.lemmatize = False
 
 
 class SpacyTokenizer:

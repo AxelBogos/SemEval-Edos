@@ -63,11 +63,11 @@ def setup_wandb(args):
     :return: A wandblogger object
     """
     wandb_logger = WandbLogger(
-        project=os.getenv("WANDB_PROJECT"),
+        project="EDOS-ift6289",
         save_dir=args.log_dir,
         log_model=True,
-        group=args.model,
-        tags=args.model,
+        group="Task " + args.task,
+        tags=[args.model],
     )
     return wandb_logger
 
@@ -126,8 +126,7 @@ def get_model(
     :return: A model object that is a torch.nn.Module
     """
     if args.model == "bilstm":
-        net = simple_bilstm_net.SimpleBiLstmNet(args)
-        return lstm_module.LSTMModule(net, optimizer, scheduler)
+        return lstm_module.LSTMModule(args=args, optimizer=optimizer, scheduler=scheduler)
     if args.model == "gnb":
         pass  # TODO
     if args.model == "distillbert":
@@ -156,4 +155,6 @@ def get_optimizer(args):
 
 
 def get_scheduler(args):
-    return None  # TODO
+    if args.scheduler == "stepLR":
+        scheduler = optim.lr_scheduler.StepLR
+    return scheduler
