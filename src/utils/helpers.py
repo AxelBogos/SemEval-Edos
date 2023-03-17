@@ -63,7 +63,7 @@ def setup_wandb(args):
     :return: A wandblogger object
     """
     wandb_logger = WandbLogger(
-        project=os.getenv("WANDB_PROJECT"),
+        project="EDOS-ift6289",
         save_dir=args.log_dir,
         log_model=True,
         group="Task " + args.task,
@@ -156,5 +156,5 @@ def get_optimizer(args):
 
 def get_scheduler(args):
     if args.scheduler == "stepLR":
-        scheduler = optim.lr_scheduler
+        scheduler = optim.lr_scheduler.StepLR
     return scheduler

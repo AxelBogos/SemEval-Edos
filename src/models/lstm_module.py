@@ -116,7 +116,7 @@ class LSTMModule(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.args.lr)
         if self.scheduler is not None:
-            scheduler = self.scheduler(optimizer=optimizer)
+            scheduler = self.scheduler(step_size=self.args.step_scheduler, optimizer=optimizer)
             return {
                 "optimizer": optimizer,
                 "lr_scheduler": {

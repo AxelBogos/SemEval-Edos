@@ -14,6 +14,7 @@ def main():
     helpers.setup_python_logging(log_dir)
     args = parse_args()
     args.log_dir = log_dir
+    wandb_logger = helpers.setup_wandb(args)
 
     logger = logging.getLogger(__name__)
     logger.info(f"Run Arguments are:\n {pprint.pformat(vars(args), sort_dicts=False)}")
@@ -26,7 +27,6 @@ def main():
     optimizer = helpers.get_optimizer(args)
     scheduler = helpers.get_scheduler(args)
     model = helpers.get_model(args, optimizer, scheduler)
-    wandb_logger = helpers.setup_wandb(args)
     lightning_callbacks = helpers.get_lightning_callbacks(args)
 
     trainer = Trainer(

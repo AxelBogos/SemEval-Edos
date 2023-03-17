@@ -78,7 +78,7 @@ def parse_args():
 
     parser.add_argument("--embedding_dim", default=300, type=int, help="Embedding Dimension size")
 
-    parser.add_argument("--hidden_dim", default=32, type=int, help="Hidden Dimension size")
+    parser.add_argument("--hidden_dim", default=256, type=int, help="Hidden Dimension size")
 
     parser.add_argument("--num_layers", default=2, type=int, help="Number of bilstm layers")
     parser.add_argument(
