@@ -58,7 +58,7 @@ class EDOSDataModule(LightningDataModule):
             raw_data_train["text"] = self.text_preprocessor.transform_series(
                 raw_data_train["text"]
             )
-            raw_data_train = raw_data_train[raw_data_train[self._train_target_index] != -1]
+            raw_data_train = raw_data_train[raw_data_train[self._train_target_label] != -1]
             raw_data_train = raw_data_train.to_numpy()
 
             self.vocab = build_vocab_from_iterator(
@@ -150,6 +150,22 @@ class EDOSDataModule(LightningDataModule):
             return 3
         elif self.args.task == "c":
             return 4
+
+    @property
+    def _train_target_label(self):
+
+        """The _train_target_label function is used to determine the target label for training. The
+        function takes in a single argument, self, which is an instance of the class.
+
+        :param self: Bind the instance of the class to the method
+        :return: The label of the training set for current task
+        """
+        if self.args.task == "a":
+            return "label_sexist"
+        elif self.args.task == "b":
+            return "label_category"
+        elif self.args.task == "c":
+            return "label_vector"
 
 
 class Collator:
