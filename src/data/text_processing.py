@@ -1,14 +1,8 @@
 import re
 import string
-from pathlib import Path
-from typing import Any
 
 import pandas as pd
 import spacy
-import torch
-from torchtext.vocab import GloVe
-
-from src.utils import defines
 
 
 class TextPreprocessor:
@@ -42,6 +36,7 @@ class TextPreprocessor:
         self.remove_handles_and_urls = False
         self.remove_stop_words = False
         self.lemmatize = False
+        self.tokenize = False
 
         self.set_preprocessing_flags(preprocessing_mode)
 
@@ -69,9 +64,12 @@ class TextPreprocessor:
         if self.remove_stop_words:
             x = " ".join([word for word in x.split() if word not in self.stop_words])
 
+        assert not (
+            self.lemmatize and self.tokenize
+        ), "Cannot both tokenize and lemmatize. Choose one."
         if self.lemmatize:
             x = [token.lemma_ for token in self.nlp(x)]
-        else:
+        if self.tokenize:
             x = [token for token in self.nlp(x)]
 
         return x
@@ -103,6 +101,7 @@ class TextPreprocessor:
             self.remove_handles_and_urls = True
             self.remove_stop_words = True
             self.lemmatize = True
+            self.tokenize = False
 
         if preprocessing_mode == "none":
             self.lower_case = False
@@ -111,3 +110,4 @@ class TextPreprocessor:
             self.remove_handles_and_urls = False
             self.remove_stop_words = False
             self.lemmatize = False
+            self.tokenize = False
