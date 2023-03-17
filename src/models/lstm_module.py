@@ -114,7 +114,7 @@ class LSTMModule(pl.LightningModule):
         return {"loss": loss, "preds": preds, "targets": targets}
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.args.lr)
+        optimizer = self.optimizer(self.parameters(), lr=self.args.lr)
         if self.scheduler is not None:
             scheduler = self.scheduler(optimizer=optimizer)
             return {
