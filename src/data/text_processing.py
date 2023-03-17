@@ -70,13 +70,9 @@ class TextPreprocessor:
             x = " ".join([word for word in x.split() if word not in self.stop_words])
 
         if self.lemmatize:
-            # TODO testing
-            # x = [token.lemma_ for token in self.nlp(x)]
-            x = x.split()
+            x = [token.lemma_ for token in self.nlp(x)]
         else:
-            # TODO testing
-            # x = [token for token in self.nlp(x)]
-            x = x.split()
+            x = [token for token in self.nlp(x)]
 
         return x
 
