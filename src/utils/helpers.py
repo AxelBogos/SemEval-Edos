@@ -8,8 +8,8 @@ import torch.optim as optim
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
 from pytorch_lightning.loggers import WandbLogger
 
-from src.data import edos_datamodule_lstm
-from src.models import lstm_module
+from src.data import edos_datamodule_lstm, edos_datamodule_transformer
+from src.models import lstm_module, transformer_module
 from src.utils import defines
 
 
@@ -126,10 +126,8 @@ def get_model(
     """
     if args.model == "bilstm":
         return lstm_module.LSTMModule(args=args, optimizer=optimizer, scheduler=scheduler)
-    if args.model == "gnb":
-        pass  # TODO
-    if args.model == "distillbert":
-        pass  # TODO
+    else:
+        return transformer_module.TransformerModule(args, optimizer=optimizer, scheduler=scheduler)
 
 
 def get_data_module(args):
@@ -140,8 +138,10 @@ def get_data_module(args):
     :param args: Pass in the arguments from the command line
     :return: The data module
     """
-    datamodule = edos_datamodule_lstm.EDOSDataModuleLSTM(args)
-    return datamodule
+    if args.model == "bilstm":
+        return edos_datamodule_lstm.EDOSDataModuleLSTM(args)
+    else:
+        return edos_datamodule_transformer.EDOSDataModuleTransformer(args)
 
 
 def get_optimizer(args):
@@ -161,7 +161,6 @@ def get_optimizer(args):
 
 
 def get_scheduler(args):
-
     """
     The get_scheduler function takes in the args object and returns a scheduler.
         Args:

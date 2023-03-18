@@ -15,7 +15,6 @@ class TransformerModule(pl.LightningModule):
     ):
         super().__init__()
         self.transformer = AutoModel.from_pretrained(args.model, return_dict=True)
-        self.tokenizer = AutoTokenizer.from_pretrained(args.model)
         self.classifier = nn.Linear(self.bert.config.hidden_size, args.num_target_class)
         self.n_training_steps = args.n_training_steps
         self.n_warmup_steps = args.n_warmup_steps

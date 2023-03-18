@@ -4,20 +4,21 @@ from typing import Optional
 import pandas as pd
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
+from transformers import AutoTokenizer
 
 from src.data.components.Dataset import GenericDatasetTransformer
 from src.data.text_processing import TextPreprocessor
 
 
 class EDOSDataModuleTransformer(pl.LightningDataModule):
-    def __init__(self, args, tokenizer):
+    def __init__(self, args):
         super().__init__()
         self.data_train: Optional[GenericDatasetTransformer] = None
         self.data_val: Optional[GenericDatasetTransformer] = None
         self.data_test: Optional[GenericDatasetTransformer] = None
 
         self.args = args
-        self.tokenizer = tokenizer
+        self.tokenizer = AutoTokenizer.from_pretrained(args.model)
 
         # data preparation handlers
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)

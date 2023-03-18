@@ -44,7 +44,7 @@ def parse_args():
         "--model",
         default="bilstm",
         type=str,
-        help="Model name; available models: {'bilstm','distillbert'}",
+        help="Model name; available models: {'bilstm','bert-base-cased','distillbert'}",
     )
 
     parser.add_argument("--dropout", default=0.1, type=int, help="Dropout rate")
@@ -68,7 +68,15 @@ def parse_args():
     parser.add_argument("--lr", default=0.001, type=float, help="Learning rate")
 
     parser.add_argument("--step_scheduler", default=5, type=int, help="Scheduler rate")
-
+    parser.add_argument(
+        "--n_warmup_steps", default=30, type=int, help="Warmup steps. Used for transformer"
+    )
+    parser.add_argument(
+        "--n_training_steps",
+        default=30,
+        type=int,
+        help="Training steps. Used for transformer rate",
+    )
     parser.add_argument(
         "--preprocessing_mode",
         default="standard",
