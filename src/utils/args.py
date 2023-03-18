@@ -70,14 +70,9 @@ def parse_args():
 
     parser.add_argument("--step_scheduler", default=5, type=int, help="Scheduler rate")
     parser.add_argument(
-        "--n_warmup_steps", default=30, type=int, help="Warmup steps. Used for transformer"
+        "--n_warmup_steps", default=0, type=int, help="Warmup steps. Used for backbone"
     )
-    parser.add_argument(
-        "--n_training_steps",
-        default=30,
-        type=int,
-        help="Training steps. Used for transformer rate",
-    )
+
     parser.add_argument(
         "--preprocessing_mode",
         default="standard",
@@ -111,7 +106,7 @@ def parse_args():
 
     parser.add_argument("--batch_size", default=64, type=int, help="Mini batch size")
 
-    parser.add_argument("--max_epoch", default=80, type=int, help="Number of epoch to train")
+    parser.add_argument("--num_epoch", default=15, type=int, help="Number of epoch to train")
 
     parser.add_argument(
         "--patience",

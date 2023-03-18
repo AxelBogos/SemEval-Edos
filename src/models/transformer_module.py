@@ -3,7 +3,11 @@ import torch
 import torch.nn as nn
 from torchmetrics import MaxMetric, MeanMetric
 from torchmetrics.classification import MulticlassF1Score
-from transformers import AutoModel, get_linear_schedule_with_warmup
+from transformers import (
+    AutoModelForSequenceClassification,
+    get_linear_schedule_with_warmup,
+    get_scheduler,
+)
 
 
 class TransformerModule(pl.LightningModule):
@@ -11,16 +15,13 @@ class TransformerModule(pl.LightningModule):
         self,
         args,
         optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler = None,
     ):
         super().__init__()
         self.args = args
-        self.transformer = AutoModel.from_pretrained(args.model, return_dict=True)
-        self.classifier = nn.Linear(self.transformer.config.hidden_size, args.num_target_class)
-        self.n_training_steps = args.n_training_steps
-        self.n_warmup_steps = args.n_warmup_steps
+        self.model = AutoModelForSequenceClassification.from_pretrained(
+            args.model, return_dict=True
+        )
         self.optimizer = optimizer
-        self.scheduler = scheduler
         self.criterion = nn.CrossEntropyLoss()
 
         # metric objects for calculating and macro f1 across batches
@@ -37,13 +38,10 @@ class TransformerModule(pl.LightningModule):
         self.val_f1_best = MaxMetric()
 
     def forward(self, input_ids, attention_mask, labels=None):
-        output = self.transformer(input_ids, attention_mask=attention_mask)
-        output = self.classifier(output.pooler_output)
+        output = self.model(input_ids, attention_mask=attention_mask)
         return output
 
     def on_train_start(self):
-        # by default lightning executes validation step sanity checks before training starts,
-        # so we need to make sure val_f1_best doesn't store f1 from these checks
         self.val_f1_best.reset()
 
     def model_step(self, batch):
@@ -86,9 +84,11 @@ class TransformerModule(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.args.lr)
-        scheduler = get_linear_schedule_with_warmup(
-            optimizer,
-            num_warmup_steps=self.n_warmup_steps,
-            num_training_steps=self.n_training_steps,
+        num_training_steps = self.args.num_epochs * self.args.len_train_loader
+        scheduler = get_scheduler(
+            name="linear",
+            optimizer=optimizer,
+            num_warmup_steps=0,
+            num_training_steps=num_training_steps,
         )
         return dict(optimizer=optimizer, lr_scheduler=dict(scheduler=scheduler, interval="step"))

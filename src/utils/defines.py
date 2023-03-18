@@ -10,7 +10,14 @@ PROCESSED_DATA_DIR = Path(ROOT_PATH, "data", "processed")
 RAW_DATA_DIR = Path(ROOT_PATH, "data", "raw")
 DOTENV_FILE = Path(ROOT_PATH, ".env")
 LOG_DIR = Path(ROOT_PATH, "logs")
-VALID_MODEL_CHOICES = ("bilstm", "bert-base-cased", "distillbert")
+VALID_MODEL_CHOICES = (
+    "bilstm",
+    "bert-base-cased",
+    "roberta-base",
+    "bert-base-uncased",
+    "distilbert-base-uncased",
+    "distilroberta-base",
+)
 VALID_TASK_CHOICES = ("a", "b", "c")
 VALID_PREPROCESSING_MODE = ("standard", "none")
 VALID_OPTIMIZERS = ("Adam", "AdamW", "SGD")

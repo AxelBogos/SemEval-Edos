@@ -34,6 +34,7 @@ def main():
     data_module = helpers.get_data_module(args)
     data_module.setup()
     args.num_target_class = data_module._num_classes
+    args.len_train_loader = len(data_module.train_dataloader())
     if args.model == "bilstm":
         args.len_vocab = len(data_module.vocab)
         args.pad_idx = data_module.pad_idx
