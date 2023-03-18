@@ -38,7 +38,7 @@ class TransformerModule(pl.LightningModule):
         self.val_f1_best = MaxMetric()
 
     def forward(self, input_ids, attention_mask, labels=None):
-        output = self.model(**input_ids, attention_mask=attention_mask, labels=labels)
+        output = self.model(input_ids, attention_mask=attention_mask, labels=labels)
         return output
 
     def on_train_start(self):
@@ -88,7 +88,7 @@ class TransformerModule(pl.LightningModule):
         scheduler = get_scheduler(
             name="linear",
             optimizer=optimizer,
-            num_warmup_steps=0,
+            num_warmup_steps=self.args.n_warmup_steps,
             num_training_steps=num_training_steps,
         )
         return dict(optimizer=optimizer, lr_scheduler=dict(scheduler=scheduler, interval="step"))

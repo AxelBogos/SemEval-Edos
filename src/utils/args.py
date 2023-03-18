@@ -59,13 +59,6 @@ def parse_args():
         help="Optimizer name; available tasks: {Adam, AdamW, SGD}",
     )
 
-    parser.add_argument(
-        "--scheduler",
-        default="stepLR",
-        type=str,
-        help="Scheduler name; available tasks: {stepLR}",
-    )
-
     parser.add_argument("--lr", default=0.001, type=float, help="Learning rate")
 
     parser.add_argument("--step_scheduler", default=5, type=int, help="Scheduler rate")

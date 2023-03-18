@@ -11,12 +11,10 @@ class LSTMModule(pl.LightningModule):
         self,
         args,
         optimizer: torch.optim.Optimizer,
-        scheduler: torch.optim.lr_scheduler = None,
     ):
         super().__init__()
         self.args = args
         self.optimizer = optimizer
-        self.scheduler = scheduler
 
         # Embedding
         self.embedding_layer = torch.nn.Embedding(
@@ -115,15 +113,15 @@ class LSTMModule(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.args.lr)
-        if self.scheduler is not None:
-            scheduler = self.scheduler(step_size=self.args.step_scheduler, optimizer=optimizer)
-            return {
-                "optimizer": optimizer,
-                "lr_scheduler": {
-                    "scheduler": scheduler,
-                    "monitor": "val/loss",
-                    "interval": "epoch",
-                    "frequency": 1,
-                },
-            }
-        return {"optimizer": optimizer}
+        scheduler = torch.optim.lr_scheduler.StepLR(
+            step_size=self.args.step_scheduler, optimizer=optimizer
+        )
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": {
+                "scheduler": scheduler,
+                "monitor": "val/loss",
+                "interval": "epoch",
+                "frequency": 1,
+            },
+        }

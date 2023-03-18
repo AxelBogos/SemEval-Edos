@@ -113,9 +113,7 @@ def make_log_dir() -> Path:
     return log_dir_path
 
 
-def get_model(
-    args, optimizer: torch.optim.Optimizer = None, scheduler: torch.optim.lr_scheduler = None
-):
+def get_model(args, optimizer: torch.optim.Optimizer = None):
     """The get_model function is a factory function that returns an instance of the nn.Module
     class. The get_model function takes in two optional arguments: optimizer and scheduler. These
     are used to pass in PyTorch objects that will be used to train our model.
@@ -126,7 +124,7 @@ def get_model(
     :return: A model object that is a torch.nn.Module
     """
     if args.model == "bilstm":
-        return lstm_module.LSTMModule(args=args, optimizer=optimizer, scheduler=scheduler)
+        return lstm_module.LSTMModule(args=args, optimizer=optimizer)
     else:
         return transformer_module.TransformerModule(args, optimizer=optimizer)
 
@@ -159,17 +157,3 @@ def get_optimizer(args):
         optimizer = optim.SGD
 
     return optimizer
-
-
-def get_scheduler(args):
-    """
-    The get_scheduler function takes in the args object and returns a scheduler.
-        Args:
-            args (object): The arguments object containing all of the command line arguments.
-
-    :param args: Pass the arguments from the command line to this function
-    :return: An object of the class optim
-    """
-    if args.scheduler == "stepLR":
-        scheduler = optim.lr_scheduler.StepLR
-    return scheduler

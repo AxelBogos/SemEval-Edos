@@ -41,8 +41,7 @@ def main():
 
     # Build model
     optimizer = helpers.get_optimizer(args)
-    scheduler = helpers.get_scheduler(args)
-    model = helpers.get_model(args, optimizer, scheduler)
+    model = helpers.get_model(args, optimizer)
     lightning_callbacks = helpers.get_lightning_callbacks(args)
 
     trainer = Trainer(
