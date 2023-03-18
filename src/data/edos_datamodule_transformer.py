@@ -12,6 +12,13 @@ from src.data.text_processing import TextPreprocessor
 
 class EDOSDataModuleTransformer(pl.LightningDataModule):
     def __init__(self, args):
+        """The __init__ function is called when the class is instantiated. It sets up the instance
+        of the class, and defines all its attributes.
+
+        :param self: Represent the instance of the class
+        :param args: Pass the arguments from the command line to the class
+        :return: None
+        """
         super().__init__()
         self.data_train: Optional[GenericDatasetTransformer] = None
         self.data_val: Optional[GenericDatasetTransformer] = None
@@ -22,9 +29,6 @@ class EDOSDataModuleTransformer(pl.LightningDataModule):
 
         # data preparation handlers
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)
-
-    def prepare_data(self):
-        pass
 
     def setup(self, stage: Optional[str] = None):
 
@@ -79,6 +83,11 @@ class EDOSDataModuleTransformer(pl.LightningDataModule):
             )
 
     def train_dataloader(self):
+        """The train_dataloader function is used to load the training data.
+
+        :param self: Represent the instance of the class
+        :return: A dataloader object that contains the training data
+        """
         return DataLoader(
             self.data_train,
             batch_size=self.args.batch_size,
@@ -87,11 +96,23 @@ class EDOSDataModuleTransformer(pl.LightningDataModule):
         )
 
     def val_dataloader(self):
+        """The val_dataloader function is used to create a DataLoader object for the validation
+        set. The function takes no arguments and returns a DataLoader object that can be used to
+        iterate over the validation data.
+
+        :param self: Bind the instance of the class to the method
+        :return: A dataloader object that contains the validation data
+        """
         return DataLoader(
             self.data_val, batch_size=self.args.batch_size, num_workers=self.args.num_workers
         )
 
     def test_dataloader(self):
+        """The test_dataloader function is used to load the test data.
+
+        :param self: Bind the attributes and methods of a class to the class object
+        :return: A dataloader object
+        """
         return DataLoader(
             self.data_test, batch_size=self.args.batch_size, num_workers=self.args.num_workers
         )
