@@ -128,7 +128,7 @@ def get_model(
     if args.model == "bilstm":
         return lstm_module.LSTMModule(args=args, optimizer=optimizer, scheduler=scheduler)
     else:
-        return transformer_module.TransformerModule(args, optimizer=optimizer, scheduler=scheduler)
+        return transformer_module.TransformerModule(args, optimizer=optimizer)
 
 
 def get_data_module(args):
@@ -172,6 +172,4 @@ def get_scheduler(args):
     """
     if args.scheduler == "stepLR":
         scheduler = optim.lr_scheduler.StepLR
-    if args.scheduler == "linear_with_warmup":
-        scheduler = get_linear_schedule_with_warmup
     return scheduler

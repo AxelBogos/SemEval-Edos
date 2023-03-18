@@ -19,7 +19,7 @@ class TransformerModule(pl.LightningModule):
         super().__init__()
         self.args = args
         self.model = AutoModelForSequenceClassification.from_pretrained(
-            args.model, return_dict=True
+            args.model, num_labels=args.num_target_class
         )
         self.optimizer = optimizer
         self.criterion = nn.CrossEntropyLoss()
@@ -38,7 +38,7 @@ class TransformerModule(pl.LightningModule):
         self.val_f1_best = MaxMetric()
 
     def forward(self, input_ids, attention_mask, labels=None):
-        output = self.model(input_ids, attention_mask=attention_mask)
+        output = self.model(**input_ids, attention_mask=attention_mask, labels=labels)
         return output
 
     def on_train_start(self):
@@ -49,8 +49,8 @@ class TransformerModule(pl.LightningModule):
         attention_mask = batch["attention_mask"]
         labels = batch["labels"]
         outputs = self(input_ids, attention_mask, labels)
-        loss = self.criterion(outputs, labels)
-        preds = torch.argmax(outputs, dim=1)
+        loss = outputs.loss
+        preds = torch.argmax(outputs.logits, dim=1)
 
         return loss, preds, labels
 
@@ -84,7 +84,7 @@ class TransformerModule(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.args.lr)
-        num_training_steps = self.args.num_epochs * self.args.len_train_loader
+        num_training_steps = self.args.num_epoch * self.args.len_train_loader
         scheduler = get_scheduler(
             name="linear",
             optimizer=optimizer,

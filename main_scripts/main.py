@@ -50,7 +50,7 @@ def main():
         callbacks=lightning_callbacks,
         accelerator="auto",
         devices="auto",
-        max_epochs=args.max_epoch,
+        max_epochs=args.num_epoch,
     )
 
     # Train
