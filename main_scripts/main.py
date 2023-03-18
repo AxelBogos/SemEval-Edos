@@ -33,9 +33,10 @@ def main():
     # Build data module
     data_module = helpers.get_data_module(args)
     data_module.setup()
-    args.len_vocab = len(data_module.vocab)
-    args.num_target_class = data_module._num_classes
-    args.pad_idx = data_module.pad_idx
+    if args.model == "bilstm":
+        args.len_vocab = len(data_module.vocab)
+        args.num_target_class = data_module._num_classes
+        args.pad_idx = data_module.pad_idx
 
     # Build model
     optimizer = helpers.get_optimizer(args)
