@@ -44,7 +44,8 @@ def parse_args():
         "--model",
         default="bilstm",
         type=str,
-        help="Model name; available models: {'bilstm','bert-base-cased','distillbert'}",
+        help="Model name; available models: {'bilstm','bert-base-cased', or any huggingface model (eg. roberta-base)}."
+        "Good options include: roberta-base, bert-base-uncased, distilbert-base-uncased, distilroberta-base",
     )
 
     parser.add_argument("--dropout", default=0.1, type=int, help="Dropout rate")
@@ -86,7 +87,7 @@ def parse_args():
 
     # --------------- Transformer Config Arguments ---------------
 
-    parser.add_argument("--max_token_length", default=512, type=int, help="Max Token Length")
+    parser.add_argument("--max_token_length", default=128, type=int, help="Max Token Length")
 
     # --------------- LSTM Config Arguments ---------------
 
