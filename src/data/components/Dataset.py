@@ -52,5 +52,5 @@ class GenericDatasetTransformer(Dataset):
             text=text,
             input_ids=encoding["input_ids"].flatten(),
             attention_mask=encoding["attention_mask"].flatten(),
-            labels=torch.FloatTensor(label),
+            labels=torch.tensor(label, dtype=torch.long),
         )

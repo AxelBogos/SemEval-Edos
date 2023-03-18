@@ -7,6 +7,7 @@ import torch.optim
 import torch.optim as optim
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
 from pytorch_lightning.loggers import WandbLogger
+from transformers import get_linear_schedule_with_warmup
 
 from src.data import edos_datamodule_lstm, edos_datamodule_transformer
 from src.models import lstm_module, transformer_module
@@ -171,4 +172,6 @@ def get_scheduler(args):
     """
     if args.scheduler == "stepLR":
         scheduler = optim.lr_scheduler.StepLR
+    if args.scheduler == "linear_with_warmup":
+        scheduler = get_linear_schedule_with_warmup
     return scheduler

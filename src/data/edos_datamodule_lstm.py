@@ -53,43 +53,49 @@ class EDOSDataModuleLSTM(LightningDataModule):
 
         if not self.data_train:
             train_path = Path(self.args.interim_data_dir, "train_all_tasks.csv")
-            raw_data_train = pd.read_csv(train_path)
-            raw_data_train["text"] = self.text_preprocessor.transform_series(
-                raw_data_train["text"]
+            interim_data_train = pd.read_csv(train_path)
+            interim_data_train["text"] = self.text_preprocessor.transform_series(
+                interim_data_train["text"]
             )
-            raw_data_train = raw_data_train[raw_data_train[self._train_target_label] != -1]
-            raw_data_train = raw_data_train.to_numpy()
+            interim_data_train = interim_data_train[
+                interim_data_train[self._train_target_label] != -1
+            ]
+            interim_data_train = interim_data_train.to_numpy()
 
             self.vocab = build_vocab_from_iterator(
-                _helper_yield_tokens(raw_data_train), specials=["<unk>", "<pad>"], min_freq=5
+                _helper_yield_tokens(interim_data_train), specials=["<unk>", "<pad>"], min_freq=5
             )
             self.vocab.set_default_index(self.vocab["<unk>"])
             self.collator = Collator(pad_idx=self.vocab["<pad>"])
             self.pad_idx = self.vocab["<pad>"]
             self.data_train = GenericDatasetLSTM(
-                text=raw_data_train[:, 1],
-                label=raw_data_train[:, self._train_target_index],
+                text=interim_data_train[:, 1],
+                label=interim_data_train[:, self._train_target_index],
                 vocab=self.vocab,
             )
 
         if not self.data_val:
             val_path = Path(self.args.interim_data_dir, f"dev_task_{self.args.task}_entries.csv")
-            raw_data_val = pd.read_csv(val_path)
-            raw_data_val["text"] = self.text_preprocessor.transform_series(raw_data_val["text"])
+            interim_data_val = pd.read_csv(val_path)
+            interim_data_val["text"] = self.text_preprocessor.transform_series(
+                interim_data_val["text"]
+            )
 
-            raw_data_val = raw_data_val.to_numpy()
+            interim_data_val = interim_data_val.to_numpy()
 
             self.data_val = GenericDatasetLSTM(
-                text=raw_data_val[:, 1], label=raw_data_val[:, 2], vocab=self.vocab
+                text=interim_data_val[:, 1], label=interim_data_val[:, 2], vocab=self.vocab
             )
 
         if not self.data_test:
             test_path = Path(self.args.interim_data_dir, f"test_task_{self.args.task}_entries.csv")
-            raw_data_test = pd.read_csv(test_path)
-            raw_data_test["text"] = self.text_preprocessor.transform_series(raw_data_test["text"])
-            raw_data_test = raw_data_test.to_numpy()
+            interim_data_test = pd.read_csv(test_path)
+            interim_data_test["text"] = self.text_preprocessor.transform_series(
+                interim_data_test["text"]
+            )
+            interim_data_test = interim_data_test.to_numpy()
             self.data_test = GenericDatasetLSTM(
-                text=raw_data_test[:, 1], label=raw_data_test[:, 2], vocab=self.vocab
+                text=interim_data_test[:, 1], label=interim_data_test[:, 2], vocab=self.vocab
             )
 
     def train_dataloader(self):

@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from torchmetrics import MaxMetric, MeanMetric
 from torchmetrics.classification import MulticlassF1Score
-from transformers import AutoModel, AutoTokenizer, get_linear_schedule_with_warmup
+from transformers import AutoModel, get_linear_schedule_with_warmup
 
 
 class TransformerModule(pl.LightningModule):
@@ -14,12 +14,13 @@ class TransformerModule(pl.LightningModule):
         scheduler: torch.optim.lr_scheduler = None,
     ):
         super().__init__()
+        self.args = args
         self.transformer = AutoModel.from_pretrained(args.model, return_dict=True)
         self.classifier = nn.Linear(self.transformer.config.hidden_size, args.num_target_class)
         self.n_training_steps = args.n_training_steps
         self.n_warmup_steps = args.n_warmup_steps
         self.optimizer = optimizer
-        self.scheduler.scheduler
+        self.scheduler = scheduler
         self.criterion = nn.CrossEntropyLoss()
 
         # metric objects for calculating and macro f1 across batches
@@ -52,32 +53,33 @@ class TransformerModule(pl.LightningModule):
         outputs = self(input_ids, attention_mask, labels)
         loss = self.criterion(outputs, labels)
         preds = torch.argmax(outputs, dim=1)
-        return loss, preds, outputs
+
+        return loss, preds, labels
 
     def training_step(self, batch, batch_idx):
-        loss, preds, outputs = self.model_step(batch)
+        loss, preds, labels = self.model_step(batch)
 
         # update and log metrics
         self.train_loss(loss)
-        self.train_f1(preds, outputs)
+        self.train_f1(preds, labels)
         self.log("train/loss", self.train_loss, on_step=True, on_epoch=True, prog_bar=True)
         self.log("train/f1", self.train_f1, on_step=True, on_epoch=True, prog_bar=True)
 
-        return {"loss": loss, "predictions": preds, "labels": outputs}
+        return {"loss": loss, "predictions": preds, "labels": labels}
 
     def validation_step(self, batch, batch_idx):
-        loss, preds, outputs = self.model_step(batch)
+        loss, preds, labels = self.model_step(batch)
 
         self.val_loss(loss)
-        self.val_f1(preds, outputs)
+        self.val_f1(preds, labels)
         self.log("val/loss", self.val_loss, on_step=True, on_epoch=True, prog_bar=True)
         self.log("val/f1", self.val_f1, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 
     def test_step(self, batch, batch_idx):
-        loss, preds, outputs = self.model_step(batch)
+        loss, preds, labels = self.model_step(batch)
         self.test_loss(loss)
-        self.test_f1(preds, outputs)
+        self.test_f1(preds, labels)
         self.log("test/loss", self.test_loss, on_step=True, on_epoch=True, prog_bar=True)
         self.log("test/f1", self.test_f1, on_step=True, on_epoch=True, prog_bar=True)
         return loss
