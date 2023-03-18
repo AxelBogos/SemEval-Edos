@@ -140,7 +140,7 @@ def get_data_module(args):
     :param args: Pass in the arguments from the command line
     :return: The data module
     """
-    datamodule = edos_datamodule_lstm.EDOSDataModule(args)
+    datamodule = edos_datamodule_lstm.EDOSDataModuleLSTM(args)
     return datamodule
 
 

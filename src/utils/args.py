@@ -47,6 +47,10 @@ def parse_args():
         help="Model name; available models: {'bilstm','distillbert'}",
     )
 
+    parser.add_argument("--dropout", default=0.1, type=int, help="Dropout rate")
+
+    # --------------- Optimizer Definition Arguments ---------------
+
     parser.add_argument(
         "--optimizer",
         default="AdamW",
@@ -61,6 +65,10 @@ def parse_args():
         help="Scheduler name; available tasks: {stepLR}",
     )
 
+    parser.add_argument("--lr", default=0.001, type=float, help="Learning rate")
+
+    parser.add_argument("--step_scheduler", default=5, type=int, help="Scheduler rate")
+
     parser.add_argument(
         "--preprocessing_mode",
         default="standard",
@@ -68,11 +76,9 @@ def parse_args():
         help="Type of preprocessing to apply. Choices as {'standard', 'none'}. Standard preprocessing is not meant for transformers models.",
     )
 
-    parser.add_argument("--max_length", default=256, type=int, help="Max Sequence Length")
+    # --------------- Transformer Config Arguments ---------------
 
-    parser.add_argument("--dropout", default=0.1, type=int, help="Dropout rate")
-    parser.add_argument("--lr", default=0.001, type=float, help="Learning rate")
-    parser.add_argument("--step_scheduler", default=5, type=int, help="Scheduler rate")
+    parser.add_argument("--max_token_length", default=512, type=int, help="Max Token Length")
 
     # --------------- LSTM Config Arguments ---------------
 

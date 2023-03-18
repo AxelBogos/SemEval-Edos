@@ -2,28 +2,22 @@ from pathlib import Path
 from typing import Optional
 
 import pandas as pd
-import torch
-from pytorch_lightning import LightningDataModule
+import pytorch_lightning as pl
 from torch.utils.data import DataLoader
-from torchtext.vocab import build_vocab_from_iterator
 
-from src.data.components.Dataset import GenericDatasetLSTM
+from src.data.components.Dataset import GenericDatasetTransformer
 from src.data.text_processing import TextPreprocessor
 
 
-class EDOSDataModuleLSTM(LightningDataModule):
-    def __init__(self, args):
+class EDOSDataModuleTransformer(pl.LightningDataModule):
+    def __init__(self, args, tokenizer):
         super().__init__()
-
-        self.data_train: Optional[GenericDatasetLSTM] = None
-        self.data_val: Optional[GenericDatasetLSTM] = None
-        self.data_test: Optional[GenericDatasetLSTM] = None
+        self.data_train: Optional[GenericDatasetTransformer] = None
+        self.data_val: Optional[GenericDatasetTransformer] = None
+        self.data_test: Optional[GenericDatasetTransformer] = None
 
         self.args = args
-
-        self.vocab = None
-        self.collator = None
-        self.pad_idx = None
+        self.tokenizer = tokenizer
 
         # data preparation handlers
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)
@@ -41,16 +35,6 @@ class EDOSDataModuleLSTM(LightningDataModule):
         :return: A tuple of the train, val and test datasets
         """
 
-        def _helper_yield_tokens(train_dataset):
-            """The _helper_yield_tokens function is a generator that yields the tokens from each
-            row in the train_dataset.
-
-            :param train_dataset: Pass in the dataset that we want to tokenize
-            :return: A generator object
-            """
-            for row in train_dataset:
-                yield row[1]
-
         if not self.data_train:
             train_path = Path(self.args.interim_data_dir, "train_all_tasks.csv")
             raw_data_train = pd.read_csv(train_path)
@@ -60,27 +44,24 @@ class EDOSDataModuleLSTM(LightningDataModule):
             raw_data_train = raw_data_train[raw_data_train[self._train_target_label] != -1]
             raw_data_train = raw_data_train.to_numpy()
 
-            self.vocab = build_vocab_from_iterator(
-                _helper_yield_tokens(raw_data_train), specials=["<unk>", "<pad>"], min_freq=5
-            )
-            self.vocab.set_default_index(self.vocab["<unk>"])
-            self.collator = Collator(pad_idx=self.vocab["<pad>"])
-            self.pad_idx = self.vocab["<pad>"]
-            self.data_train = GenericDatasetLSTM(
-                text=raw_data_train[:, 1],
-                label=raw_data_train[:, self._train_target_index],
-                vocab=self.vocab,
+            self.data_train = GenericDatasetTransformer(
+                texts=raw_data_train[:, 1],
+                labels=raw_data_train[:, self._train_target_index],
+                tokenizer=self.tokenizer,
+                max_token_len=self.args.max_token_length,
             )
 
         if not self.data_val:
             val_path = Path(self.args.interim_data_dir, f"dev_task_{self.args.task}_entries.csv")
             raw_data_val = pd.read_csv(val_path)
             raw_data_val["text"] = self.text_preprocessor.transform_series(raw_data_val["text"])
-
             raw_data_val = raw_data_val.to_numpy()
 
-            self.data_val = GenericDatasetLSTM(
-                text=raw_data_val[:, 1], label=raw_data_val[:, 2], vocab=self.vocab
+            self.data_val = GenericDatasetTransformer(
+                texts=raw_data_val[:, 1],
+                labels=raw_data_val[:, 2],
+                tokenizer=self.tokenizer,
+                max_token_len=self.args.max_token_length,
             )
 
         if not self.data_test:
@@ -88,35 +69,30 @@ class EDOSDataModuleLSTM(LightningDataModule):
             raw_data_test = pd.read_csv(test_path)
             raw_data_test["text"] = self.text_preprocessor.transform_series(raw_data_test["text"])
             raw_data_test = raw_data_test.to_numpy()
-            self.data_test = GenericDatasetLSTM(
-                text=raw_data_test[:, 1], label=raw_data_test[:, 2], vocab=self.vocab
+
+            self.data_test = GenericDatasetTransformer(
+                texts=raw_data_test[:, 1],
+                labels=raw_data_test[:, 2],
+                tokenizer=self.tokenizer,
+                max_token_len=self.args.max_token_length,
             )
 
     def train_dataloader(self):
         return DataLoader(
-            dataset=self.data_train,
+            self.data_train,
             batch_size=self.args.batch_size,
-            num_workers=self.args.num_workers,
             shuffle=True,
-            collate_fn=self.collator.collate,
+            num_workers=self.args.num_workers,
         )
 
     def val_dataloader(self):
         return DataLoader(
-            dataset=self.data_val,
-            batch_size=self.args.batch_size,
-            num_workers=self.args.num_workers,
-            shuffle=False,
-            collate_fn=self.collator.collate,
+            self.data_val, batch_size=self.args.batch_size, num_workers=self.args.num_workers
         )
 
     def test_dataloader(self):
         return DataLoader(
-            dataset=self.data_test,
-            batch_size=self.args.batch_size,
-            num_workers=self.args.num_workers,
-            shuffle=False,
-            collate_fn=self.collator.collate,
+            self.data_test, batch_size=self.args.batch_size, num_workers=self.args.num_workers
         )
 
     @property
@@ -165,14 +141,3 @@ class EDOSDataModuleLSTM(LightningDataModule):
             return "label_category"
         elif self.args.task == "c":
             return "label_vector"
-
-
-class Collator:
-    def __init__(self, pad_idx):
-        self.pad_idx = pad_idx
-
-    def collate(self, batch):
-        text, labels = zip(*batch)
-        labels = torch.LongTensor(labels)
-        text = torch.nn.utils.rnn.pad_sequence(text, padding_value=self.pad_idx, batch_first=True)
-        return text, labels
