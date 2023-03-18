@@ -82,6 +82,13 @@ class TransformerModule(pl.LightningModule):
         self.log("test/f1", self.test_f1, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 
+    def validation_epoch_end(self, outputs):
+        f1 = self.val_f1.compute()  # get current val f1
+        self.val_f1_best(f1)  # update best so far val f1
+        # log `val_f1_best` as a value through `.compute()` method, instead of as a metric object
+        # otherwise metric would be reset by lightning after each epoch
+        self.log("val/f1_best", self.val_f1_best.compute(), prog_bar=True)
+
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.args.lr)
         num_training_steps = self.args.num_epoch * self.args.len_train_loader
