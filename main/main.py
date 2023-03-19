@@ -58,7 +58,7 @@ def main():
 
     # Eval TODO: handle checkpoint loading
     if args.eval:
-        trainer.test(ckpt_path="best")
+        trainer.test(model=model, datamodule=data_module, ckpt_path="best")
 
 
 if __name__ == "__main__":
