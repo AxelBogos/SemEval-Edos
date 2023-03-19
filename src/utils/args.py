@@ -44,8 +44,13 @@ def parse_args():
         "--model",
         default="bilstm",
         type=str,
-        help="Model name; available models: {'bilstm','distillbert'}",
+        help="Model name; available models: {'bilstm','bert-base-cased', or any huggingface model (eg. roberta-base)}."
+        "Good options include: roberta-base, bert-base-uncased, distilbert-base-uncased, distilroberta-base",
     )
+
+    parser.add_argument("--dropout", default=0.1, type=int, help="Dropout rate")
+
+    # --------------- Optimizer Definition Arguments ---------------
 
     parser.add_argument(
         "--optimizer",
@@ -54,11 +59,11 @@ def parse_args():
         help="Optimizer name; available tasks: {Adam, AdamW, SGD}",
     )
 
+    parser.add_argument("--lr", default=0.001, type=float, help="Learning rate")
+
+    parser.add_argument("--step_scheduler", default=5, type=int, help="Scheduler rate")
     parser.add_argument(
-        "--scheduler",
-        default="stepLR",
-        type=str,
-        help="Scheduler name; available tasks: {stepLR}",
+        "--n_warmup_steps", default=0, type=int, help="Warmup steps. Used for backbone"
     )
 
     parser.add_argument(
@@ -68,11 +73,9 @@ def parse_args():
         help="Type of preprocessing to apply. Choices as {'standard', 'none'}. Standard preprocessing is not meant for transformers models.",
     )
 
-    parser.add_argument("--max_length", default=256, type=int, help="Max Sequence Length")
+    # --------------- Transformer Config Arguments ---------------
 
-    parser.add_argument("--dropout", default=0.1, type=int, help="Dropout rate")
-    parser.add_argument("--lr", default=0.001, type=float, help="Learning rate")
-    parser.add_argument("--step_scheduler", default=5, type=int, help="Scheduler rate")
+    parser.add_argument("--max_token_length", default=128, type=int, help="Max Token Length")
 
     # --------------- LSTM Config Arguments ---------------
 
@@ -96,7 +99,7 @@ def parse_args():
 
     parser.add_argument("--batch_size", default=64, type=int, help="Mini batch size")
 
-    parser.add_argument("--max_epoch", default=80, type=int, help="Number of epoch to train")
+    parser.add_argument("--num_epoch", default=15, type=int, help="Number of epoch to train")
 
     parser.add_argument(
         "--patience",

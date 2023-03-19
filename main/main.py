@@ -33,14 +33,15 @@ def main():
     # Build data module
     data_module = helpers.get_data_module(args)
     data_module.setup()
-    args.len_vocab = len(data_module.vocab)
     args.num_target_class = data_module._num_classes
-    args.pad_idx = data_module.pad_idx
+    args.len_train_loader = len(data_module.train_dataloader())
+    if args.model == "bilstm":
+        args.len_vocab = len(data_module.vocab)
+        args.pad_idx = data_module.pad_idx
 
     # Build model
     optimizer = helpers.get_optimizer(args)
-    scheduler = helpers.get_scheduler(args)
-    model = helpers.get_model(args, optimizer, scheduler)
+    model = helpers.get_model(args, optimizer)
     lightning_callbacks = helpers.get_lightning_callbacks(args)
 
     trainer = Trainer(
@@ -48,7 +49,7 @@ def main():
         callbacks=lightning_callbacks,
         accelerator="auto",
         devices="auto",
-        max_epochs=args.max_epoch,
+        max_epochs=args.num_epoch,
     )
 
     # Train
@@ -57,7 +58,7 @@ def main():
 
     # Eval TODO: handle checkpoint loading
     if args.eval:
-        trainer.predict(model=model, datamodule=data_module)
+        trainer.test(model=model, datamodule=data_module, ckpt_path="best")
 
 
 if __name__ == "__main__":

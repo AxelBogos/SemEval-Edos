@@ -7,9 +7,10 @@ import torch.optim
 import torch.optim as optim
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
 from pytorch_lightning.loggers import WandbLogger
+from transformers import get_linear_schedule_with_warmup
 
-from src.data import edos_datamodule_lstm
-from src.models import lstm_module
+from src.data import edos_datamodule_lstm, edos_datamodule_transformer
+from src.models import lstm_module, transformer_module
 from src.utils import defines
 
 
@@ -112,9 +113,7 @@ def make_log_dir() -> Path:
     return log_dir_path
 
 
-def get_model(
-    args, optimizer: torch.optim.Optimizer = None, scheduler: torch.optim.lr_scheduler = None
-):
+def get_model(args, optimizer: torch.optim.Optimizer = None):
     """The get_model function is a factory function that returns an instance of the nn.Module
     class. The get_model function takes in two optional arguments: optimizer and scheduler. These
     are used to pass in PyTorch objects that will be used to train our model.
@@ -125,11 +124,9 @@ def get_model(
     :return: A model object that is a torch.nn.Module
     """
     if args.model == "bilstm":
-        return lstm_module.LSTMModule(args=args, optimizer=optimizer, scheduler=scheduler)
-    if args.model == "gnb":
-        pass  # TODO
-    if args.model == "distillbert":
-        pass  # TODO
+        return lstm_module.LSTMModule(args=args, optimizer=optimizer)
+    else:
+        return transformer_module.TransformerModule(args, optimizer=optimizer)
 
 
 def get_data_module(args):
@@ -140,8 +137,10 @@ def get_data_module(args):
     :param args: Pass in the arguments from the command line
     :return: The data module
     """
-    datamodule = edos_datamodule_lstm.EDOSDataModule(args)
-    return datamodule
+    if args.model == "bilstm":
+        return edos_datamodule_lstm.EDOSDataModuleLSTM(args)
+    else:
+        return edos_datamodule_transformer.EDOSDataModuleTransformer(args)
 
 
 def get_optimizer(args):
@@ -158,18 +157,3 @@ def get_optimizer(args):
         optimizer = optim.SGD
 
     return optimizer
-
-
-def get_scheduler(args):
-
-    """
-    The get_scheduler function takes in the args object and returns a scheduler.
-        Args:
-            args (object): The arguments object containing all of the command line arguments.
-
-    :param args: Pass the arguments from the command line to this function
-    :return: An object of the class optim
-    """
-    if args.scheduler == "stepLR":
-        scheduler = optim.lr_scheduler.StepLR
-    return scheduler

@@ -10,6 +10,7 @@ seaborn
 # --------- NLP libraries --------- #
 wordcloud
 spacy
+transformers
 
 # --------- pytorch --------- #
 torch>=1.10.0
