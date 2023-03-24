@@ -13,7 +13,7 @@ def main():
     downloader = raw_data_downloader.GoogleDriveDownloader(defines.RAW_DATA_DIR)
     downloader.download()
 
-    # Encode and merge dev & test set labels
+    # Encode and merge val & test set labels
     interim_processor = interim_preprocessing.InterimProcessor(
         defines.RAW_DATA_DIR, defines.INTERIM_DATA_DIR
     )

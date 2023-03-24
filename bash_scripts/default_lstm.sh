@@ -1,7 +1,7 @@
 #!/bin/bash
 # pip install -r requirements.txt
-python ./../main/main_make_dataset.py
-python ./../main/main.py \
+python main/main_make_dataset.py
+python main/main.py \
 --train \
 --eval \
 --task a \

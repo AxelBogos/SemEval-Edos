@@ -46,15 +46,20 @@ class InterimProcessor:
             }
         )
 
-        # Split data into train, dev and test sets
+        # Split data into train, val and test sets
         train = full_data[full_data["split"] == "train"]
-        dev = full_data[full_data["split"] == "dev"]
+        val = full_data[full_data["split"] == "val"]
         test = full_data[full_data["split"] == "test"]
+
+        # Drop split column
+        train = train.drop(columns=["split"])
+        val = val.drop(columns=["split"])
+        test = test.drop(columns=["split"])
 
         # Save train set
         train.to_csv(Path(self.interim_output_dir, "train.csv"), index=False)
-        # Save dev set
-        dev.to_csv(Path(self.interim_output_dir, "dev.csv"), index=False)
+        # Save val set
+        val.to_csv(Path(self.interim_output_dir, "val.csv"), index=False)
         # Save test set
         test.to_csv(Path(self.interim_output_dir, "test.csv"), index=False)
 
@@ -83,7 +88,7 @@ class InterimProcessor:
         :param self: Access the attributes and methods of the class
         :return: A dictionary that maps the target_col labels to integers
         """
-        return {"not sexist": 0, "sexist": 1}
+        return {"not sexist": 1, "sexist": 2}
 
     @property
     def _get_task_b_target_encoding(self) -> dict:

@@ -52,14 +52,11 @@ class EDOSDataModuleLSTM(LightningDataModule):
                 yield row[1]
 
         if not self.data_train:
-            train_path = Path(self.args.interim_data_dir, "train_all_tasks.csv")
-            interim_data_train = pd.read_csv(train_path)
+            interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
             interim_data_train["text"] = self.text_preprocessor.transform_series(
                 interim_data_train["text"]
             )
-            interim_data_train = interim_data_train[
-                interim_data_train[self._train_target_label] != -1
-            ]
+            interim_data_train = interim_data_train[interim_data_train[self._target_label] != 0]
             interim_data_train = interim_data_train.to_numpy()
 
             self.vocab = build_vocab_from_iterator(
@@ -70,32 +67,36 @@ class EDOSDataModuleLSTM(LightningDataModule):
             self.pad_idx = self.vocab["<pad>"]
             self.data_train = GenericDatasetLSTM(
                 text=interim_data_train[:, 1],
-                label=interim_data_train[:, self._train_target_index],
+                label=interim_data_train[:, self._target_index],
                 vocab=self.vocab,
             )
 
         if not self.data_val:
-            val_path = Path(self.args.interim_data_dir, f"dev_task_{self.args.task}_entries.csv")
-            interim_data_val = pd.read_csv(val_path)
+            interim_data_val = pd.read_csv(Path(self.args.interim_data_dir, "val.csv"))
             interim_data_val["text"] = self.text_preprocessor.transform_series(
                 interim_data_val["text"]
             )
-
+            interim_data_val = interim_data_val[interim_data_val[self._target_label] != 0]
             interim_data_val = interim_data_val.to_numpy()
 
             self.data_val = GenericDatasetLSTM(
-                text=interim_data_val[:, 1], label=interim_data_val[:, 2], vocab=self.vocab
+                text=interim_data_val[:, 1],
+                label=interim_data_val[:, self._target_index],
+                vocab=self.vocab,
             )
 
         if not self.data_test:
-            test_path = Path(self.args.interim_data_dir, f"test_task_{self.args.task}_entries.csv")
-            interim_data_test = pd.read_csv(test_path)
+            interim_data_test = pd.read_csv(Path(self.args.interim_data_dir, "test.csv"))
             interim_data_test["text"] = self.text_preprocessor.transform_series(
                 interim_data_test["text"]
             )
+            interim_data_test = interim_data_test[interim_data_test[self._target_label] != 0]
             interim_data_test = interim_data_test.to_numpy()
+
             self.data_test = GenericDatasetLSTM(
-                text=interim_data_test[:, 1], label=interim_data_test[:, 2], vocab=self.vocab
+                text=interim_data_test[:, 1],
+                label=interim_data_test[:, self._target_index],
+                vocab=self.vocab,
             )
 
     def train_dataloader(self):
@@ -141,10 +142,10 @@ class EDOSDataModuleLSTM(LightningDataModule):
             return 11
 
     @property
-    def _train_target_index(self):
+    def _target_index(self):
 
-        """The _train_target_index function returns the index of the target_col column in a
-        training dataframe.
+        """The _target_index function returns the index of the target_col column in a training
+        dataframe.
 
         :param self: Bind the instance of the class to a function
         :return: The index of the target_col column in the training data
@@ -157,20 +158,20 @@ class EDOSDataModuleLSTM(LightningDataModule):
             return 4
 
     @property
-    def _train_target_label(self):
+    def _target_label(self):
 
-        """The _train_target_label function is used to determine the target_col label for training.
-        The function takes in a single argument, self, which is an instance of the class.
+        """The _target_label function is used to determine the target_col label for training. The
+        function takes in a single argument, self, which is an instance of the class.
 
         :param self: Bind the instance of the class to the method
         :return: The label of the training set for current task
         """
         if self.args.task == "a":
-            return "label_sexist"
+            return "target_a"
         elif self.args.task == "b":
-            return "label_category"
+            return "target_b"
         elif self.args.task == "c":
-            return "label_vector"
+            return "target_c"
 
 
 class Collator:

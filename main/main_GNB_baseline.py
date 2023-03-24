@@ -17,29 +17,23 @@ def main() -> None:
     """
 
     # Load train
-    train = pd.read_csv(Path(defines.INTERIM_DATA_DIR, "train_all_tasks.csv"))
+    train = pd.read_csv(Path(defines.INTERIM_DATA_DIR, "train.csv"))
 
     # Load val
-    val_sets = [
-        pd.read_csv(Path(defines.INTERIM_DATA_DIR, f"dev_task_{task}_entries.csv"))
-        for task in ["a", "b", "c"]
-    ]
+    val = pd.read_csv(Path(defines.INTERIM_DATA_DIR, "val.csv"))
     # Load test
-    test_sets = [
-        pd.read_csv(Path(defines.INTERIM_DATA_DIR, f"test_task_{task}_entries.csv"))
-        for task in ["a", "b", "c"]
-    ]
+    test = pd.read_csv(Path(defines.INTERIM_DATA_DIR, "test.csv"))
 
     # Task A
-    eval_task(train, val_sets[0], test_sets[0], "label_sexist", "A")
+    eval_task(train, val, test, "target_a", "A")
     # Task B
-    eval_task(train, val_sets[1], test_sets[1], "label_category", "B")
+    eval_task(train, val, test, "target_b", "B")
     # Task C
-    eval_task(train, val_sets[2], test_sets[2], "label_vector", "C")
+    eval_task(train, val, test, "target_c", "C")
 
 
 def eval_task(
-    train: pd.DataFrame, dev: pd.DataFrame, test: pd.DataFrame, target_label: str, task: str
+    train: pd.DataFrame, val: pd.DataFrame, test: pd.DataFrame, target_label: str, task: str
 ) -> None:
     """The eval_task function takes in the train, dev and test dataframes as well as the target_col
     label and task name. It then performs basic text processing on all three datasets (train, dev
@@ -51,7 +45,7 @@ def eval_task(
     fitting it to the training set but not transforming it. Finally, we fit a Multinomial-GNB.
 
     :param train: pd.DataFrame: Pass the train dataframe
-    :param dev: pd.DataFrame: Pass the dev dataframe to the function
+    :param val: pd.DataFrame: Pass the dev dataframe to the function
     :param test: pd.DataFrame: Evaluate the model on the test set
     :param target_label: str: Filter the train data for the current task
     :param task: str: Print the task name in the output
@@ -60,17 +54,21 @@ def eval_task(
 
     # Basic tex processing (remove stopwords, urls, lowercasing etc..)
     text_processor = get_text_processor()
-    # Filter train data for the current task
-    train = train[train[target_label] != -1]
+
+    # Filter data for the current task
+    train = train[train[target_label] != 0]
+    val = val[val[target_label] != 0]
+    test = test[test[target_label] != 0]
+
     # Apply text processing and convert to np array
     X_train, y_train = np.array(text_processor.transform_series(train["text"])), np.array(
         train[target_label]
     )
-    X_val, y_val = np.array(text_processor.transform_series(dev["text"])), np.array(
-        dev["target_col"]
+    X_val, y_val = np.array(text_processor.transform_series(val["text"])), np.array(
+        val[target_label]
     )
     X_test, y_test = np.array(text_processor.transform_series(test["text"])), np.array(
-        test["target_col"]
+        test[target_label]
     )
 
     # Vectorize with counter Vectorizer
