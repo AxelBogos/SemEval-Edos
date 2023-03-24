@@ -143,11 +143,11 @@ class EDOSDataModuleLSTM(LightningDataModule):
     @property
     def _train_target_index(self):
 
-        """The _train_target_index function returns the index of the target column in a training
-        dataframe.
+        """The _train_target_index function returns the index of the target_col column in a
+        training dataframe.
 
         :param self: Bind the instance of the class to a function
-        :return: The index of the target column in the training data
+        :return: The index of the target_col column in the training data
         """
         if self.args.task == "a":
             return 2
@@ -159,8 +159,8 @@ class EDOSDataModuleLSTM(LightningDataModule):
     @property
     def _train_target_label(self):
 
-        """The _train_target_label function is used to determine the target label for training. The
-        function takes in a single argument, self, which is an instance of the class.
+        """The _train_target_label function is used to determine the target_col label for training.
+        The function takes in a single argument, self, which is an instance of the class.
 
         :param self: Bind the instance of the class to the method
         :return: The label of the training set for current task

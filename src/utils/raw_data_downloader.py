@@ -117,13 +117,14 @@ class GoogleDriveDownloader:
         :return: A dictionary of default file links
         """
         default_files_links = {
-            "dev_task_a_entries.csv": "https://drive.google.com/file/d/1gEH44dxE0jH87C-JHLxDnqMRvKbHXwxA/view?usp=share_link",
-            "dev_task_b_entries.csv": "https://drive.google.com/file/d/169_3cdbeU3x3PO9TUD1CL6wmqLNRxZz_/view?usp=share_link",
-            "dev_task_c_entries.csv": "https://drive.google.com/file/d/1FhHM7x-MFw0e4T31vzzyddwKVhc2Rnk3/view?usp=share_link",
-            "test_task_a_entries.csv": "https://drive.google.com/file/d/1uOtCjiqYUGjECUfbr2VTkE7NUZ7bBD4P/view?usp=share_link",
-            "test_task_b_entries.csv": "https://drive.google.com/file/d/1WniGdTKzlalchoPrntxyTAI6n9aRGnVB/view?usp=share_link",
-            "test_task_c_entries.csv": "https://drive.google.com/file/d/1u0FB_K11WAyHbmOy2M_25nJ5XxEpSyH5/view?usp=share_link",
-            "train_all_tasks.csv": "https://drive.google.com/file/d/1XVJMR4j_-_C_6D-tfIh6_KrYYhv7bv8R/view?usp=share_link",
+            # Commented out files are not used in the current version of the code. edos_labelled_aggregated contains everything.
+            # "dev_task_a_entries.csv": "https://drive.google.com/file/d/1gEH44dxE0jH87C-JHLxDnqMRvKbHXwxA/view?usp=share_link",
+            # "dev_task_b_entries.csv": "https://drive.google.com/file/d/169_3cdbeU3x3PO9TUD1CL6wmqLNRxZz_/view?usp=share_link",
+            # "dev_task_c_entries.csv": "https://drive.google.com/file/d/1FhHM7x-MFw0e4T31vzzyddwKVhc2Rnk3/view?usp=share_link",
+            # "test_task_a_entries.csv": "https://drive.google.com/file/d/1uOtCjiqYUGjECUfbr2VTkE7NUZ7bBD4P/view?usp=share_link",
+            # "test_task_b_entries.csv": "https://drive.google.com/file/d/1WniGdTKzlalchoPrntxyTAI6n9aRGnVB/view?usp=share_link",
+            # "test_task_c_entries.csv": "https://drive.google.com/file/d/1u0FB_K11WAyHbmOy2M_25nJ5XxEpSyH5/view?usp=share_link",
+            # "train_all_tasks.csv": "https://drive.google.com/file/d/1XVJMR4j_-_C_6D-tfIh6_KrYYhv7bv8R/view?usp=share_link",
             "edos_labelled_aggregated.csv": "https://drive.google.com/file/d/1wzu_ERah3iTTt3gWZY342c7GFZSUlPLJ/view?usp=share_link",
         }
         return default_files_links

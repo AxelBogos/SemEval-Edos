@@ -9,7 +9,7 @@ from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, ModelSum
 from pytorch_lightning.loggers import WandbLogger
 from transformers import get_linear_schedule_with_warmup
 
-from src.data import edos_datamodule_lstm, edos_datamodule_transformer
+from src.data import datamodule_lstm, datamodule_transformer
 from src.models import lstm_module, transformer_module
 from src.utils import defines
 
@@ -138,9 +138,9 @@ def get_data_module(args):
     :return: The data module
     """
     if args.model == "bilstm":
-        return edos_datamodule_lstm.EDOSDataModuleLSTM(args)
+        return datamodule_lstm.EDOSDataModuleLSTM(args)
     else:
-        return edos_datamodule_transformer.EDOSDataModuleTransformer(args)
+        return datamodule_transformer.EDOSDataModuleTransformer(args)
 
 
 def get_optimizer(args):

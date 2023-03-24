@@ -174,7 +174,7 @@ latex_elements = {
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
-# (source start file, target name, title, author, documentclass [howto/manual]).
+# (source start file, target_col name, title, author, documentclass [howto/manual]).
 latex_documents = [
     ("index", "SemEval-Edos.tex", "SemEval-Edos Documentation", "Axel Bogos", "manual"),
 ]
@@ -213,7 +213,7 @@ man_pages = [("index", "SemEval-Edos", "SemEval-Edos Documentation", ["Axel Bogo
 # -- Options for Texinfo output ------------------------------------------------
 
 # Grouping the document tree into Texinfo files. List of tuples
-# (source start file, target name, title, author,
+# (source start file, target_col name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
     (

@@ -41,12 +41,12 @@ def main() -> None:
 def eval_task(
     train: pd.DataFrame, dev: pd.DataFrame, test: pd.DataFrame, target_label: str, task: str
 ) -> None:
-    """The eval_task function takes in the train, dev and test dataframes as well as the target
+    """The eval_task function takes in the train, dev and test dataframes as well as the target_col
     label and task name. It then performs basic text processing on all three datasets (train, dev
     and test) using a TextProcessor object. The function then filters out any rows from the train
     dataset that have.
 
-    a - 1 value for their target label (this is because we are only interested in training our model on
+    a - 1 value for their target_col label (this is because we are only interested in training our model on
     the tasks that have been labelled). The function then applies a CountVectorizer to each of these datasets,
     fitting it to the training set but not transforming it. Finally, we fit a Multinomial-GNB.
 
@@ -66,9 +66,11 @@ def eval_task(
     X_train, y_train = np.array(text_processor.transform_series(train["text"])), np.array(
         train[target_label]
     )
-    X_val, y_val = np.array(text_processor.transform_series(dev["text"])), np.array(dev["target"])
+    X_val, y_val = np.array(text_processor.transform_series(dev["text"])), np.array(
+        dev["target_col"]
+    )
     X_test, y_test = np.array(text_processor.transform_series(test["text"])), np.array(
-        test["target"]
+        test["target_col"]
     )
 
     # Vectorize with counter Vectorizer
