@@ -10,7 +10,7 @@ from src.data.components.Dataset import GenericDatasetTransformer
 from src.data.text_processing import TextPreprocessor
 
 
-class DataModuleTransformer(pl.LightningDataModule):
+class DataModuleTransformerBeamSearch(pl.LightningDataModule):
     def __init__(self, args):
         """The __init__ function is called when the class is instantiated. It sets up the instance
         of the class, and defines all its attributes.
@@ -45,12 +45,11 @@ class DataModuleTransformer(pl.LightningDataModule):
             interim_data_train["text"] = self.text_preprocessor.transform_series(
                 interim_data_train["text"]
             )
-            interim_data_train = interim_data_train[interim_data_train[self._target_label] != 0]
             interim_data_train = interim_data_train.to_numpy()
 
             self.data_train = GenericDatasetTransformer(
                 texts=interim_data_train[:, 1],
-                labels=interim_data_train[:, self._target_index],
+                labels=interim_data_train[:, [2, 3, 4]],
                 tokenizer=self.tokenizer,
                 max_token_len=self.args.max_token_length,
             )
@@ -61,12 +60,11 @@ class DataModuleTransformer(pl.LightningDataModule):
             interim_data_val["text"] = self.text_preprocessor.transform_series(
                 interim_data_val["text"]
             )
-            interim_data_val = interim_data_val[interim_data_val[self._target_label] != 0]
             interim_data_val = interim_data_val.to_numpy()
 
             self.data_val = GenericDatasetTransformer(
                 texts=interim_data_val[:, 1],
-                labels=interim_data_val[:, self._target_index],
+                labels=interim_data_val[:, [2, 3, 4]],
                 tokenizer=self.tokenizer,
                 max_token_len=self.args.max_token_length,
             )
@@ -76,12 +74,11 @@ class DataModuleTransformer(pl.LightningDataModule):
             interim_data_test["text"] = self.text_preprocessor.transform_series(
                 interim_data_test["text"]
             )
-            interim_data_test = interim_data_test[interim_data_test[self._target_label] != 0]
             interim_data_test = interim_data_test.to_numpy()
 
             self.data_test = GenericDatasetTransformer(
                 texts=interim_data_test[:, 1],
-                labels=interim_data_test[:, self._target_index],
+                labels=interim_data_test[:, [2, 3, 4]],
                 tokenizer=self.tokenizer,
                 max_token_len=self.args.max_token_length,
             )
@@ -135,35 +132,3 @@ class DataModuleTransformer(pl.LightningDataModule):
             return 4
         elif self.args.task == "c":
             return 11
-
-    @property
-    def _target_index(self):
-
-        """The _target_index function returns the index of the target_col column in a training
-        dataframe.
-
-        :param self: Bind the instance of the class to a function
-        :return: The index of the target_col column in the training data
-        """
-        if self.args.task == "a":
-            return 2
-        elif self.args.task == "b":
-            return 3
-        elif self.args.task == "c":
-            return 4
-
-    @property
-    def _target_label(self):
-
-        """The _target_label function is used to determine the target_col label for training. The
-        function takes in a single argument, self, which is an instance of the class.
-
-        :param self: Bind the instance of the class to the method
-        :return: The label of the training set for current task
-        """
-        if self.args.task == "a":
-            return "target_a"
-        elif self.args.task == "b":
-            return "target_b"
-        elif self.args.task == "c":
-            return "target_c"

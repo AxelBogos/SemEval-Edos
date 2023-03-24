@@ -11,8 +11,17 @@ from src.data.components.Dataset import GenericDatasetLSTM
 from src.data.text_processing import TextPreprocessor
 
 
-class EDOSDataModuleLSTM(LightningDataModule):
+class DataModuleLSTM(LightningDataModule):
     def __init__(self, args):
+
+        """The __init__ function is called when the class is instantiated. It allows the class to
+        initialize the attributes of a class. The self parameter is a reference to the current
+        instance of the class, and is used to access variables that belong to the class.
+
+        :param self: Represent the instance of the class
+        :param args: Pass the arguments from the command line to the class
+        :return: Nothing
+        """
         super().__init__()
 
         self.data_train: Optional[GenericDatasetLSTM] = None
@@ -27,9 +36,6 @@ class EDOSDataModuleLSTM(LightningDataModule):
 
         # data preparation handlers
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)
-
-    def prepare_data(self):
-        pass
 
     def setup(self, stage: Optional[str] = None):
 
@@ -100,6 +106,13 @@ class EDOSDataModuleLSTM(LightningDataModule):
             )
 
     def train_dataloader(self):
+
+        """The train_dataloader function is used to create a PyTorch DataLoader object for the
+        training set.
+
+        :param self: Bind the instance of the class to the method
+        :return: A dataloader object which is used to load the data in batches
+        """
         return DataLoader(
             dataset=self.data_train,
             batch_size=self.args.batch_size,
@@ -109,6 +122,13 @@ class EDOSDataModuleLSTM(LightningDataModule):
         )
 
     def val_dataloader(self):
+        """The val_dataloader function is used to create a DataLoader object for the validation
+        set. The function takes no arguments and returns a DataLoader object that can be used to
+        iterate over the validation set.
+
+        :param self: Represent the instance of the class
+        :return: A dataloader object
+        """
         return DataLoader(
             dataset=self.data_val,
             batch_size=self.args.batch_size,
@@ -118,6 +138,12 @@ class EDOSDataModuleLSTM(LightningDataModule):
         )
 
     def test_dataloader(self):
+
+        """The test_dataloader function is used to create a DataLoader object for the test set.
+
+        :param self: Bind the instance of the class to the method
+        :return: A dataloader object that is used to iterate through the test dataset
+        """
         return DataLoader(
             dataset=self.data_test,
             batch_size=self.args.batch_size,
@@ -176,9 +202,25 @@ class EDOSDataModuleLSTM(LightningDataModule):
 
 class Collator:
     def __init__(self, pad_idx):
+
+        """The __init__ function is called when the class is instantiated. It sets up the instance
+        of the class, and defines what attributes it has. In this case, we are setting up a
+        Vocabulary object that will have an attribute pad_idx.
+
+        :param self: Represent the instance of the class
+        :param pad_idx: Determine which index in the vocabulary is used for padding
+        :return: Nothing
+        """
         self.pad_idx = pad_idx
 
     def collate(self, batch):
+
+        """The collate function is used to batch together multiple samples.
+
+        :param self: Access the attributes of the class
+        :param batch: Pass the batch of data to the collate function
+        :return: Padded sequences and labels
+        """
         text, labels = zip(*batch)
         labels = torch.LongTensor(labels)
         text = torch.nn.utils.rnn.pad_sequence(text, padding_value=self.pad_idx, batch_first=True)

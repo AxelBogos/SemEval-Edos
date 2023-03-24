@@ -138,9 +138,9 @@ def get_data_module(args):
     :return: The data module
     """
     if args.model == "bilstm":
-        return datamodule_lstm.EDOSDataModuleLSTM(args)
+        return datamodule_lstm.DataModuleLSTM(args)
     else:
-        return datamodule_transformer.EDOSDataModuleTransformer(args)
+        return datamodule_transformer.DataModuleTransformer(args)
 
 
 def get_optimizer(args):
