@@ -39,12 +39,18 @@ def parse_args():
     )
 
     # --------------- Model Definition Arguments ---------------
+    parser.add_argument(
+        "--architecture",
+        default="transformer",
+        type=str,
+        help="Architecture name; available architectures: {'lstm','transformer', 'transformer-beamsearch'}.",
+    )
 
     parser.add_argument(
         "--model",
-        default="bilstm",
+        default="roberta-base",
         type=str,
-        help="Model name; available models: {'bilstm','bert-base-cased', or any huggingface model (eg. roberta-base)}."
+        help="Model name; available models: {any huggingface model (eg. roberta-base)}."
         "Good options include: roberta-base, bert-base-uncased, distilbert-base-uncased, distilroberta-base",
     )
 

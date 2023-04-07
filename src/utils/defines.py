@@ -20,6 +20,7 @@ VALID_MODEL_CHOICES = (
     "distilroberta-base",
     "roberta-large",
 )
+VALID_ARCHITECTURE_CHOICES = ("lstm", "transformer", "transformer-beamsearch'")
 VALID_TASK_CHOICES = ("a", "b", "c")
 VALID_PREPROCESSING_MODE = ("standard", "none")
 VALID_OPTIMIZERS = ("Adam", "AdamW", "SGD")

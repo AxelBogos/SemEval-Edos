@@ -7,10 +7,13 @@ import torch.optim
 import torch.optim as optim
 from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
 from pytorch_lightning.loggers import WandbLogger
-from transformers import get_linear_schedule_with_warmup
 
-from src.data import datamodule_lstm, datamodule_transformer
-from src.models import lstm_module, transformer_module
+from src.data import (
+    datamodule_lstm,
+    datamodule_transformer,
+    datamodule_transformer_beamsearch,
+)
+from src.models import beam_search_transformer_module, lstm_module, transformer_module
 from src.utils import defines
 
 
@@ -123,10 +126,14 @@ def get_model(args, optimizer: torch.optim.Optimizer = None):
     :param scheduler: torch.optim.lr_scheduler:
     :return: A model object that is a torch.nn.Module
     """
-    if args.model == "bilstm":
+    if args.architecture == "lstm":
         return lstm_module.LSTMModule(args=args, optimizer=optimizer)
-    else:
+    elif args.architecture == "transformer":
         return transformer_module.TransformerModule(args, optimizer=optimizer)
+    elif args.architecture == "transformer-beamsearch":
+        return beam_search_transformer_module.BeamSearchTransformerModule(
+            args, optimizer=optimizer
+        )
 
 
 def get_data_module(args):
@@ -137,10 +144,12 @@ def get_data_module(args):
     :param args: Pass in the arguments from the command line
     :return: The data module
     """
-    if args.model == "bilstm":
+    if args.architecture == "lstm":
         return datamodule_lstm.DataModuleLSTM(args)
-    else:
+    elif args.architecture == "transformer":
         return datamodule_transformer.DataModuleTransformer(args)
+    elif args.architecture == "transformer-beamsearch":
+        return datamodule_transformer_beamsearch.DataModuleTransformerBeamSearch(args)
 
 
 def get_optimizer(args):
