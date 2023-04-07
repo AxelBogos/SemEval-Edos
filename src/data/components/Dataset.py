@@ -37,11 +37,11 @@ class GenericDatasetTransformer(Dataset):
 
     def __getitem__(self, idx: int):
         text = self.texts[idx]
-        label = self.labels[idx]
-        if isinstance(label, np.ndarray):
-            label = [torch.tensor(lbl, dtype=torch.long) for lbl in label]
+        labels = self.labels[idx]
+        if isinstance(labels, np.ndarray):
+            labels = np.array([torch.tensor(lbl, dtype=torch.long) for lbl in labels])
         else:
-            label = torch.tensor(label, dtype=torch.long)
+            labels = torch.tensor(labels, dtype=torch.long)
         encoding = self.tokenizer.encode_plus(
             text,
             add_special_tokens=True,
@@ -56,5 +56,5 @@ class GenericDatasetTransformer(Dataset):
             text=text,
             input_ids=encoding["input_ids"].flatten(),
             attention_mask=encoding["attention_mask"].flatten(),
-            labels=label,
+            labels=labels,
         )

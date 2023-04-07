@@ -129,7 +129,7 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
     def custom_collate_fn(batch):
         task_a_batch, task_b_batch, task_c_batch = [], [], []
         for sample in batch:
-            input_ids, attention_mask, labels = sample
+            _, input_ids, attention_mask, labels = sample
             if labels[0] != -1:
                 task_a_batch.append(sample)
             if labels[1] != -1:

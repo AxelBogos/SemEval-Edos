@@ -55,6 +55,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
 
     def forward(self, input_ids, attention_mask, labels=None):
         features = self.feature_extractor(input_ids, attention_mask=attention_mask)
+        features = features.last_hidden_state
         logits_a = self.classifier_a(features)
         logits_b = self.classifier_b(features)
         logits_c = self.classifier_c(features)
@@ -67,10 +68,11 @@ class BeamSearchTransformerModule(pl.LightningModule):
         else:
             return logits_a, logits_b, logits_c
 
-    def _model_step(self, batch):
-        input_ids = batch["input_ids"]
-        attention_mask = batch["attention_mask"]
-        labels = batch["labels"]
+    def _model_step(self, task_batch):
+        # Unpack the batch
+        input_ids = task_batch[0]["input_ids"].unsqueeze(0)
+        attention_mask = task_batch[0]["attention_mask"].unsqueeze(0)
+        labels = task_batch[0]["labels"]
 
         loss_a, loss_b, loss_c, logits_a, logits_b, logits_c = self(
             input_ids, attention_mask, labels
