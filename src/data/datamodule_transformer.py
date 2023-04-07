@@ -137,6 +137,22 @@ class DataModuleTransformer(pl.LightningDataModule):
             return 11
 
     @property
+    def _target_index(self):
+
+        """The _target_index function returns the index of the target_col column in a training
+        dataframe.
+
+        :param self: Bind the instance of the class to a function
+        :return: The index of the target_col column in the training data
+        """
+        if self.args.task == "a":
+            return 2
+        elif self.args.task == "b":
+            return 3
+        elif self.args.task == "c":
+            return 4
+
+    @property
     def _target_label(self):
 
         """The _target_label function is used to determine the target_col label for training. The

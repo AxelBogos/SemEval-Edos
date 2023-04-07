@@ -48,7 +48,7 @@ class InterimProcessor:
 
         # Split data into train, val and test sets
         train = full_data[full_data["split"] == "train"]
-        val = full_data[full_data["split"] == "val"]
+        val = full_data[full_data["split"] == "dev"]
         test = full_data[full_data["split"] == "test"]
 
         # Drop split column
