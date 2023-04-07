@@ -20,6 +20,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
             self.classifier_b,
             self.classifier_c,
         ) = self.define_models(args)
+        self.freeze_module(self.feature_extractor)
         self.optimizer = optimizer
         self.criterion = nn.CrossEntropyLoss()
 
@@ -214,3 +215,13 @@ class BeamSearchTransformerModule(pl.LightningModule):
             num_training_steps=num_training_steps,
         )
         return dict(optimizer=optimizer, lr_scheduler=dict(scheduler=scheduler, interval="step"))
+
+    @staticmethod
+    def freeze_module(module):
+        for param in module.parameters():
+            param.requires_grad = False
+
+    @staticmethod
+    def unfreeze_module(module):
+        for param in module.parameters():
+            param.requires_grad = True
