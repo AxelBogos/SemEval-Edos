@@ -1,3 +1,4 @@
+import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.nn as nn
@@ -55,6 +56,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
 
     def forward(self, input_ids, attention_mask, labels=None):
         features = self.feature_extractor(input_ids, attention_mask=attention_mask)
+        print(labels.shape)
         features = features.last_hidden_state
         logits_a = self.classifier_a(features)
         logits_b = self.classifier_b(features)
@@ -70,9 +72,9 @@ class BeamSearchTransformerModule(pl.LightningModule):
 
     def _model_step(self, task_batch, task):
         # Unpack the batch
-        input_ids = task_batch[0]["input_ids"].unsqueeze(0)
-        attention_mask = task_batch[0]["attention_mask"].unsqueeze(0)
-        labels = task_batch[0]["labels"]
+        input_ids = task_batch["input_ids"]
+        attention_mask = task_batch["attention_mask"]
+        labels = task_batch["labels"]
 
         loss_a, loss_b, loss_c, logits_a, logits_b, logits_c = self(
             input_ids, attention_mask, labels
