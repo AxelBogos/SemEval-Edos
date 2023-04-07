@@ -6,7 +6,7 @@ from torchmetrics.classification import MulticlassF1Score
 from transformers import AutoModelForSequenceClassification, get_scheduler
 
 
-class TransformerModule(pl.LightningModule):
+class BeamSearchTransformerModule(pl.LightningModule):
     def __init__(
         self,
         args,
@@ -14,78 +14,195 @@ class TransformerModule(pl.LightningModule):
     ):
         super().__init__()
         self.args = args
-        classification_model = AutoModelForSequenceClassification.from_pretrained(
-            args.model, num_labels=2
-        )
-        self.encoder = classification_model.base_model
-        self.is_sexist_clf = classification_model.classifier.copy()
+        (
+            self.feature_extractor,
+            self.classifier_a,
+            self.classifier_b,
+            self.classifier_c,
+        ) = self.define_models(args)
         self.optimizer = optimizer
         self.criterion = nn.CrossEntropyLoss()
 
-        # metric objects for calculating and macro f1 across batches
-        self.train_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
-        self.val_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
-        self.test_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
+        self.train_f1_a = MulticlassF1Score(num_classes=2, average="macro")
+        self.train_f1_b = MulticlassF1Score(num_classes=4, average="macro")
+        self.train_f1_c = MulticlassF1Score(num_classes=11, average="macro")
 
-        # for averaging loss across batches
+        self.val_f1_a = MulticlassF1Score(num_classes=2, average="macro")
+        self.val_f1_b = MulticlassF1Score(num_classes=4, average="macro")
+        self.val_f1_c = MulticlassF1Score(num_classes=11, average="macro")
+
+        self.test_f1_a = MulticlassF1Score(num_classes=2, average="macro")
+        self.test_f1_b = MulticlassF1Score(num_classes=4, average="macro")
+        self.test_f1_c = MulticlassF1Score(num_classes=11, average="macro")
+
         self.train_loss = MeanMetric()
         self.val_loss = MeanMetric()
         self.test_loss = MeanMetric()
 
-        # for tracking best so far validation f1
-        self.val_f1_best = MaxMetric()
+        self.val_f1_best_a = MaxMetric()
+        self.val_f1_best_b = MaxMetric()
+        self.val_f1_best_c = MaxMetric()
+
+    def define_models(self, args):
+        feature_extractor = AutoModelForSequenceClassification.from_pretrained(
+            args.model_name
+        ).base_model
+        classifier_a = AutoModelForSequenceClassification.from_pretrained(
+            args.model_name
+        ).classifier
+        classifier_b = AutoModelForSequenceClassification.from_pretrained(
+            args.model_name
+        ).classifier
+        classifier_c = AutoModelForSequenceClassification.from_pretrained(
+            args.model_name
+        ).classifier
+        return feature_extractor, classifier_a, classifier_b, classifier_c
 
     def forward(self, input_ids, attention_mask, labels=None):
-        output = self.model(input_ids, attention_mask=attention_mask, labels=labels)
-        return output
+        features = self.feature_extractor(input_ids, attention_mask=attention_mask)
+        logits_a = self.classifier_a(features)
+        logits_b = self.classifier_b(features)
+        logits_c = self.classifier_c(features)
 
-    def on_train_start(self):
-        self.val_f1_best.reset()
+        if labels is not None:
+            loss_a = self.criterion(logits_a, labels[:, 0])
+            loss_b = self.criterion(logits_b, labels[:, 1])
+            loss_c = self.criterion(logits_c, labels[:, 2])
+            return loss_a, loss_b, loss_c, logits_a, logits_b, logits_c
+        else:
+            return logits_a, logits_b, logits_c
 
     def model_step(self, batch):
         input_ids = batch["input_ids"]
         attention_mask = batch["attention_mask"]
         labels = batch["labels"]
-        outputs = self(input_ids, attention_mask, labels)
-        loss = outputs.loss
-        preds = torch.argmax(outputs.logits, dim=1)
 
-        return loss, preds, labels
+        loss_a, loss_b, loss_c, logits_a, logits_b, logits_c = self(
+            input_ids, attention_mask, labels
+        )
+
+        preds_a, preds_b, preds_c = self.beam_search(logits_a, logits_b, logits_c)
+
+        total_loss = loss_a + loss_b + loss_c
+        labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
+
+        return total_loss, preds_a, preds_b, preds_c, labels_a, labels_b, labels_c
+
+    def beam_search(self, logits_a, logits_b, logits_c):  # noqa: max-complexity: 13
+        topk_a = torch.topk(logits_a, 2, dim=1)
+        topk_b = torch.topk(logits_b, 4, dim=1)
+        topk_c = torch.topk(logits_c, 11, dim=1)
+
+        beam_result = []
+        for a_probs, b_probs, c_probs in zip(topk_a.values, topk_b.values, topk_c.values):
+            beam_probs = []
+            for a_prob, a_idx in zip(a_probs, topk_a.indices):
+                if a_idx == 1:  # sexist
+                    for b_prob, b_idx in zip(b_probs, topk_b.indices):
+                        if b_idx == 1:
+                            for c_prob, c_idx in zip(c_probs[:2], topk_c.indices[:2]):
+                                beam_probs.append(
+                                    (a_prob * b_prob * c_prob, (a_idx, b_idx, c_idx))
+                                )
+                        elif b_idx == 2:
+                            for c_prob, c_idx in zip(c_probs[2:5], topk_c.indices[2:5]):
+                                beam_probs.append(
+                                    (a_prob * b_prob * c_prob, (a_idx, b_idx, c_idx))
+                                )
+                        elif b_idx == 3:
+                            for c_prob, c_idx in zip(c_probs[5:9], topk_c.indices[5:9]):
+                                beam_probs.append(
+                                    (a_prob * b_prob * c_prob, (a_idx, b_idx, c_idx))
+                                )
+                        elif b_idx == 4:
+                            for c_prob, c_idx in zip(c_probs[9:], topk_c.indices[9:]):
+                                beam_probs.append(
+                                    (a_prob * b_prob * c_prob, (a_idx, b_idx, c_idx))
+                                )
+                else:  # not sexist
+                    beam_probs.append((a_prob, (a_idx, 0, 0)))
+
+            beam_probs.sort(reverse=True)
+            beam_result.append(beam_probs[0][1])
+
+        preds_a, preds_b, preds_c = zip(*beam_result)
+        preds_a = torch.tensor(preds_a, device=logits_a.device)
+        preds_b = torch.tensor(preds_b, device=logits_b.device)
+        preds_c = torch.tensor(preds_c, device=logits_c.device)
+
+        return preds_a, preds_b, preds_c
 
     def training_step(self, batch, batch_idx):
-        loss, preds, labels = self.model_step(batch)
+        total_loss, preds_a, preds_b, preds_c, labels_a, labels_b, labels_c = self.model_step(
+            batch
+        )
 
-        # update and log metrics
-        self.train_loss(loss)
-        self.train_f1(preds, labels)
+        self.train_loss(total_loss)
+        self.train_f1_a(preds_a, labels_a)
+        self.train_f1_b(preds_b, labels_b)
+        self.train_f1_c(preds_c, labels_c)
+
         self.log("train/loss", self.train_loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("train/f1", self.train_f1, on_step=True, on_epoch=True, prog_bar=True)
+        self.log("train/f1_a", self.train_f1_a, on_step=True, on_epoch=True, prog_bar=True)
+        self.log("train/f1_b", self.train_f1_b, on_step=True, on_epoch=True, prog_bar=True)
+        self.log("train/f1_c", self.train_f1_c, on_step=True, on_epoch=True, prog_bar=True)
 
-        return {"loss": loss, "predictions": preds, "labels": labels}
+        return {
+            "loss": total_loss,
+            "predictions_a": preds_a,
+            "labels_a": labels_a,
+            "predictions_b": preds_b,
+            "labels_b": labels_b,
+            "predictions_c": preds_c,
+            "labels_c": labels_c,
+        }
 
     def validation_step(self, batch, batch_idx):
-        loss, preds, labels = self.model_step(batch)
+        total_loss, preds_a, preds_b, preds_c, labels_a, labels_b, labels_c = self.model_step(
+            batch
+        )
 
-        self.val_loss(loss)
-        self.val_f1(preds, labels)
+        self.val_loss(total_loss)
+        self.val_f1_a(preds_a, labels_a)
+        self.val_f1_b(preds_b, labels_b)
+        self.val_f1_c(preds_c, labels_c)
+
         self.log("val/loss", self.val_loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("val/f1", self.val_f1, on_step=True, on_epoch=True, prog_bar=True)
-        return loss
+        self.log("val/f1_a", self.val_f1_a, on_step=True, on_epoch=True, prog_bar=True)
+        self.log("val/f1_b", self.val_f1_b, on_step=True, on_epoch=True, prog_bar=True)
+        self.log("val/f1_c", self.val_f1_c, on_step=True, on_epoch=True, prog_bar=True)
+
+        return total_loss
 
     def test_step(self, batch, batch_idx):
-        loss, preds, labels = self.model_step(batch)
-        self.test_loss(loss)
-        self.test_f1(preds, labels)
+        total_loss, preds_a, preds_b, preds_c, labels_a, labels_b, labels_c = self.model_step(
+            batch
+        )
+
+        self.test_loss(total_loss)
+        self.test_f1_a(preds_a, labels_a)
+        self.test_f1_b(preds_b, labels_b)
+        self.test_f1_c(preds_c, labels_c)
+
         self.log("test/loss", self.test_loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("test/f1", self.test_f1, on_step=True, on_epoch=True, prog_bar=True)
-        return loss
+        self.log("test/f1_a", self.test_f1_a, on_step=True, on_epoch=True, prog_bar=True)
+        self.log("test/f1_b", self.test_f1_b, on_step=True, on_epoch=True, prog_bar=True)
+        self.log("test/f1_c", self.test_f1_c, on_step=True, on_epoch=True, prog_bar=True)
+
+        return total_loss
 
     def validation_epoch_end(self, outputs):
-        f1 = self.val_f1.compute()  # get current val f1
-        self.val_f1_best(f1)  # update best so far val f1
-        # log `val_f1_best` as a value through `.compute()` method, instead of as a metric object
-        # otherwise metric would be reset by lightning after each epoch
-        self.log("val/f1_best", self.val_f1_best.compute(), prog_bar=True)
+        f1_a = self.val_f1_a.compute()
+        f1_b = self.val_f1_b.compute()
+        f1_c = self.val_f1_c.compute()
+
+        self.val_f1_best_a(f1_a)
+        self.val_f1_best_b(f1_b)
+        self.val_f1_best_c(f1_c)
+
+        self.log("val/f1_best_a", self.val_f1_best_a.compute(), prog_bar=True)
+        self.log("val/f1_best_b", self.val_f1_best_b.compute(), prog_bar=True)
+        self.log("val/f1_best_c", self.val_f1_best_c.compute(), prog_bar=True)
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.args.lr)
