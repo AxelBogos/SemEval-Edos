@@ -45,7 +45,8 @@ class BeamSearchTransformerModule(pl.LightningModule):
         self.val_f1_best_b = MaxMetric()
         self.val_f1_best_c = MaxMetric()
 
-    def define_models(self, args):
+    @staticmethod
+    def define_models(args):
         feature_extractor = AutoModelForSequenceClassification.from_pretrained(
             args.model
         ).base_model
@@ -56,6 +57,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
 
     def forward(self, input_ids, attention_mask, labels=None):
         input_ids = input_ids.long()
+        labels = labels.long()
         features = self.feature_extractor(input_ids, attention_mask=attention_mask)
         features = features.last_hidden_state
         logits_a = self.classifier_a(features)
@@ -95,10 +97,10 @@ class BeamSearchTransformerModule(pl.LightningModule):
 
         return loss, preds, labels
 
-    def beam_search(self, logits_a, logits_b, logits_c):  # noqa: max-complexity: 13
-        topk_a = torch.topk(logits_a, 2, dim=1)
-        topk_b = torch.topk(logits_b, 4, dim=1)
-        topk_c = torch.topk(logits_c, 11, dim=1)
+    def beam_search(self, logits_a, logits_b, logits_c, beam_size=3):  # noqa: max-complexity: 13
+        topk_a = torch.topk(logits_a, beam_size, dim=1)
+        topk_b = torch.topk(logits_b, beam_size, dim=1)
+        topk_c = torch.topk(logits_c, beam_size, dim=1)
 
         beam_result = []
         for a_probs, b_probs, c_probs in zip(topk_a.values, topk_b.values, topk_c.values):
