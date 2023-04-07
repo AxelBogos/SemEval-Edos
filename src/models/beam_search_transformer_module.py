@@ -46,17 +46,11 @@ class BeamSearchTransformerModule(pl.LightningModule):
 
     def define_models(self, args):
         feature_extractor = AutoModelForSequenceClassification.from_pretrained(
-            args.model_name
+            args.model
         ).base_model
-        classifier_a = AutoModelForSequenceClassification.from_pretrained(
-            args.model_name
-        ).classifier
-        classifier_b = AutoModelForSequenceClassification.from_pretrained(
-            args.model_name
-        ).classifier
-        classifier_c = AutoModelForSequenceClassification.from_pretrained(
-            args.model_name
-        ).classifier
+        classifier_a = AutoModelForSequenceClassification.from_pretrained(args.model).classifier
+        classifier_b = AutoModelForSequenceClassification.from_pretrained(args.model).classifier
+        classifier_c = AutoModelForSequenceClassification.from_pretrained(args.model).classifier
         return feature_extractor, classifier_a, classifier_b, classifier_c
 
     def forward(self, input_ids, attention_mask, labels=None):

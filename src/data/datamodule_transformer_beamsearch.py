@@ -137,3 +137,13 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
             if labels[2] != -1:
                 task_c_batch.append(sample)
         return task_a_batch, task_b_batch, task_c_batch
+
+    @property
+    def _num_classes(self):
+
+        """The _num_classes function returns the number of classes for a given task.
+
+        :param self: Represent the instance of the class
+        :return: The number of classes in the dataset
+        """
+        return 0  # useless
