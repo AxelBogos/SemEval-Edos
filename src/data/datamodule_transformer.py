@@ -45,7 +45,7 @@ class DataModuleTransformer(pl.LightningDataModule):
             interim_data_train["text"] = self.text_preprocessor.transform_series(
                 interim_data_train["text"]
             )
-            interim_data_train = interim_data_train[interim_data_train[self._target_label] != 0]
+            interim_data_train = interim_data_train[interim_data_train[self._target_label] != -1]
             interim_data_train = interim_data_train.to_numpy()
 
             self.data_train = GenericDatasetTransformer(
@@ -61,7 +61,7 @@ class DataModuleTransformer(pl.LightningDataModule):
             interim_data_val["text"] = self.text_preprocessor.transform_series(
                 interim_data_val["text"]
             )
-            interim_data_val = interim_data_val[interim_data_val[self._target_label] != 0]
+            interim_data_val = interim_data_val[interim_data_val[self._target_label] != -1]
             interim_data_val = interim_data_val.to_numpy()
 
             self.data_val = GenericDatasetTransformer(
@@ -76,7 +76,7 @@ class DataModuleTransformer(pl.LightningDataModule):
             interim_data_test["text"] = self.text_preprocessor.transform_series(
                 interim_data_test["text"]
             )
-            interim_data_test = interim_data_test[interim_data_test[self._target_label] != 0]
+            interim_data_test = interim_data_test[interim_data_test[self._target_label] != -1]
             interim_data_test = interim_data_test.to_numpy()
 
             self.data_test = GenericDatasetTransformer(
