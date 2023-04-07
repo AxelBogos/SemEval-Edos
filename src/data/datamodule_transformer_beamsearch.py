@@ -166,10 +166,10 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
             if labels[1] != -1:
                 task_b_batch["text"].append(text)
                 task_b_batch["input_ids"] = torch.cat(
-                    (task_b_batch["input_ids"], input_ids.unsqueeze(1)), dim=0
+                    (task_b_batch["input_ids"], input_ids.unsqueeze(1).T), dim=0
                 )
                 task_b_batch["attention_mask"] = torch.cat(
-                    (task_b_batch["attention_mask"], attention_mask.unsqueeze(1)), dim=0
+                    (task_b_batch["attention_mask"], attention_mask.unsqueeze(1).T), dim=0
                 )
                 task_b_batch["labels"] = torch.cat(
                     (
@@ -181,10 +181,10 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
             if labels[2] != -1:
                 task_c_batch["text"].append(text)
                 task_c_batch["input_ids"] = torch.cat(
-                    (task_c_batch["input_ids"], input_ids.unsqueeze(1)), dim=0
+                    (task_c_batch["input_ids"], input_ids.unsqueeze(1).T), dim=0
                 )
                 task_c_batch["attention_mask"] = torch.cat(
-                    (task_c_batch["attention_mask"], attention_mask.unsqueeze(1)), dim=0
+                    (task_c_batch["attention_mask"], attention_mask.unsqueeze(1).T), dim=0
                 )
                 task_c_batch["labels"] = torch.cat(
                     (
