@@ -68,7 +68,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
         else:
             return logits_a, logits_b, logits_c
 
-    def _model_step(self, task_batch):
+    def _model_step(self, task_batch, task):
         # Unpack the batch
         input_ids = task_batch[0]["input_ids"].unsqueeze(0)
         attention_mask = task_batch[0]["attention_mask"].unsqueeze(0)
@@ -78,12 +78,20 @@ class BeamSearchTransformerModule(pl.LightningModule):
             input_ids, attention_mask, labels
         )
 
-        preds_a, preds_b, preds_c = self.beam_search(logits_a, logits_b, logits_c)
+        if task == "A":
+            loss = loss_a
+            preds = self.beam_search(logits_a, logits_b, logits_c)[0]
+            labels = labels[:, 0]
+        elif task == "B":
+            loss = loss_b
+            preds = self.beam_search(logits_a, logits_b, logits_c)[1]
+            labels = labels[:, 1]
+        elif task == "C":
+            loss = loss_c
+            preds = self.beam_search(logits_a, logits_b, logits_c)[2]
+            labels = labels[:, 2]
 
-        total_loss = loss_a + loss_b + loss_c
-        labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
-
-        return total_loss, preds_a, preds_b, preds_c, labels_a, labels_b, labels_c
+        return loss, preds, labels
 
     def beam_search(self, logits_a, logits_b, logits_c):  # noqa: max-complexity: 13
         topk_a = torch.topk(logits_a, 2, dim=1)
@@ -133,60 +141,44 @@ class BeamSearchTransformerModule(pl.LightningModule):
         task_a_batch, task_b_batch, task_c_batch = batch
 
         # Task A
-        loss_a, preds_a, _, _, labels_a, _, _ = self._model_step(task_a_batch)
-        self.train_loss(loss_a)
-        self.train_f1_a(preds_a, labels_a)
+        loss_a, preds_a, labels_a = self._model_step(task_a_batch, "A")
+        self.log("train_loss_a", loss_a)
+        self.log("train_f1_a", self.f1_a(preds_a, labels_a))
 
         # Task B
-        _, loss_b, preds_b, _, _, labels_b, _ = self._model_step(task_b_batch)
-        self.train_loss(loss_b)
-        self.train_f1_b(preds_b, labels_b)
+        loss_b, preds_b, labels_b = self._model_step(task_b_batch, "B")
+        self.log("train_loss_b", loss_b)
+        self.log("train_f1_b", self.f1_b(preds_b, labels_b))
 
         # Task C
-        _, _, loss_c, preds_c, _, _, labels_c = self._model_step(task_c_batch)
-        self.train_loss(loss_c)
-        self.train_f1_c(preds_c, labels_c)
-
-        self.log("train/loss", self.train_loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("train/f1_a", self.train_f1_a, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("train/f1_b", self.train_f1_b, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("train/f1_c", self.train_f1_c, on_step=True, on_epoch=True, prog_bar=True)
+        loss_c, preds_c, labels_c = self._model_step(task_c_batch, "C")
+        self.log("train_loss_c", loss_c)
+        self.log("train_f1_c", self.f1_c(preds_c, labels_c))
 
         total_loss = loss_a + loss_b + loss_c
-        return {
-            "loss": total_loss,
-            "predictions_a": preds_a,
-            "labels_a": labels_a,
-            "predictions_b": preds_b,
-            "labels_b": labels_b,
-            "predictions_c": preds_c,
-            "labels_c": labels_c,
-        }
+        self.log("train_loss", total_loss)
+        return total_loss
 
     def validation_step(self, batch, batch_idx):
         task_a_batch, task_b_batch, task_c_batch = batch
 
         # Task A
-        loss_a, preds_a, _, _, labels_a, _, _ = self._model_step(task_a_batch)
-        self.val_loss(loss_a)
-        self.val_f1_a(preds_a, labels_a)
+        loss_a, preds_a, labels_a = self._model_step(task_a_batch, "A")
+        self.log("val/loss_a", loss_a)
+        self.log("val/f1_a", self.f1_a(preds_a, labels_a))
 
         # Task B
-        _, loss_b, preds_b, _, _, labels_b, _ = self._model_step(task_b_batch)
-        self.val_loss(loss_b)
-        self.val_f1_b(preds_b, labels_b)
+        loss_b, preds_b, labels_b = self._model_step(task_b_batch, "B")
+        self.log("val/loss_b", loss_b)
+        self.log("val/f1_b", self.f1_b(preds_b, labels_b))
 
         # Task C
-        _, _, loss_c, preds_c, _, _, labels_c = self._model_step(task_c_batch)
-        self.val_loss(loss_c)
-        self.val_f1_c(preds_c, labels_c)
-
-        self.log("val/loss", self.val_loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("val/f1_a", self.val_f1_a, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("val/f1_b", self.val_f1_b, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("val/f1_c", self.val_f1_c, on_step=True, on_epoch=True, prog_bar=True)
+        loss_c, preds_c, labels_c = self._model_step(task_c_batch, "C")
+        self.log("val/loss_c", loss_c)
+        self.log("val/f1_c", self.f1_c(preds_c, labels_c))
 
         total_loss = loss_a + loss_b + loss_c
+        self.log("val/loss", total_loss)
         return {
             "loss": total_loss,
             "predictions_a": preds_a,
@@ -201,35 +193,23 @@ class BeamSearchTransformerModule(pl.LightningModule):
         task_a_batch, task_b_batch, task_c_batch = batch
 
         # Task A
-        loss_a, preds_a, _, _, labels_a, _, _ = self._model_step(task_a_batch)
-        self.test_loss(loss_a)
-        self.test_f1_a(preds_a, labels_a)
+        loss_a, preds_a, labels_a = self._model_step(task_a_batch, "A")
+        self.log("test/loss_a", loss_a)
+        self.log("test/f1_a", self.f1_a(preds_a, labels_a))
 
         # Task B
-        _, loss_b, preds_b, _, _, labels_b, _ = self._model_step(task_b_batch)
-        self.test_loss(loss_b)
-        self.test_f1_b(preds_b, labels_b)
+        loss_b, preds_b, labels_b = self._model_step(task_b_batch, "B")
+        self.log("test/loss_b", loss_b)
+        self.log("test/f1_b", self.f1_b(preds_b, labels_b))
 
         # Task C
-        _, _, loss_c, preds_c, _, _, labels_c = self._model_step(task_c_batch)
-        self.test_loss(loss_c)
-        self.test_f1_c(preds_c, labels_c)
-
-        self.log("test/loss", self.test_loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("test/f1_a", self.test_f1_a, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("test/f1_b", self.test_f1_b, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("test/f1_c", self.test_f1_c, on_step=True, on_epoch=True, prog_bar=True)
+        loss_c, preds_c, labels_c = self._model_step(task_c_batch, "C")
+        self.log("test/loss_c", loss_c)
+        self.log("test/f1_c", self.f1_c(preds_c, labels_c))
 
         total_loss = loss_a + loss_b + loss_c
-        return {
-            "loss": total_loss,
-            "predictions_a": preds_a,
-            "labels_a": labels_a,
-            "predictions_b": preds_b,
-            "labels_b": labels_b,
-            "predictions_c": preds_c,
-            "labels_c": labels_c,
-        }
+        self.log("test/loss", total_loss)
+        return total_loss
 
     def validation_epoch_end(self, outputs):
         f1_a = self.val_f1_a.compute()
