@@ -6,7 +6,7 @@ python main/main.py \
 --eval \
 --task a \
 --preprocessing_mode standard \
---model bilstm \
+--architecture lstm \
 --lr 5e-6 \
 --optimizer AdamW \
 --embedding_dim 300 \

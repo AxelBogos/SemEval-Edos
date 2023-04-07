@@ -6,6 +6,7 @@ python ./../main/main.py \
 --eval \
 --task a \
 --preprocessing_mode none \
+--architecture transformer \
 --model roberta-base \
 --optimizer AdamW \
 --max_token_length 128 \
