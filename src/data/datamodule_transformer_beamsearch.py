@@ -94,6 +94,7 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
             batch_size=self.args.batch_size,
             shuffle=True,
             num_workers=self.args.num_workers,
+            collate_fn=self.custom_collate_fn,
         )
 
     def val_dataloader(self):
@@ -105,7 +106,10 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
         :return: A dataloader object that contains the validation data
         """
         return DataLoader(
-            self.data_val, batch_size=self.args.batch_size, num_workers=self.args.num_workers
+            self.data_val,
+            batch_size=self.args.batch_size,
+            num_workers=self.args.num_workers,
+            collate_fn=self.custom_collate_fn,
         )
 
     def test_dataloader(self):
@@ -115,20 +119,21 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
         :return: A dataloader object
         """
         return DataLoader(
-            self.data_test, batch_size=self.args.batch_size, num_workers=self.args.num_workers
+            self.data_test,
+            batch_size=self.args.batch_size,
+            num_workers=self.args.num_workers,
+            collate_fn=self.custom_collate_fn,
         )
 
-    @property
-    def _num_classes(self):
-
-        """The _num_classes function returns the number of classes for a given task.
-
-        :param self: Represent the instance of the class
-        :return: The number of classes in the dataset
-        """
-        if self.args.task == "a":
-            return 2
-        elif self.args.task == "b":
-            return 4
-        elif self.args.task == "c":
-            return 11
+    @staticmethod
+    def custom_collate_fn(batch):
+        task_a_batch, task_b_batch, task_c_batch = [], [], []
+        for sample in batch:
+            input_ids, attention_mask, labels = sample
+            if labels[0] != -1:
+                task_a_batch.append(sample)
+            if labels[1] != -1:
+                task_b_batch.append(sample)
+            if labels[2] != -1:
+                task_c_batch.append(sample)
+        return task_a_batch, task_b_batch, task_c_batch

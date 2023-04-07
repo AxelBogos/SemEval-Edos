@@ -73,7 +73,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
         else:
             return logits_a, logits_b, logits_c
 
-    def model_step(self, batch):
+    def _model_step(self, batch):
         input_ids = batch["input_ids"]
         attention_mask = batch["attention_mask"]
         labels = batch["labels"]
@@ -134,13 +134,21 @@ class BeamSearchTransformerModule(pl.LightningModule):
         return preds_a, preds_b, preds_c
 
     def training_step(self, batch, batch_idx):
-        total_loss, preds_a, preds_b, preds_c, labels_a, labels_b, labels_c = self.model_step(
-            batch
-        )
+        task_a_batch, task_b_batch, task_c_batch = batch
 
-        self.train_loss(total_loss)
+        # Task A
+        loss_a, preds_a, _, _, labels_a, _, _ = self._model_step(task_a_batch)
+        self.train_loss(loss_a)
         self.train_f1_a(preds_a, labels_a)
+
+        # Task B
+        _, loss_b, preds_b, _, _, labels_b, _ = self._model_step(task_b_batch)
+        self.train_loss(loss_b)
         self.train_f1_b(preds_b, labels_b)
+
+        # Task C
+        _, _, loss_c, preds_c, _, _, labels_c = self._model_step(task_c_batch)
+        self.train_loss(loss_c)
         self.train_f1_c(preds_c, labels_c)
 
         self.log("train/loss", self.train_loss, on_step=True, on_epoch=True, prog_bar=True)
@@ -148,6 +156,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
         self.log("train/f1_b", self.train_f1_b, on_step=True, on_epoch=True, prog_bar=True)
         self.log("train/f1_c", self.train_f1_c, on_step=True, on_epoch=True, prog_bar=True)
 
+        total_loss = loss_a + loss_b + loss_c
         return {
             "loss": total_loss,
             "predictions_a": preds_a,
@@ -159,13 +168,21 @@ class BeamSearchTransformerModule(pl.LightningModule):
         }
 
     def validation_step(self, batch, batch_idx):
-        total_loss, preds_a, preds_b, preds_c, labels_a, labels_b, labels_c = self.model_step(
-            batch
-        )
+        task_a_batch, task_b_batch, task_c_batch = batch
 
-        self.val_loss(total_loss)
+        # Task A
+        loss_a, preds_a, _, _, labels_a, _, _ = self._model_step(task_a_batch)
+        self.val_loss(loss_a)
         self.val_f1_a(preds_a, labels_a)
+
+        # Task B
+        _, loss_b, preds_b, _, _, labels_b, _ = self._model_step(task_b_batch)
+        self.val_loss(loss_b)
         self.val_f1_b(preds_b, labels_b)
+
+        # Task C
+        _, _, loss_c, preds_c, _, _, labels_c = self._model_step(task_c_batch)
+        self.val_loss(loss_c)
         self.val_f1_c(preds_c, labels_c)
 
         self.log("val/loss", self.val_loss, on_step=True, on_epoch=True, prog_bar=True)
@@ -173,16 +190,33 @@ class BeamSearchTransformerModule(pl.LightningModule):
         self.log("val/f1_b", self.val_f1_b, on_step=True, on_epoch=True, prog_bar=True)
         self.log("val/f1_c", self.val_f1_c, on_step=True, on_epoch=True, prog_bar=True)
 
-        return total_loss
+        total_loss = loss_a + loss_b + loss_c
+        return {
+            "loss": total_loss,
+            "predictions_a": preds_a,
+            "labels_a": labels_a,
+            "predictions_b": preds_b,
+            "labels_b": labels_b,
+            "predictions_c": preds_c,
+            "labels_c": labels_c,
+        }
 
     def test_step(self, batch, batch_idx):
-        total_loss, preds_a, preds_b, preds_c, labels_a, labels_b, labels_c = self.model_step(
-            batch
-        )
+        task_a_batch, task_b_batch, task_c_batch = batch
 
-        self.test_loss(total_loss)
+        # Task A
+        loss_a, preds_a, _, _, labels_a, _, _ = self._model_step(task_a_batch)
+        self.test_loss(loss_a)
         self.test_f1_a(preds_a, labels_a)
+
+        # Task B
+        _, loss_b, preds_b, _, _, labels_b, _ = self._model_step(task_b_batch)
+        self.test_loss(loss_b)
         self.test_f1_b(preds_b, labels_b)
+
+        # Task C
+        _, _, loss_c, preds_c, _, _, labels_c = self._model_step(task_c_batch)
+        self.test_loss(loss_c)
         self.test_f1_c(preds_c, labels_c)
 
         self.log("test/loss", self.test_loss, on_step=True, on_epoch=True, prog_bar=True)
@@ -190,7 +224,16 @@ class BeamSearchTransformerModule(pl.LightningModule):
         self.log("test/f1_b", self.test_f1_b, on_step=True, on_epoch=True, prog_bar=True)
         self.log("test/f1_c", self.test_f1_c, on_step=True, on_epoch=True, prog_bar=True)
 
-        return total_loss
+        total_loss = loss_a + loss_b + loss_c
+        return {
+            "loss": total_loss,
+            "predictions_a": preds_a,
+            "labels_a": labels_a,
+            "predictions_b": preds_b,
+            "labels_b": labels_b,
+            "predictions_c": preds_c,
+            "labels_c": labels_c,
+        }
 
     def validation_epoch_end(self, outputs):
         f1_a = self.val_f1_a.compute()
