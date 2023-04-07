@@ -55,17 +55,17 @@ class BeamSearchTransformerModule(pl.LightningModule):
         return feature_extractor, classifier_a, classifier_b, classifier_c
 
     def forward(self, input_ids, attention_mask, labels=None):
+        input_ids = input_ids.long()
         features = self.feature_extractor(input_ids, attention_mask=attention_mask)
-        print(labels.shape)
         features = features.last_hidden_state
         logits_a = self.classifier_a(features)
         logits_b = self.classifier_b(features)
         logits_c = self.classifier_c(features)
 
         if labels is not None:
-            loss_a = self.criterion(logits_a, labels[:, 0])
-            loss_b = self.criterion(logits_b, labels[:, 1])
-            loss_c = self.criterion(logits_c, labels[:, 2])
+            loss_a = self.criterion(logits_a, labels)
+            loss_b = self.criterion(logits_b, labels)
+            loss_c = self.criterion(logits_c, labels)
             return loss_a, loss_b, loss_c, logits_a, logits_b, logits_c
         else:
             return logits_a, logits_b, logits_c
@@ -83,15 +83,15 @@ class BeamSearchTransformerModule(pl.LightningModule):
         if task == "A":
             loss = loss_a
             preds = self.beam_search(logits_a, logits_b, logits_c)[0]
-            labels = labels[:, 0]
+            labels = labels
         elif task == "B":
             loss = loss_b
             preds = self.beam_search(logits_a, logits_b, logits_c)[1]
-            labels = labels[:, 1]
+            labels = labels
         elif task == "C":
             loss = loss_c
             preds = self.beam_search(logits_a, logits_b, logits_c)[2]
-            labels = labels[:, 2]
+            labels = labels
 
         return loss, preds, labels
 
