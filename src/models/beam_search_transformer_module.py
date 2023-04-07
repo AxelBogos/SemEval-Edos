@@ -50,9 +50,15 @@ class BeamSearchTransformerModule(pl.LightningModule):
         feature_extractor = AutoModelForSequenceClassification.from_pretrained(
             args.model
         ).base_model
-        classifier_a = AutoModelForSequenceClassification.from_pretrained(args.model).classifier
-        classifier_b = AutoModelForSequenceClassification.from_pretrained(args.model).classifier
-        classifier_c = AutoModelForSequenceClassification.from_pretrained(args.model).classifier
+        classifier_a = AutoModelForSequenceClassification.from_pretrained(
+            args.model, num_labels=2
+        ).classifier
+        classifier_b = AutoModelForSequenceClassification.from_pretrained(
+            args.model, num_labels=4
+        ).classifier
+        classifier_c = AutoModelForSequenceClassification.from_pretrained(
+            args.model, num_labels=11
+        ).classifier
         return feature_extractor, classifier_a, classifier_b, classifier_c
 
     def forward(self, input_ids, attention_mask, labels=None):
@@ -98,33 +104,40 @@ class BeamSearchTransformerModule(pl.LightningModule):
         return loss, preds, labels
 
     def beam_search(self, logits_a, logits_b, logits_c, beam_size=3):  # noqa: max-complexity: 13
-        topk_a = torch.topk(logits_a, beam_size, dim=1)
-        topk_b = torch.topk(logits_b, beam_size, dim=1)
-        topk_c = torch.topk(logits_c, beam_size, dim=1)
-
+        topk_a = torch.topk(logits_a, 2, dim=1)
+        topk_b = torch.topk(logits_b, 4, dim=1)
+        topk_c = torch.topk(logits_c, 11, dim=1)
         beam_result = []
-        for a_probs, b_probs, c_probs in zip(topk_a.values, topk_b.values, topk_c.values):
+
+        for a_probs, b_probs, c_probs, a_indices, b_indices, c_indices in zip(
+            topk_a.values,
+            topk_b.values,
+            topk_c.values,
+            topk_a.indices,
+            topk_b.indices,
+            topk_c.indices,
+        ):
             beam_probs = []
-            for a_prob, a_idx in zip(a_probs, topk_a.indices):
-                if a_idx == 1:  # sexist
-                    for b_prob, b_idx in zip(b_probs, topk_b.indices):
-                        if b_idx == 1:
-                            for c_prob, c_idx in zip(c_probs[:2], topk_c.indices[:2]):
+            for a_prob, a_idx in zip(a_probs, a_indices):
+                if a_idx == 0:  # sexist
+                    for b_prob, b_idx in zip(b_probs, b_indices):
+                        if b_idx == 0:
+                            for c_prob, c_idx in zip(c_probs[:2], c_indices[:2]):
+                                beam_probs.append(
+                                    (a_prob * b_prob * c_prob, (a_idx, b_idx, c_idx))
+                                )
+                        elif b_idx == 1:
+                            for c_prob, c_idx in zip(c_probs[2:5], c_indices[2:5]):
                                 beam_probs.append(
                                     (a_prob * b_prob * c_prob, (a_idx, b_idx, c_idx))
                                 )
                         elif b_idx == 2:
-                            for c_prob, c_idx in zip(c_probs[2:5], topk_c.indices[2:5]):
+                            for c_prob, c_idx in zip(c_probs[5:9], c_indices[5:9]):
                                 beam_probs.append(
                                     (a_prob * b_prob * c_prob, (a_idx, b_idx, c_idx))
                                 )
                         elif b_idx == 3:
-                            for c_prob, c_idx in zip(c_probs[5:9], topk_c.indices[5:9]):
-                                beam_probs.append(
-                                    (a_prob * b_prob * c_prob, (a_idx, b_idx, c_idx))
-                                )
-                        elif b_idx == 4:
-                            for c_prob, c_idx in zip(c_probs[9:], topk_c.indices[9:]):
+                            for c_prob, c_idx in zip(c_probs[9:], c_indices[9:]):
                                 beam_probs.append(
                                     (a_prob * b_prob * c_prob, (a_idx, b_idx, c_idx))
                                 )
