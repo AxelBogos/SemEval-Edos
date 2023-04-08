@@ -159,21 +159,21 @@ class BeamSearchTransformerModule(pl.LightningModule):
 
         # Task A
         loss_a, preds_a, labels_a = self._model_step(task_a_batch, "A")
-        self.log("train_loss_a", loss_a)
-        self.log("train_f1_a", self.f1_a(preds_a, labels_a))
+        self.log("train/loss_a", loss_a)
+        self.log("train/f1_a", self.train_f1_a(preds_a, labels_a))
 
         # Task B
         loss_b, preds_b, labels_b = self._model_step(task_b_batch, "B")
-        self.log("train_loss_b", loss_b)
-        self.log("train_f1_b", self.f1_b(preds_b, labels_b))
+        self.log("train/loss_b", loss_b)
+        self.log("train/f1_b", self.train_f1_b(preds_b, labels_b))
 
         # Task C
         loss_c, preds_c, labels_c = self._model_step(task_c_batch, "C")
-        self.log("train_loss_c", loss_c)
-        self.log("train_f1_c", self.f1_c(preds_c, labels_c))
+        self.log("train/loss_c", loss_c)
+        self.log("train/f1_c", self.train_f1_c(preds_c, labels_c))
 
         total_loss = loss_a + loss_b + loss_c
-        self.log("train_loss", total_loss)
+        self.log("train/loss", total_loss)
         return total_loss
 
     def validation_step(self, batch, batch_idx):
@@ -182,17 +182,17 @@ class BeamSearchTransformerModule(pl.LightningModule):
         # Task A
         loss_a, preds_a, labels_a = self._model_step(task_a_batch, "A")
         self.log("val/loss_a", loss_a)
-        self.log("val/f1_a", self.f1_a(preds_a, labels_a))
+        self.log("val/f1_a", self.val_f1_a(preds_a, labels_a))
 
         # Task B
         loss_b, preds_b, labels_b = self._model_step(task_b_batch, "B")
         self.log("val/loss_b", loss_b)
-        self.log("val/f1_b", self.f1_b(preds_b, labels_b))
+        self.log("val/f1_b", self.val_f1_b(preds_b, labels_b))
 
         # Task C
         loss_c, preds_c, labels_c = self._model_step(task_c_batch, "C")
         self.log("val/loss_c", loss_c)
-        self.log("val/f1_c", self.f1_c(preds_c, labels_c))
+        self.log("val/f1_c", self.val_f1_c(preds_c, labels_c))
 
         total_loss = loss_a + loss_b + loss_c
         self.log("val/loss", total_loss)
@@ -212,17 +212,17 @@ class BeamSearchTransformerModule(pl.LightningModule):
         # Task A
         loss_a, preds_a, labels_a = self._model_step(task_a_batch, "A")
         self.log("test/loss_a", loss_a)
-        self.log("test/f1_a", self.f1_a(preds_a, labels_a))
+        self.log("test/f1_a", self.test_f1_a(preds_a, labels_a))
 
         # Task B
         loss_b, preds_b, labels_b = self._model_step(task_b_batch, "B")
         self.log("test/loss_b", loss_b)
-        self.log("test/f1_b", self.f1_b(preds_b, labels_b))
+        self.log("test/f1_b", self.test_f1_b(preds_b, labels_b))
 
         # Task C
         loss_c, preds_c, labels_c = self._model_step(task_c_batch, "C")
         self.log("test/loss_c", loss_c)
-        self.log("test/f1_c", self.f1_c(preds_c, labels_c))
+        self.log("test/f1_c", self.test_f1_c(preds_c, labels_c))
 
         total_loss = loss_a + loss_b + loss_c
         self.log("test/loss", total_loss)
