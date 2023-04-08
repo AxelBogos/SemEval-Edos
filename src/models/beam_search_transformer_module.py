@@ -23,7 +23,9 @@ class BeamSearchTransformerModule(pl.LightningModule):
         ) = self.define_models(args)
         self.freeze_module(self.feature_extractor)
         self.optimizer = optimizer
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion_a = nn.CrossEntropyLoss()
+        self.criterion_b = nn.CrossEntropyLoss()
+        self.criterion_c = nn.CrossEntropyLoss()
 
         self.train_f1_a = MulticlassF1Score(num_classes=2, average="macro")
         self.train_f1_b = MulticlassF1Score(num_classes=4, average="macro")
@@ -61,7 +63,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
         ).classifier
         return feature_extractor, classifier_a, classifier_b, classifier_c
 
-    def forward(self, input_ids, attention_mask, labels=None):
+    def forward(self, input_ids, attention_mask, labels=None, task=None):
         input_ids = input_ids.long()
         labels = labels.long()
         features = self.feature_extractor(input_ids, attention_mask=attention_mask)
@@ -71,9 +73,13 @@ class BeamSearchTransformerModule(pl.LightningModule):
         logits_c = self.classifier_c(features)
 
         if labels is not None:
-            loss_a = self.criterion(logits_a, labels)
-            loss_b = self.criterion(logits_b, labels)
-            loss_c = self.criterion(logits_c, labels)
+            loss_a, loss_b, loss_c = 0.0, 0.0, 0.0
+            if task == "A":
+                loss_a = self.criterion_a(logits_a, labels)
+            elif task == "B":
+                loss_b = self.criterion_b(logits_b, labels)
+            elif task == "C":
+                loss_c = self.criterion_c(logits_c, labels)
             return loss_a, loss_b, loss_c, logits_a, logits_b, logits_c
         else:
             return logits_a, logits_b, logits_c
@@ -85,7 +91,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
         labels = task_batch["labels"]
 
         loss_a, loss_b, loss_c, logits_a, logits_b, logits_c = self(
-            input_ids, attention_mask, labels
+            input_ids, attention_mask, labels, task
         )
 
         if task == "A":
