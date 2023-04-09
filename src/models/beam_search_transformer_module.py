@@ -115,6 +115,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
         topk_c = torch.topk(logits_c, 11, dim=1)
         beam_result = []
 
+        # Perform beam search
         for a_probs, b_probs, c_probs, a_indices, b_indices, c_indices in zip(
             topk_a.values,
             topk_b.values,
