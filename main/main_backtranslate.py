@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 import pandas as pd
@@ -17,12 +18,13 @@ def main() -> None:
     train = pd.read_csv(Path(defines.INTERIM_DATA_DIR, "train.csv"))
     columns_train = train.columns
 
-    # Create a new DataFrame to store the backtranslated texts
-    # backtranslated_df = pd.DataFrame(columns=columns_train)
+    # Apply backtranslate
+    backtranslated_df = backtranslate_dataset(train[:5])
 
-    backtranslated_df = backtranslate_dataset(train[:10])
-
-    return print(train.head())
+    # save to csv
+    df = pd.DataFrame(backtranslated_df)
+    output_path = os.path.join(Path(defines.DATA_DIR), 'backtranslate_all.csv')
+    df.to_csv(output_path, index=False)
 
 
 # Create a function to backtranslate an entire dataset
