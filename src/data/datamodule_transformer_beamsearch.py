@@ -46,6 +46,10 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
             interim_data_train["text"] = self.text_preprocessor.transform_series(
                 interim_data_train["text"]
             )
+            # Add 1 to all labels
+            interim_data_train["target_b"] = interim_data_train["target_b"] + 1
+            interim_data_train["target_c"] = interim_data_train["target_c"] + 1
+
             interim_data_train = interim_data_train.to_numpy()
 
             self.data_train = GenericDatasetTransformer(
@@ -61,6 +65,10 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
             interim_data_val["text"] = self.text_preprocessor.transform_series(
                 interim_data_val["text"]
             )
+
+            # Add 1 to all labels
+            interim_data_val["target_b"] = interim_data_val["target_b"] + 1
+            interim_data_val["target_c"] = interim_data_val["target_c"] + 1
             interim_data_val = interim_data_val.to_numpy()
 
             self.data_val = GenericDatasetTransformer(
@@ -75,6 +83,9 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
             interim_data_test["text"] = self.text_preprocessor.transform_series(
                 interim_data_test["text"]
             )
+            # Add 1 to all labels
+            interim_data_test["target_b"] = interim_data_test["target_b"] + 1
+            interim_data_test["target_c"] = interim_data_test["target_c"] + 1
             interim_data_test = interim_data_test.to_numpy()
 
             self.data_test = GenericDatasetTransformer(
@@ -95,7 +106,6 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
             batch_size=self.args.batch_size,
             shuffle=True,
             num_workers=self.args.num_workers,
-            collate_fn=self.custom_collate_fn,
         )
 
     def val_dataloader(self):
@@ -110,7 +120,6 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
             self.data_val,
             batch_size=self.args.batch_size,
             num_workers=self.args.num_workers,
-            collate_fn=self.custom_collate_fn,
         )
 
     def test_dataloader(self):
@@ -123,7 +132,6 @@ class DataModuleTransformerBeamSearch(pl.LightningDataModule):
             self.data_test,
             batch_size=self.args.batch_size,
             num_workers=self.args.num_workers,
-            collate_fn=self.custom_collate_fn,
         )
 
     @staticmethod
