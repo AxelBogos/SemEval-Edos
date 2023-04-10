@@ -5,6 +5,8 @@ pandas
 scikit-learn
 matplotlib
 seaborn
+shap
+streamlit
 
 
 # --------- NLP libraries --------- #
