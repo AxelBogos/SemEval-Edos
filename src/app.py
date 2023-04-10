@@ -3,26 +3,13 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import shap
 import streamlit as st
-import torch
 
-import src.utils.streamlit_helpers
-from models.transformer_module import TransformerModule
-from utils import defines
+from src.utils.streamlit_helpers import get_attention_scores, load_models
 
 saved_models_dir = Path("saved_models").resolve()
-st.write(saved_models_dir)
-# Load models
-model_a = TransformerModule.load_from_checkpoint(
-    defines.SAVED_MODEL_DIR / "task_a.ckpt", map_location=torch.device("cpu")
-)
-model_b = TransformerModule.load_from_checkpoint(
-    defines.SAVED_MODEL_DIR / "task_b.ckpt", map_location=torch.device("cpu")
-)
-model_c = TransformerModule.load_from_checkpoint(
-    defines.SAVED_MODEL_DIR / "task_a.ckpt", map_location=torch.device("cpu")
-)
 
-models = {"Task A": model_a, "Task B": model_b, "Task C": model_c}
+# Load models
+models = load_models()
 
 # Streamlit interface
 st.title("Sexist Statement Classifier")
@@ -76,7 +63,7 @@ if st.button("Submit"):
                 st.pyplot(plt.gcf())
 
             elif explanation_method == "Attention Scores":
-                attention_scores = src.utils.streamlit_helpers.get_attention_scores(
+                attention_scores = get_attention_scores(
                     model, statement
                 )  # Implement your own attention score function
 
