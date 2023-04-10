@@ -49,7 +49,9 @@ class BeamSearchTransformerModule(pl.LightningModule):
         self.val_f1_best_c = MaxMetric()
 
     def on_train_start(self):
-        self.val_f1_best.reset()
+        self.val_f1_best_a.reset()
+        self.val_f1_best_b.reset()
+        self.val_f1_best_c.reset()
 
     def forward(self, input_ids, attention_mask, labels=None):
         input_ids = input_ids.long()
@@ -60,7 +62,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
         logits_c = self.classifier_c(features)
 
         if labels is not None:
-            labels_a, labels_b, labels_c = labels
+            labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
             loss_a = self.criterion_a(logits_a, labels_a)
             loss_b = self.criterion_b(logits_b, labels_b)
             loss_c = self.criterion_c(logits_c, labels_c)
@@ -85,7 +87,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
         preds = (preds_a, preds_b, preds_c)
         return losses, preds, labels
 
-    def beam_search(self, logits_a, logits_b, logits_c):
+    def beam_search(self, logits_a, logits_b, logits_c, epsilon=0.3):
         batch_size = logits_a.size(0)
         probs_a = torch.softmax(logits_a, dim=1)
         probs_b = torch.softmax(logits_b, dim=1)
@@ -93,21 +95,104 @@ class BeamSearchTransformerModule(pl.LightningModule):
 
         preds_a = torch.argmax(probs_a, dim=1)
 
-        joint_probs_ab = torch.unsqueeze(probs_a, 2) * torch.unsqueeze(probs_b, 1)
+        # Apply conditioning on logits_b
+        mask_b = torch.tensor(
+            [[1.0, epsilon, epsilon, epsilon, epsilon], [epsilon, 1.0, 1.0, 1.0, 1.0]]
+        ).to(logits_b.device)
+        conditioned_probs_b = probs_b * mask_b[preds_a]
+
+        joint_probs_ab = torch.unsqueeze(probs_a, 2) * torch.unsqueeze(conditioned_probs_b, 1)
         preds_b = torch.argmax(joint_probs_ab.view(batch_size, -1), dim=1) % logits_b.size(1)
 
+        # Apply conditioning on logits_c
+        mask_c = torch.tensor(
+            [
+                [
+                    1.0,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                ],
+                [
+                    epsilon,
+                    1.0,
+                    1.0,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                ],
+                [
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    1.0,
+                    1.0,
+                    1.0,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                ],
+                [
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0,
+                    epsilon,
+                    epsilon,
+                ],
+                [
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    epsilon,
+                    1.0,
+                    1.0,
+                ],
+            ]
+        ).to(logits_c.device)
+        conditioned_probs_c = probs_c * mask_c[preds_b]
+
         joint_probs_abc = torch.unsqueeze(joint_probs_ab, 3) * torch.unsqueeze(
-            probs_c, 1
+            conditioned_probs_c, 1
         ).unsqueeze(2)
         preds_c = torch.argmax(joint_probs_abc.view(batch_size, -1), dim=1) % logits_c.size(1)
 
         return preds_a, preds_b, preds_c
 
     def training_step(self, batch, batch_idx):
-        losses, preds, labels = self._model_step(batch)
+        losses, preds, labels = self.model_step(batch)
         loss_a, loss_b, loss_c = losses
         preds_a, preds_b, preds_c = preds
-        labels_a, labels_b, labels_c = labels
+        labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
 
         # Log Task A
         self.log("train/loss_a", loss_a)
@@ -126,10 +211,10 @@ class BeamSearchTransformerModule(pl.LightningModule):
         return {"loss": total_loss}
 
     def validation_step(self, batch, batch_idx):
-        losses, preds, labels = self._model_step(batch)
+        losses, preds, labels = self.model_step(batch)
         loss_a, loss_b, loss_c = losses
         preds_a, preds_b, preds_c = preds
-        labels_a, labels_b, labels_c = labels
+        labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
 
         # Log Task A
         self.log("val/loss_a", loss_a)
@@ -148,10 +233,10 @@ class BeamSearchTransformerModule(pl.LightningModule):
         return {"loss": total_loss}
 
     def test_step(self, batch, batch_idx):
-        losses, preds, labels = self._model_step(batch)
+        losses, preds, labels = self.model_step(batch)
         loss_a, loss_b, loss_c = losses
         preds_a, preds_b, preds_c = preds
-        labels_a, labels_b, labels_c = labels
+        labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
 
         # Log Task A
         self.log("test/loss_a", loss_a)
