@@ -229,7 +229,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
         self.log("val/f1_c", self.train_f1_c(preds_c, labels_c))
 
         total_loss = loss_a + loss_b + loss_c
-        self.log("val/total_loss", total_loss)
+        self.log("val/loss", total_loss)
         return {"loss": total_loss}
 
     def test_step(self, batch, batch_idx):
