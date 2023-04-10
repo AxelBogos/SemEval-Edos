@@ -15,7 +15,7 @@ def main() -> None:
     """
 
     # Load train
-    train = pd.read_csv(Path(defines.INTERIM_DATA_DIR, "train_all_tasks.csv"))
+    train = pd.read_csv(Path(defines.INTERIM_DATA_DIR, "train.csv"))
     columns_train = train.columns
 
     # Apply backtranslate
@@ -36,18 +36,18 @@ def backtranslate_dataset(dataset):
         # Get the targets
 
         rewire_id = dataset.iloc[idx]['rewire_id']
-        label_sexist = dataset.iloc[idx]['label_sexist']
-        label_category = dataset.iloc[idx]['label_category']
-        label_vector = dataset.iloc[idx]['label_vector']
+        target_a = dataset.iloc[idx]['target_a']
+        target_b = dataset.iloc[idx]['target_b']
+        target_c = dataset.iloc[idx]['target_c']
 
         # Backtranslate the text
         backtranslated_text = backtranslate(dataset.iloc[idx]['text'])
 
         # Create a new review with the backtranslated text and the same label
         backtranslated_review = {'rewire_id': rewire_id, 'text': backtranslated_text,
-                                 'label_sexist': label_sexist,
-                                 'label_category': label_category,
-                                 'label_vector': label_vector}
+                                 'target_a': target_a,
+                                 'target_b': target_b,
+                                 'target_c': target_c}
 
         # Add the backtranslated review to the list
         backtranslated_dataset.append(backtranslated_review)
