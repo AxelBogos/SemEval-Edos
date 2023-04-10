@@ -7,6 +7,7 @@ import numpy as np
 import scipy as sp
 import shap
 import streamlit as st
+import streamlit.components.v1 as components
 import torch
 from transformers import AutoTokenizer
 
@@ -34,71 +35,36 @@ def main():
 
     # Choose statement to classify
     statement = user_input if user_input else selected_example
-
-    # Initialize session state
-    if "predictions" not in st.session_state:
-        st.session_state["predictions"] = {}
-
+    logits = {}
+    predictions = {}
     if st.button("Submit"):
+        inputs = tokenizer(statement, return_tensors="pt")
         with st.spinner("Classifying..."):
             for model_name, model in models.items():
-                inputs = tokenizer(statement, return_tensors="pt")
                 outputs = model(**inputs)
-                st.session_state["predictions"][model_name] = outputs.logits.argmax().item()
+                logits[model_name] = outputs.logits
+                predictions[model_name] = outputs.logits.argmax().item()
 
         st.write("Predicted classes:")
-        for model_name, prediction in st.session_state["predictions"].items():
+        for model_name, prediction in predictions.items():
             st.write(f"{model_name}: {label_dicts[model_name][prediction]}")
 
-    model_to_explain = st.selectbox("Select a model to get an explanation", list(models.keys()))
-    explanation_method = st.selectbox(
-        "Select an explanation method", ["SHAP Values", "Attention Scores"]
-    )
+        # Explanation of the predictions
+        st.write("Explanation of the predictions:")
+        for model_name, logit in logits.items():
+            # Extract the predicted class probabilities
+            pred_prob = torch.softmax(logit, dim=1).detach().cpu().numpy()[0]
 
-    if st.button("Explain"):
-        with st.spinner("Calculating explanation..."):
-            model = models[model_to_explain]
+            # Initialize the explainer
+            explainer = shap.Explainer(models[model_name], tokenizer)
 
-            if explanation_method == "SHAP Values":
-                # Define a prediction function
-                def f(x):
-                    tv = torch.tensor(
-                        [
-                            tokenizer.encode(
-                                v, padding="max_length", max_length=500, truncation=True
-                            )
-                            for v in x
-                        ]
-                    ).cuda()
-                    outputs = model(tv)[0].detach().cpu().numpy()
-                    scores = (np.exp(outputs).T / np.exp(outputs).sum(-1)).T
-                    val = sp.special.logit(scores[:, 1])  # use one vs rest logit units
-                    return val
+            # Generate the Shapley values for the input text
+            input_ids = inputs["input_ids"].unsqueeze(0)
+            shap_values = explainer(input_ids)
 
-                # Build an explainer using a token masker
-                explainer = shap.Explainer(f, tokenizer)
-
-                # Explain the model's predictions on the input statement
-                shap_values = explainer([statement], fixed_context=1)
-
-                # Visualize SHAP values
-                st.write(f"SHAP Values for {model_to_explain}")
-                st_shap = st.empty()
-                shap.plots.text(shap_values[0], display=False)
-                st_shap.pyplot(bbox_inches="tight", dpi=150, pad_inches=0)
-
-            elif explanation_method == "Attention Scores":
-                attention_scores = get_attention_scores(
-                    model, statement
-                )  # Implement your own attention score function
-
-                # Visualize attention scores
-                plt.figure(figsize=(10, 5))
-                plt.bar(range(len(attention_scores)), attention_scores)
-                plt.xlabel("Token Index")
-                plt.ylabel("Attention Score")
-                plt.title(f"Attention Scores for {model_to_explain}")
-                st.pyplot(plt.gcf())
+            # Plot the Shapley values
+            st.write(f"{model_name} explanation:")
+            shap.plots.text(shap_values[0], feature_names=tokenizer.decode(inputs[0]))
 
 
 @st.cache_resource
