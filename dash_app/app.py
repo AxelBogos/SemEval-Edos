@@ -20,7 +20,7 @@ model_b = TransformerModule.load_from_checkpoint(
     defines.SAVED_MODEL_DIR / "task_b.ckpt", map_location=torch.device("cpu")
 )
 model_c = TransformerModule.load_from_checkpoint(
-    defines.SAVED_MODEL_DIR / "task_c.ckpt", map_location=torch.device("cpu")
+    defines.SAVED_MODEL_DIR / "task_cOLD.ckpt", map_location=torch.device("cpu")
 )
 
 models = {"Task A": model_a, "Task B": model_b, "Task C": model_c}
