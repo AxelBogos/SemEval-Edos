@@ -2,6 +2,12 @@ import torch
 from transformers import AutoTokenizer
 
 
+# Define a helper function to load models
+def load_model(model_path):
+    model = torch.load(model_path)
+    return model
+
+
 def get_attention_scores(model, statement):
     model.eval()  # Set model to evaluation mode
 
