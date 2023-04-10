@@ -11,6 +11,9 @@ seaborn
 wordcloud
 spacy
 transformers
+MarianMTModel
+MarianTokenizer
+SentencePiece # subword tokenization algorithms by Google
 
 # --------- pytorch --------- #
 torch>=1.10.0
