@@ -9,6 +9,7 @@ import shap
 import streamlit as st
 import streamlit.components.v1 as components
 import torch
+from streamlit_shap import st_shap
 from transformers import AutoTokenizer
 
 from models.transformer_module import TransformerModule
@@ -27,7 +28,11 @@ def main():
     st.write("Select or input a statement to classify:")
 
     # Provide examples of sexist statements
-    example_statements = ["Example 1", "Example 2", "Example 3"]
+    example_statements = [
+        "Women's football is so shit, they're so slow and clumsy",
+        "Women shouldn't show that much skin, it’s their own fault if they get raped",
+        "You would sue your own mom over burnt toast. Stay classy beta.",
+    ]
     selected_example = st.selectbox("Example statements", example_statements)
 
     # Allow user to input a statement
@@ -48,23 +53,32 @@ def main():
         st.write("Predicted classes:")
         for model_name, prediction in predictions.items():
             st.write(f"{model_name}: {label_dicts[model_name][prediction]}")
+            if model_name == "Task A" and prediction == 0:
+                break
 
         # Explanation of the predictions
         st.write("Explanation of the predictions:")
-        for model_name, logit in logits.items():
-            # Extract the predicted class probabilities
-            pred_prob = torch.softmax(logit, dim=1).detach().cpu().numpy()[0]
+        for model_name, model in models.items():
 
-            # Initialize the explainer
-            explainer = shap.Explainer(models[model_name], tokenizer)
+            def model_prediction_cpu(x):
+                tv = torch.tensor(
+                    [
+                        tokenizer.encode(v, padding="max_length", max_length=128, truncation=True)
+                        for v in x
+                    ]
+                ).cpu()
+                attention_mask = (tv != 0).type(torch.int64).cpu()
+                outputs = model(tv, attention_mask=attention_mask)[0]
+                scores = torch.nn.Softmax(dim=-1)(outputs)
+                val = torch.logit(scores).detach().numpy()
 
-            # Generate the Shapley values for the input text
-            input_ids = inputs["input_ids"].unsqueeze(0)
-            shap_values = explainer(input_ids)
+                return val
 
-            # Plot the Shapley values
-            st.write(f"{model_name} explanation:")
-            shap.plots.text(shap_values[0], feature_names=tokenizer.decode(inputs[0]))
+            explainer = shap.Explainer(model_prediction_cpu, tokenizer)
+            shap_values = explainer([statement])
+            st_shap(shap.plots.text(shap_values[0]), height=500)
+            if model_name == "Task A" and predictions[model_name] == 0:
+                break
 
 
 @st.cache_resource
