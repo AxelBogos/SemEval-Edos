@@ -5,20 +5,22 @@ import shap
 import streamlit as st
 import torch
 
-from app_module import helpers
+import src.utils.streamlit_helpers
+from models.transformer_module import TransformerModule
+from utils import defines
 
-
-# Define a helper function to load models
-def load_model(model_path):
-    model = torch.load(model_path)
-    return model
-
-
+saved_models_dir = Path("saved_models").resolve()
+st.write(saved_models_dir)
 # Load models
-models_path = Path("saved_models")
-model_a = load_model(models_path / "task_a" / "model.pt")
-model_b = load_model(models_path / "task_b" / "model.pt")
-model_c = load_model(models_path / "task_c" / "model.pt")
+model_a = TransformerModule.load_from_checkpoint(
+    defines.SAVED_MODEL_DIR / "task_a.ckpt", map_location=torch.device("cpu")
+)
+model_b = TransformerModule.load_from_checkpoint(
+    defines.SAVED_MODEL_DIR / "task_b.ckpt", map_location=torch.device("cpu")
+)
+model_c = TransformerModule.load_from_checkpoint(
+    defines.SAVED_MODEL_DIR / "task_a.ckpt", map_location=torch.device("cpu")
+)
 
 models = {"Task A": model_a, "Task B": model_b, "Task C": model_c}
 
@@ -41,7 +43,8 @@ if st.button("Submit"):
     predictions = {}
     with st.spinner("Classifying..."):
         for model_name, model in models.items():
-            prediction = model.predict(statement)  # Replace with your models' predict method
+            st.write(model)
+            prediction = model(statement)
             predictions[model_name] = prediction
 
     st.write("Predicted classes:")
@@ -73,7 +76,7 @@ if st.button("Submit"):
                 st.pyplot(plt.gcf())
 
             elif explanation_method == "Attention Scores":
-                attention_scores = helpers.get_attention_scores(
+                attention_scores = src.utils.streamlit_helpers.get_attention_scores(
                     model, statement
                 )  # Implement your own attention score function
 
