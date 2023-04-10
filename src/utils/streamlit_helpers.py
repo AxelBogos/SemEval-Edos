@@ -60,18 +60,18 @@ def load_models():
         defines.SAVED_MODEL_DIR / "task_a.ckpt",
         map_location=torch.device("cpu"),
         args=args_task_a,
-        optimizer=torch.optim.Adamw,
+        optimizer=torch.optim.AdamW,
     )
     model_b = TransformerModule.load_from_checkpoint(
         defines.SAVED_MODEL_DIR / "task_b.ckpt",
         map_location=torch.device("cpu"),
         args=args_task_b,
-        optimizer=torch.optim.Adamw,
+        optimizer=torch.optim.AdamW,
     )
     model_c = TransformerModule.load_from_checkpoint(
         defines.SAVED_MODEL_DIR / "task_a.ckpt",
         map_location=torch.device("cpu"),
         args=args_task_c,
-        optimizer=torch.optim.Adamw,
+        optimizer=torch.optim.AdamW,
     )
     return {"Task A": model_a, "Task B": model_b, "Task C": model_c}
