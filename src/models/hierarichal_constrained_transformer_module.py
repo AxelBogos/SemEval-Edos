@@ -15,6 +15,8 @@ class HierarchicalTransformerModule(pl.LightningModule):
         super().__init__()
         self.automatic_optimization = False
         self.args = args
+        self.optimizer = optimizer
+        self.save_hyperparameters()
         (
             self.feature_extractor,
             self.classifier_a,
@@ -22,7 +24,6 @@ class HierarchicalTransformerModule(pl.LightningModule):
             self.classifier_c,
         ) = self.define_models(args)
         self.freeze_module(self.feature_extractor)
-        self.optimizer = optimizer
 
         self.criterion_a = nn.CrossEntropyLoss(
             weight=torch.tensor([0.6603, 2.0600], dtype=torch.float)

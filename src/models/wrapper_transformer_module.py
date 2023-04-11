@@ -21,6 +21,7 @@ class WrapperTransformerModule(pl.LightningModule):
         self.args_task_a = args_task_a
         self.args_task_b = args_task_b
         self.args_task_c = args_task_c
+        self.save_hyperparameters()
         (
             self.feature_extractor,
             self.classifier_a,

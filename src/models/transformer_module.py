@@ -18,10 +18,11 @@ class TransformerModule(pl.LightningModule):
     ):
         super().__init__()
         self.args = args
+        self.optimizer = optimizer
+        self.save_hyperparameters()
         self.model = AutoModelForSequenceClassification.from_pretrained(
             args.model, num_labels=args.num_target_class
         )
-        self.optimizer = optimizer
         self.criterion = nn.CrossEntropyLoss()
 
         # metric objects for calculating and macro f1 across batches

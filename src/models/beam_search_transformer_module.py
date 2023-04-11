@@ -14,7 +14,10 @@ class BeamSearchTransformerModule(pl.LightningModule):
         optimizer: torch.optim.Optimizer,
     ):
         super().__init__()
+
         self.args = args
+        self.optimizer = optimizer
+        self.save_hyperparameters()
         (
             self.feature_extractor,
             self.classifier_a,
@@ -22,8 +25,6 @@ class BeamSearchTransformerModule(pl.LightningModule):
             self.classifier_c,
         ) = self.define_models(args)
         self.freeze_module(self.feature_extractor)
-        self.optimizer = optimizer
-
         self.criterion_a = nn.CrossEntropyLoss()
         self.criterion_b = nn.CrossEntropyLoss()
         self.criterion_c = nn.CrossEntropyLoss()

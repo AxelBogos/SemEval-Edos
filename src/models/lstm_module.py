@@ -15,6 +15,7 @@ class LSTMModule(pl.LightningModule):
         super().__init__()
         self.args = args
         self.optimizer = optimizer
+        self.save_hyperparameters()
 
         # Embedding
         self.embedding_layer = torch.nn.Embedding(
