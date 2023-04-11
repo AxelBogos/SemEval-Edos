@@ -13,6 +13,7 @@ class HierarchicalTransformerModule(pl.LightningModule):
         optimizer: torch.optim.Optimizer,
     ):
         super().__init__()
+        self.automatic_optimization = False
         self.args = args
         (
             self.feature_extractor,
