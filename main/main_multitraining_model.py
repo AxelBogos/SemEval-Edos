@@ -41,8 +41,12 @@ def main(model_name: str):
         "patience": 3,
         "num_workers": 1,
         "random_seed": 3454572,
+        "logs_dir": defines.LOG_DIR,
+        "raw_data_dir": defines.RAW_DATA_DIR,
+        "interim_data_dir": defines.INTERIM_DATA_DIR,
+        "processed_data_dir": defines.PROCESSED_DATA_DIR,
+        "log_dir": log_dir,
     }
-    args_task_a.log_dir = log_dir
     args_task_b = args_task_a.copy()
     args_task_c = args_task_a.copy()
     args_task_b["task"] = "b"
@@ -50,6 +54,7 @@ def main(model_name: str):
     args_task_a = Namespace(**args_task_a)
     args_task_b = Namespace(**args_task_b)
     args_task_c = Namespace(**args_task_c)
+    args_task_a.log_dir = log_dir
     args_wrapper = {
         "train": True,
         "eval": True,
@@ -68,6 +73,11 @@ def main(model_name: str):
         "patience": 3,
         "num_workers": 1,
         "random_seed": 3454572,
+        "logs_dir": defines.LOG_DIR,
+        "raw_data_dir": defines.RAW_DATA_DIR,
+        "interim_data_dir": defines.INTERIM_DATA_DIR,
+        "processed_data_dir": defines.PROCESSED_DATA_DIR,
+        "log_dir": log_dir,
     }
     args_wrapper = Namespace(**args_wrapper)
 
@@ -107,7 +117,7 @@ def main(model_name: str):
     api = wandb.Api()
     for link in download_links:
         artifact = api.artifact(link)
-        model_paths.append(artifact.download())
+        model_paths.append(artifact.download() + "/model.ckpt")
     args_task_a.ckpt_path = model_paths[0]
     args_task_b.ckpt_path = model_paths[1]
     args_task_c.ckpt_path = model_paths[2]

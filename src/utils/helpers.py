@@ -187,7 +187,7 @@ def get_model_download_links(model_name):
         model_a = "axel-bogos/EDOS-ift6289/model-3ktkppxz:v0"
         model_b = "axel-bogos/EDOS-ift6289/model-9yuwtdxw:v0"
         model_c = "axel-bogos/EDOS-ift6289/model-puvcanys:v0"
-    elif model_name == "roberta_base":
+    elif model_name == "roberta-base":
         model_a = "axel-bogos/EDOS-ift6289/model-xbmigcbz:v0"
         model_b = "axel-bogos/EDOS-ift6289/model-e3l1x1p6:v0"
         model_c = "axel-bogos/EDOS-ift6289/model-jadamcqs:v0"
