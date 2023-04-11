@@ -131,19 +131,19 @@ class HierarchicalTransformerModule(pl.LightningModule):
         labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
 
         # Log Task A
-        self.log("val/loss_a", loss_a)
-        self.log("val/f1_a", self.train_f1_a(preds_a, labels_a))
+        self.log("val/loss_a", loss_a, prog_bar=True)
+        self.log("val/f1_a", self.train_f1_a(preds_a, labels_a), prog_bar=True)
 
         # Log Task B
-        self.log("val/loss_b", loss_b)
-        self.log("val/f1_b", self.train_f1_b(preds_b, labels_b))
+        self.log("val/loss_b", loss_b, prog_bar=True)
+        self.log("val/f1_b", self.train_f1_b(preds_b, labels_b), prog_bar=True)
 
         # Log Task C
-        self.log("val/loss_c", loss_c)
-        self.log("val/f1_c", self.train_f1_c(preds_c, labels_c))
+        self.log("val/loss_c", loss_c, prog_bar=True)
+        self.log("val/f1_c", self.train_f1_c(preds_c, labels_c), prog_bar=True)
 
         total_loss = loss_a + loss_b + loss_c
-        self.log("val/loss", total_loss)
+        self.log("val/loss", total_loss, prog_bar=True)
         return {"loss": total_loss}
 
     def test_step(self, batch, batch_idx):
@@ -153,19 +153,19 @@ class HierarchicalTransformerModule(pl.LightningModule):
         labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
 
         # Log Task A
-        self.log("test/loss_a", loss_a)
-        self.log("test/f1_a", self.train_f1_a(preds_a, labels_a))
+        self.log("test/loss_a", loss_a, prog_bar=True)
+        self.log("test/f1_a", self.train_f1_a(preds_a, labels_a), prog_bar=True)
 
         # Log Task B
-        self.log("test/loss_b", loss_b)
-        self.log("test/f1_b", self.train_f1_b(preds_b, labels_b))
+        self.log("test/loss_b", loss_b, prog_bar=True)
+        self.log("test/f1_b", self.train_f1_b(preds_b, labels_b), prog_bar=True)
 
         # Log Task C
-        self.log("test/loss_c", loss_c)
-        self.log("test/f1_c", self.train_f1_c(preds_c, labels_c))
+        self.log("test/loss_c", loss_c, prog_bar=True)
+        self.log("test/f1_c", self.train_f1_c(preds_c, labels_c), prog_bar=True)
 
         total_loss = loss_a + loss_b + loss_c
-        self.log("test/total_loss", total_loss)
+        self.log("test/total_loss", total_loss, prog_bar=True)
         return {"loss": total_loss}
 
     def validation_epoch_end(self, outputs):
@@ -175,9 +175,9 @@ class HierarchicalTransformerModule(pl.LightningModule):
         self.val_f1_best_a(f1_a)  # update best so far val f1 a
         self.val_f1_best_b(f1_b)  # update best so far val f1 b
         self.val_f1_best_c(f1_c)  # update best so far val f1 c
-        self.log("val/f1_best_a", self.val_f1_best_a.compute())
-        self.log("val/f1_best_b", self.val_f1_best_b.compute())
-        self.log("val/f1_best_c", self.val_f1_best_c.compute())
+        self.log("val/f1_best_a", self.val_f1_best_a.compute(), prog_bar=True)
+        self.log("val/f1_best_b", self.val_f1_best_b.compute(), prog_bar=True)
+        self.log("val/f1_best_c", self.val_f1_best_c.compute(), prog_bar=True)
 
     @staticmethod
     def apply_constraints(logits):
