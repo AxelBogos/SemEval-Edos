@@ -168,6 +168,17 @@ class HierarchicalTransformerModule(pl.LightningModule):
         self.log("test/total_loss", total_loss)
         return {"loss": total_loss}
 
+    def validation_epoch_end(self, outputs):
+        f1_a = self.val_f1_a.compute()
+        f1_b = self.val_f1_b.compute()
+        f1_c = self.val_f1_c.compute()
+        self.val_f1_best_a(f1_a)  # update best so far val f1 a
+        self.val_f1_best_b(f1_b)  # update best so far val f1 b
+        self.val_f1_best_c(f1_c)  # update best so far val f1 c
+        self.log("val/f1_best_a", self.val_f1_best_a.compute())
+        self.log("val/f1_best_b", self.val_f1_best_b.compute())
+        self.log("val/f1_best_c", self.val_f1_best_c.compute())
+
     @staticmethod
     def apply_constraints(logits):
         logits_a, logits_b, logits_c = logits
@@ -194,19 +205,6 @@ class HierarchicalTransformerModule(pl.LightningModule):
         preds_c = torch.argmax(logits_c, dim=1)
 
         return preds_a, preds_b, preds_c
-
-    def validation_epoch_end(self, outputs):
-        f1_a = self.val_f1_a.compute()
-        f1_b = self.val_f1_b.compute()
-        f1_c = self.val_f1_c.compute()
-
-        self.val_f1_best_a(f1_a)
-        self.val_f1_best_b(f1_b)
-        self.val_f1_best_c(f1_c)
-
-        self.log("val/f1_best_a", self.val_f1_best_a.compute(), prog_bar=True)
-        self.log("val/f1_best_b", self.val_f1_best_b.compute(), prog_bar=True)
-        self.log("val/f1_best_c", self.val_f1_best_c.compute(), prog_bar=True)
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.args.lr)
