@@ -11,9 +11,6 @@ class HierarchicalTransformerModule(pl.LightningModule):
         self,
         args,
         optimizer: torch.optim.Optimizer,
-        class_weights_a: torch.Tensor = None,
-        class_weights_b: torch.Tensor = None,
-        class_weights_c: torch.Tensor = None,
     ):
         super().__init__()
         self.args = args
@@ -26,20 +23,30 @@ class HierarchicalTransformerModule(pl.LightningModule):
         self.freeze_module(self.feature_extractor)
         self.optimizer = optimizer
 
-        self.criterion_a = (
-            nn.CrossEntropyLoss(weight=class_weights_a)
-            if class_weights_a is not None
-            else nn.CrossEntropyLoss()
+        self.criterion_a = nn.CrossEntropyLoss(
+            weight=torch.tensor([0.6603, 2.0600], dtype=torch.float)
         )
-        self.criterion_b = (
-            nn.CrossEntropyLoss(weight=class_weights_b)
-            if class_weights_b is not None
-            else nn.CrossEntropyLoss()
+        self.criterion_b = nn.CrossEntropyLoss(
+            weight=torch.tensor([0.2641, 9.0323, 1.7610, 2.4034, 8.4084], dtype=torch.float)
         )
-        self.criterion_c = (
-            nn.CrossEntropyLoss(weight=class_weights_c)
-            if class_weights_c is not None
-            else nn.CrossEntropyLoss()
+        self.criterion_c = nn.CrossEntropyLoss(
+            weight=torch.tensor(
+                [
+                    0.1100,
+                    20.8333,
+                    4.5932,
+                    1.6272,
+                    1.7335,
+                    5.8333,
+                    1.8315,
+                    2.7978,
+                    18.2292,
+                    24.8227,
+                    15.5556,
+                    4.5220,
+                ],
+                dtype=torch.float,
+            )
         )
 
         self.train_f1_a = MulticlassF1Score(num_classes=2, average="macro")
@@ -78,9 +85,9 @@ class HierarchicalTransformerModule(pl.LightningModule):
     def compute_losses(self, logits, labels):
         logits_a, logits_b, logits_c = logits
         labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
-        loss_a = self.loss_a(logits_a, labels_a)
-        loss_b = self.loss_b(logits_b, labels_b)
-        loss_c = self.loss_c(logits_c, labels_c)
+        loss_a = self.criterion_a(logits_a, labels_a)
+        loss_b = self.criterion_b(logits_b, labels_b)
+        loss_c = self.criterion_c(logits_c, labels_c)
         return loss_a, loss_b, loss_c
 
     def model_step(self, batch):
@@ -89,7 +96,7 @@ class HierarchicalTransformerModule(pl.LightningModule):
         attention_mask = batch["attention_mask"]
         labels = batch["labels"]
 
-        logits = self(input_ids, attention_mask, labels)
+        logits = self(input_ids, attention_mask)
         losses = self.compute_losses(logits, labels)
         preds = self.apply_constraints(logits)
 

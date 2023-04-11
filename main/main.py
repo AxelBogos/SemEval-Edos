@@ -3,6 +3,7 @@ import pprint
 
 from dotenv import load_dotenv
 from pytorch_lightning import Trainer, seed_everything
+from sklearn.utils.class_weight import compute_class_weight
 
 from src.utils import defines, helpers
 from src.utils.args import parse_args
