@@ -12,8 +12,14 @@ from src.data import (
     datamodule_lstm,
     datamodule_transformer,
     datamodule_transformer_beamsearch,
+    datamodule_transformer_hierarichal_constrained,
 )
-from src.models import beam_search_transformer_module, lstm_module, transformer_module
+from src.models import (
+    beam_search_transformer_module,
+    hierarichal_constrained_transformer_module,
+    lstm_module,
+    transformer_module,
+)
 from src.utils import defines
 
 
@@ -134,6 +140,10 @@ def get_model(args, optimizer: torch.optim.Optimizer = None):
         return beam_search_transformer_module.BeamSearchTransformerModule(
             args, optimizer=optimizer
         )
+    elif args.architecture == "transformer-hierarchical":
+        return hierarichal_constrained_transformer_module.HierarchicalTransformerModule(
+            args, optimizer=optimizer
+        )
 
 
 def get_data_module(args):
@@ -150,6 +160,10 @@ def get_data_module(args):
         return datamodule_transformer.DataModuleTransformer(args)
     elif args.architecture == "transformer-beamsearch":
         return datamodule_transformer_beamsearch.DataModuleTransformerBeamSearch(args)
+    elif args.architecture == "transformer-hierarchical":
+        return datamodule_transformer_hierarichal_constrained.DataModuleTransformerHierarichal(
+            args
+        )
 
 
 def get_optimizer(args):
