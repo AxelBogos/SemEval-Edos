@@ -2,14 +2,12 @@ import logging
 import pprint
 from argparse import Namespace
 
-import torch
 import wandb
 from dotenv import load_dotenv
 from pytorch_lightning import Trainer, seed_everything
 
 from src.models.wrapper_transformer_module import WrapperTransformerModule
 from src.utils import defines, helpers
-from src.utils.args import parse_args
 
 
 def main(model_name: str):
@@ -104,10 +102,6 @@ def main(model_name: str):
     args_task_c.num_target_class = data_module_task_c._num_classes
     args_task_c.len_train_loader = len(data_module_task_c.train_dataloader())
 
-    optimizer_task_a = helpers.get_optimizer(args_task_a)
-    optimizer_task_b = helpers.get_optimizer(args_task_b)
-    optimizer_task_c = helpers.get_optimizer(args_task_c)
-
     download_links = helpers.get_model_download_links(model_name)
     model_paths = list()
     api = wandb.Api()
@@ -139,4 +133,4 @@ def main(model_name: str):
 
 
 if __name__ == "__main__":
-    main()
+    main("roberta-base")
