@@ -47,7 +47,7 @@ def main():
     trainer = Trainer(
         logger=wandb_logger,
         callbacks=lightning_callbacks,
-        accelerator="cpu",
+        accelerator="auto",
         devices="auto",
         max_epochs=args.num_epoch,
     )
