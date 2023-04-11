@@ -62,18 +62,21 @@ class HierarchicalTransformerModule(pl.LightningModule):
         self.test_f1_b = MulticlassF1Score(num_classes=5, average="macro")
         self.test_f1_c = MulticlassF1Score(num_classes=12, average="macro")
 
-        self.train_loss = MeanMetric()
-        self.val_loss = MeanMetric()
-        self.test_loss = MeanMetric()
+        self.train_loss_a = MeanMetric()
+        self.val_loss_a = MeanMetric()
+        self.test_loss_a = MeanMetric()
+
+        self.train_loss_b = MeanMetric()
+        self.val_loss_b = MeanMetric()
+        self.test_loss_b = MeanMetric()
+
+        self.train_loss_c = MeanMetric()
+        self.val_loss_c = MeanMetric()
+        self.test_loss_c = MeanMetric()
 
         self.val_f1_best_a = MaxMetric()
         self.val_f1_best_b = MaxMetric()
         self.val_f1_best_c = MaxMetric()
-
-    def on_train_start(self):
-        self.val_f1_best_a.reset()
-        self.val_f1_best_b.reset()
-        self.val_f1_best_c.reset()
 
     def forward(self, input_ids, attention_mask):
         # input_ids = input_ids.long()
@@ -111,16 +114,22 @@ class HierarchicalTransformerModule(pl.LightningModule):
         opt_a, opt_b, opt_c = self.optimizers()
 
         # Log Task A
-        self.log("train/loss_a", loss_a, on_epoch=True, prog_bar=True)
-        self.log("train/f1_a", self.train_f1_a(preds_a, labels_a), on_epoch=True, prog_bar=True)
+        self.train_loss_a(loss_a)
+        self.train_f1_a(preds_a, labels_a)
+        self.log("train/loss_a", self.train_loss_a, on_epoch=True, prog_bar=True)
+        self.log("train/f1_a", self.train_f1_a, on_epoch=True, prog_bar=True)
 
         # Log Task B
-        self.log("train/loss_b", loss_b, on_epoch=True, prog_bar=True)
-        self.log("train/f1_b", self.train_f1_b(preds_b, labels_b), on_epoch=True, prog_bar=True)
+        self.train_loss_b(loss_b)
+        self.train_f1_b(preds_b, labels_b)
+        self.log("train/loss_b", self.train_loss_b, on_epoch=True, prog_bar=True)
+        self.log("train/f1_b", self.train_f1_b, on_epoch=True, prog_bar=True)
 
         # Log Task C
-        self.log("train/loss_c", loss_c, on_epoch=True, prog_bar=True)
-        self.log("train/f1_c", self.train_f1_c(preds_c, labels_c), on_epoch=True, prog_bar=True)
+        self.train_loss_c(loss_c)
+        self.train_f1_c(preds_c, labels_c)
+        self.log("train/loss_c", self.train_loss_c, on_epoch=True, prog_bar=True)
+        self.log("train/f1_c", self.train_f1_c, on_epoch=True, prog_bar=True)
 
         # Optimize
         opt_a.zero_grad()
@@ -142,16 +151,22 @@ class HierarchicalTransformerModule(pl.LightningModule):
         labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
 
         # Log Task A
-        self.log("val/loss_a", loss_a, on_epoch=True, prog_bar=True)
-        self.log("val/f1_a", self.train_f1_a(preds_a, labels_a), on_epoch=True, prog_bar=True)
+        self.val_loss_a(loss_a)
+        self.val_f1_a(preds_a, labels_a)
+        self.log("val/loss_a", self.val_loss_a, on_epoch=True, prog_bar=True)
+        self.log("val/f1_a", self.val_f1_a, on_epoch=True, prog_bar=True)
 
         # Log Task B
-        self.log("val/loss_b", loss_b, on_epoch=True, prog_bar=True)
-        self.log("val/f1_b", self.train_f1_b(preds_b, labels_b), on_epoch=True, prog_bar=True)
+        self.val_loss_b(loss_b)
+        self.val_f1_b(preds_b, labels_b)
+        self.log("val/loss_b", self.val_loss_b, on_epoch=True, prog_bar=True)
+        self.log("val/f1_b", self.train_f1_b, on_epoch=True, prog_bar=True)
 
         # Log Task C
-        self.log("val/loss_c", loss_c, on_epoch=True, prog_bar=True)
-        self.log("val/f1_c", self.train_f1_c(preds_c, labels_c), on_epoch=True, prog_bar=True)
+        self.val_loss_c(loss_c)
+        self.val_f1_c(preds_c, labels_c)
+        self.log("val/loss_c", self.val_loss_c, on_epoch=True, prog_bar=True)
+        self.log("val/f1_c", self.val_f1_c, on_epoch=True, prog_bar=True)
 
         total_loss = loss_a + loss_b + loss_c
         self.log("val/loss", total_loss, on_epoch=True, prog_bar=True)
@@ -164,16 +179,22 @@ class HierarchicalTransformerModule(pl.LightningModule):
         labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
 
         # Log Task A
-        self.log("test/loss_a", loss_a, on_epoch=True, prog_bar=True)
-        self.log("test/f1_a", self.train_f1_a(preds_a, labels_a), on_epoch=True, prog_bar=True)
+        self.test_loss_a(loss_a)
+        self.test_f1_a(preds_a, labels_a)
+        self.log("test/loss_a", self.test_loss_a, on_epoch=True, prog_bar=True)
+        self.log("test/f1_a", self.test_f1_a, on_epoch=True, prog_bar=True)
 
         # Log Task B
-        self.log("test/loss_b", loss_b, on_epoch=True, prog_bar=True)
-        self.log("test/f1_b", self.train_f1_b(preds_b, labels_b), on_epoch=True, prog_bar=True)
+        self.test_loss_b(loss_b)
+        self.test_f1_b(preds_b, labels_b)
+        self.log("test/loss_b", self.test_loss_b, on_epoch=True, prog_bar=True)
+        self.log("test/f1_b", self.test_f1_b, on_epoch=True, prog_bar=True)
 
         # Log Task C
-        self.log("test/loss_c", loss_c, on_epoch=True, prog_bar=True)
-        self.log("test/f1_c", self.train_f1_c(preds_c, labels_c), on_epoch=True, prog_bar=True)
+        self.test_loss_c(loss_c)
+        self.test_f1_c(preds_c, labels_c)
+        self.log("test/loss_c", self.test_loss_c, on_epoch=True, prog_bar=True)
+        self.log("test/f1_c", self.test_f1_c, on_epoch=True, prog_bar=True)
 
         return {"loss_a": loss_a, "loss_b": loss_b, "loss_c": loss_c}
 
@@ -181,9 +202,9 @@ class HierarchicalTransformerModule(pl.LightningModule):
         f1_a = self.val_f1_a.compute()
         f1_b = self.val_f1_b.compute()
         f1_c = self.val_f1_c.compute()
-        self.val_f1_best_a(f1_a)  # update best so far val f1 a
-        self.val_f1_best_b(f1_b)  # update best so far val f1 b
-        self.val_f1_best_c(f1_c)  # update best so far val f1 c
+        self.val_f1_best_a.update(f1_a)  # update best so far val f1 a
+        self.val_f1_best_b.update(f1_b)  # update best so far val f1 b
+        self.val_f1_best_c.update(f1_c)  # update best so far val f1 c
         self.log("val/f1_best_a", self.val_f1_best_a.compute(), on_epoch=True, prog_bar=True)
         self.log("val/f1_best_b", self.val_f1_best_b.compute(), on_epoch=True, prog_bar=True)
         self.log("val/f1_best_c", self.val_f1_best_c.compute(), on_epoch=True, prog_bar=True)
