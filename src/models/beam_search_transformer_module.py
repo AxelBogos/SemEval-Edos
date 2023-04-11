@@ -195,19 +195,19 @@ class BeamSearchTransformerModule(pl.LightningModule):
         labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
 
         # Log Task A
-        self.log("train/loss_a", loss_a)
-        self.log("train/f1_a", self.train_f1_a(preds_a, labels_a))
+        self.log("train/loss_a", loss_a, on_epoch=True, prog_bar=True)
+        self.log("train/f1_a", self.train_f1_a(preds_a, labels_a), on_epoch=True, prog_bar=True)
 
         # Log Task B
-        self.log("train/loss_b", loss_b)
-        self.log("train/f1_b", self.train_f1_b(preds_b, labels_b))
+        self.log("train/loss_b", loss_b, on_epoch=True, prog_bar=True)
+        self.log("train/f1_b", self.train_f1_b(preds_b, labels_b), on_epoch=True, prog_bar=True)
 
         # Log Task C
-        self.log("train/loss_c", loss_c)
-        self.log("train/f1_c", self.train_f1_c(preds_c, labels_c))
+        self.log("train/loss_c", loss_c, on_epoch=True, prog_bar=True)
+        self.log("train/f1_c", self.train_f1_c(preds_c, labels_c), on_epoch=True, prog_bar=True)
 
         total_loss = loss_a + loss_b + loss_c
-        self.log("train/total_loss", total_loss)
+        self.log("train/total_loss", total_loss, on_epoch=True, prog_bar=True)
         return {"loss": total_loss}
 
     def validation_step(self, batch, batch_idx):
@@ -217,19 +217,19 @@ class BeamSearchTransformerModule(pl.LightningModule):
         labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
 
         # Log Task A
-        self.log("val/loss_a", loss_a)
-        self.log("val/f1_a", self.train_f1_a(preds_a, labels_a))
+        self.log("val/loss_a", loss_a, on_epoch=True, prog_bar=True)
+        self.log("val/f1_a", self.train_f1_a(preds_a, labels_a), on_epoch=True, prog_bar=True)
 
         # Log Task B
-        self.log("val/loss_b", loss_b)
-        self.log("val/f1_b", self.train_f1_b(preds_b, labels_b))
+        self.log("val/loss_b", loss_b, on_epoch=True, prog_bar=True)
+        self.log("val/f1_b", self.train_f1_b(preds_b, labels_b), on_epoch=True, prog_bar=True)
 
         # Log Task C
-        self.log("val/loss_c", loss_c)
-        self.log("val/f1_c", self.train_f1_c(preds_c, labels_c))
+        self.log("val/loss_c", loss_c, on_epoch=True, prog_bar=True)
+        self.log("val/f1_c", self.train_f1_c(preds_c, labels_c), oon_epoch=True, prog_bar=True)
 
         total_loss = loss_a + loss_b + loss_c
-        self.log("val/loss", total_loss)
+        self.log("val/loss", total_loss, on_epoch=True, prog_bar=True)
         return {"loss": total_loss}
 
     def test_step(self, batch, batch_idx):
@@ -239,33 +239,31 @@ class BeamSearchTransformerModule(pl.LightningModule):
         labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
 
         # Log Task A
-        self.log("test/loss_a", loss_a)
-        self.log("test/f1_a", self.train_f1_a(preds_a, labels_a))
+        self.log("test/loss_a", loss_a, on_epoch=True, prog_bar=True)
+        self.log("test/f1_a", self.train_f1_a(preds_a, labels_a), on_epoch=True, prog_bar=True)
 
         # Log Task B
-        self.log("test/loss_b", loss_b)
-        self.log("test/f1_b", self.train_f1_b(preds_b, labels_b))
+        self.log("test/loss_b", loss_b, on_epoch=True, prog_bar=True)
+        self.log("test/f1_b", self.train_f1_b(preds_b, labels_b), on_epoch=True, prog_bar=True)
 
         # Log Task C
-        self.log("test/loss_c", loss_c)
-        self.log("test/f1_c", self.train_f1_c(preds_c, labels_c))
+        self.log("test/loss_c", loss_c, on_epoch=True, prog_bar=True)
+        self.log("test/f1_c", self.train_f1_c(preds_c, labels_c), on_epoch=True, prog_bar=True)
 
         total_loss = loss_a + loss_b + loss_c
-        self.log("test/total_loss", total_loss)
+        self.log("test/total_loss", total_loss, on_epoch=True, prog_bar=True)
         return {"loss": total_loss}
 
     def validation_epoch_end(self, outputs):
         f1_a = self.val_f1_a.compute()
         f1_b = self.val_f1_b.compute()
         f1_c = self.val_f1_c.compute()
-
-        self.val_f1_best_a(f1_a)
-        self.val_f1_best_b(f1_b)
-        self.val_f1_best_c(f1_c)
-
-        self.log("val/f1_best_a", self.val_f1_best_a.compute(), prog_bar=True)
-        self.log("val/f1_best_b", self.val_f1_best_b.compute(), prog_bar=True)
-        self.log("val/f1_best_c", self.val_f1_best_c.compute(), prog_bar=True)
+        self.val_f1_best_a(f1_a)  # update best so far val f1 a
+        self.val_f1_best_b(f1_b)  # update best so far val f1 b
+        self.val_f1_best_c(f1_c)  # update best so far val f1 c
+        self.log("val/f1_best_a", self.val_f1_best_a.compute(), on_epoch=True, prog_bar=True)
+        self.log("val/f1_best_b", self.val_f1_best_b.compute(), on_epoch=True, prog_bar=True)
+        self.log("val/f1_best_c", self.val_f1_best_c.compute(), on_epoch=True, prog_bar=True)
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.args.lr)
