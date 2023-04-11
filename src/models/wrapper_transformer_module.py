@@ -16,7 +16,6 @@ class WrapperTransformerModule(pl.LightningModule):
         args_task_a: argparse.Namespace,
         args_task_b: argparse.Namespace,
         args_task_c: argparse.Namespace,
-        optimizer: torch.optim.Optimizer,
     ):
         super().__init__()
         self.args_task_a = args_task_a
@@ -29,7 +28,6 @@ class WrapperTransformerModule(pl.LightningModule):
             self.classifier_c,
         ) = self.define_models(args_task_a, args_task_b, args_task_c)
         self.freeze_module(self.feature_extractor)
-        self.optimizer = optimizer
 
         self.criterion_a = nn.CrossEntropyLoss()
         self.criterion_b = nn.CrossEntropyLoss()
@@ -232,9 +230,15 @@ class WrapperTransformerModule(pl.LightningModule):
             args_task_a.model
         ).base_model
 
-        classifier_a = TransformerModule.load_from_checkpoint(args_task_a.ckpt_path, args_task_a)
-        classifier_b = TransformerModule.load_from_checkpoint(args_task_b.ckpt_path, args_task_b)
-        classifier_c = TransformerModule.load_from_checkpoint(args_task_c.ckpt_path, args_task_c)
+        classifier_a = TransformerModule.load_from_checkpoint(
+            args_task_a.ckpt_path, args_task_a, torch.optim.AdamW
+        )
+        classifier_b = TransformerModule.load_from_checkpoint(
+            args_task_b.ckpt_path, args_task_b, torch.optim.AdamW
+        )
+        classifier_c = TransformerModule.load_from_checkpoint(
+            args_task_c.ckpt_path, args_task_c, torch.optim.AdamW
+        )
         return feature_extractor, classifier_a, classifier_b, classifier_c
 
     @staticmethod
