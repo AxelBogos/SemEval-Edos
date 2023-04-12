@@ -1,5 +1,5 @@
+import lightning as pl
 import numpy as np
-import pytorch_lightning as pl
 import torch
 import torch.nn as nn
 from torchmetrics import MaxMetric, MeanMetric
@@ -273,7 +273,7 @@ class BeamSearchTransformerModule(pl.LightningModule):
         self.log("test/total_loss", total_loss, on_epoch=True, prog_bar=True)
         return {"loss": total_loss}
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self):
         f1_a = self.val_f1_a.compute()
         f1_b = self.val_f1_b.compute()
         f1_c = self.val_f1_c.compute()

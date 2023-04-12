@@ -1,6 +1,6 @@
 import argparse
 
-import pytorch_lightning as pl
+import lightning as pl
 import torch
 import torch.nn as nn
 from torchmetrics import MaxMetric, MeanMetric
@@ -181,7 +181,7 @@ class WrapperTransformerModule(pl.LightningModule):
 
         return {"loss_a": loss_a, "loss_b": loss_b, "loss_c": loss_c}
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self):
         f1_a = self.val_f1_a.compute()
         f1_b = self.val_f1_b.compute()
         f1_c = self.val_f1_c.compute()
