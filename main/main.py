@@ -2,7 +2,10 @@ import logging
 import pprint
 
 from dotenv import load_dotenv
-from pytorch_lightning import Trainer, seed_everything
+from lightning import Trainer, seed_everything
+from lightning.pytorch.tuner import Tuner
+
+# from pytorch_lightning import Trainer, seed_everything
 from sklearn.utils.class_weight import compute_class_weight
 
 from src.utils import defines, helpers
@@ -50,12 +53,12 @@ def main():
         accelerator="auto",
         devices="auto",
         max_epochs=args.num_epoch,
-        auto_lr_find=True,
     )
-
-    lr_finder = trainer.tuner.lr_find(model, datamodule=data_module)
+    tuner = Tuner(trainer)
+    lr_finder = tuner.lr_find(model, datamodule=data_module)
     new_lr = lr_finder.suggestion()
     model.learning_rate = new_lr
+    model.hparams.learning_rate = new_lr
     # Train
     if args.train:
         trainer.fit(model=model, datamodule=data_module)

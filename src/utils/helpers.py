@@ -5,8 +5,8 @@ from pathlib import Path
 
 import torch.optim
 import torch.optim as optim
-from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
-from pytorch_lightning.loggers import WandbLogger
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
+from lightning.pytorch.loggers import WandbLogger
 
 from src.data import (
     datamodule_lstm,
@@ -21,6 +21,8 @@ from src.models import (
     transformer_module,
 )
 from src.utils import defines
+
+# from pytorch_lightning.loggers import WandbLogger
 
 
 def make_data_dirs() -> None:

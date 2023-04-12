@@ -1,8 +1,9 @@
 from pathlib import Path
 from typing import Optional
 
+# import pytorch_lightning as pl
+import lightning as pl
 import pandas as pd
-import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 

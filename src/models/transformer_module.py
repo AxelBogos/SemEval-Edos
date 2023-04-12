@@ -1,4 +1,5 @@
-import pytorch_lightning as pl
+# import pytorch_lightning as pl
+import lightning as pl
 import torch
 import torch.nn as nn
 from torchmetrics import MaxMetric, MeanMetric
@@ -90,7 +91,7 @@ class TransformerModule(pl.LightningModule):
         self.log("test/f1", self.test_f1, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 
-    def validation_epoch_end(self, outputs):
+    def on_validation_epoch_end(self):
         f1 = self.val_f1.compute()  # get current val f1
         self.val_f1_best(f1)  # update best so far val f1
         self.log("val/f1_best", self.val_f1_best.compute(), prog_bar=True)
