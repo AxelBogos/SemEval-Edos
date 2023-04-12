@@ -55,7 +55,7 @@ def main():
 
     lr_finder = trainer.tuner.lr_find(model, datamodule=data_module)
     new_lr = lr_finder.suggestion()
-    model.hparams.lr = new_lr
+    model.learning_rate = new_lr
     # Train
     if args.train:
         trainer.fit(model=model, datamodule=data_module)
