@@ -52,8 +52,10 @@ def main():
         devices="auto",
         max_epochs=args.num_epoch,
         auto_lr_find=True,
+        data_module=data_module,
+        model=model,
     )
-    trainer.tune(model)
+    trainer.tune(model=model, datamodule=data_module)
     print(model)
     print(model.criterion)
     # Train
