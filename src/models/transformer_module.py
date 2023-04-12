@@ -105,22 +105,21 @@ class TransformerModule(pl.LightningModule):
         if self.args.task == "a":
             return torch.tensor([0.6603, 2.0600], dtype=torch.float)
         elif self.args.task == "b":
-            return torch.tensor([0.2641, 9.0323, 1.7610, 2.4034, 8.4084], dtype=torch.float)
+            return torch.tensor([2.7403, 0.5343, 0.7292, 2.5511], dtype=torch.float)
         elif self.args.task == "c":
             return torch.tensor(
                 [
-                    0.1100,
-                    20.8333,
-                    4.5932,
-                    1.6272,
-                    1.7335,
-                    5.8333,
-                    1.8315,
-                    2.7978,
-                    18.2292,
-                    24.8227,
-                    15.5556,
-                    4.5220,
+                    5.5162,
+                    1.2162,
+                    0.4308,
+                    0.4590,
+                    1.5445,
+                    0.4849,
+                    0.7408,
+                    4.8267,
+                    6.5725,
+                    4.1188,
+                    1.1973,
                 ],
                 dtype=torch.float,
             )
