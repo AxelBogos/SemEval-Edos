@@ -44,7 +44,6 @@ def main():
     optimizer = helpers.get_optimizer(args)
     model = helpers.get_model(args, optimizer)
     lightning_callbacks = helpers.get_lightning_callbacks(args)
-
     trainer = Trainer(
         logger=wandb_logger,
         callbacks=lightning_callbacks,
@@ -53,9 +52,10 @@ def main():
         max_epochs=args.num_epoch,
         auto_lr_find=True,
     )
-    trainer.tune(model=model, datamodule=data_module)
-    print(model)
-    print(model.criterion)
+
+    lr_finder = trainer.tuner.lr_find(model, datamodule=data_module)
+    new_lr = lr_finder.suggestion()
+    model.hparams.lr = new_lr
     # Train
     if args.train:
         trainer.fit(model=model, datamodule=data_module)
