@@ -96,7 +96,7 @@ class TransformerModule(pl.LightningModule):
         self.log("val/f1_best", self.val_f1_best.compute(), prog_bar=True)
 
     def configure_optimizers(self):
-        optimizer = self.optimizer(self.parameters(), lr=self.lr or self.learning_rate)
+        optimizer = self.optimizer(self.parameters(), lr=self.learning_rate)
         num_training_steps = self.args.num_epoch * self.args.len_train_loader
         scheduler = get_scheduler(
             name="linear",
