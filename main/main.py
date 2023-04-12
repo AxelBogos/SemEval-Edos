@@ -51,7 +51,9 @@ def main():
         accelerator="auto",
         devices="auto",
         max_epochs=args.num_epoch,
+        auto_lr_find=True,
     )
+    trainer.tune(model)
 
     # Train
     if args.train:

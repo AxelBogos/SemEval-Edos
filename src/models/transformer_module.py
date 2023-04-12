@@ -14,10 +14,12 @@ class TransformerModule(pl.LightningModule):
     def __init__(
         self,
         args,
+        learning_rate,
         optimizer: torch.optim.Optimizer,
     ):
         super().__init__()
         self.args = args
+        self.learning_rate = learning_rate
         self.optimizer = optimizer
         self.save_hyperparameters()
         self.model = AutoModelForSequenceClassification.from_pretrained(
@@ -94,7 +96,7 @@ class TransformerModule(pl.LightningModule):
         self.log("val/f1_best", self.val_f1_best.compute(), prog_bar=True)
 
     def configure_optimizers(self):
-        optimizer = self.optimizer(self.parameters(), lr=self.args.lr)
+        optimizer = self.optimizer(self.parameters(), lr=self.lr or self.learning_rate)
         num_training_steps = self.args.num_epoch * self.args.len_train_loader
         scheduler = get_scheduler(
             name="linear",
