@@ -54,7 +54,8 @@ def main():
         auto_lr_find=True,
     )
     trainer.tune(model)
-
+    print(model)
+    print(model.criterion)
     # Train
     if args.train:
         trainer.fit(model=model, datamodule=data_module)

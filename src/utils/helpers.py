@@ -135,7 +135,9 @@ def get_model(args, optimizer: torch.optim.Optimizer = None):
     if args.architecture == "lstm":
         return lstm_module.LSTMModule(args=args, optimizer=optimizer)
     elif args.architecture == "transformer":
-        return transformer_module.TransformerModule(args, optimizer=optimizer)
+        return transformer_module.TransformerModule(
+            args, optimizer=optimizer, learning_rate=args.lr
+        )
     elif args.architecture == "transformer-beamsearch":
         return beam_search_transformer_module.BeamSearchTransformerModule(
             args, optimizer=optimizer
