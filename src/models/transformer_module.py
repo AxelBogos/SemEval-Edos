@@ -24,7 +24,7 @@ class TransformerModule(pl.LightningModule):
             args.model, num_labels=args.num_target_class
         )
 
-        self.criterion = nn.CrossEntropyLoss(weight=self._get_class_weights())
+        self.criterion = nn.CrossEntropyLoss()
 
         # metric objects for calculating and macro f1 across batches
         self.train_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
