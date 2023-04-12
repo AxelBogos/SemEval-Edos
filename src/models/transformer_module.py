@@ -23,7 +23,8 @@ class TransformerModule(pl.LightningModule):
         self.model = AutoModelForSequenceClassification.from_pretrained(
             args.model, num_labels=args.num_target_class
         )
-        self.criterion = nn.CrossEntropyLoss()
+
+        self.criterion = nn.CrossEntropyLoss(weight=self._get_class_weights())
 
         # metric objects for calculating and macro f1 across batches
         self.train_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
@@ -98,3 +99,28 @@ class TransformerModule(pl.LightningModule):
             num_training_steps=num_training_steps,
         )
         return dict(optimizer=optimizer, lr_scheduler=dict(scheduler=scheduler, interval="step"))
+
+    @property
+    def _get_class_weights(self) -> torch.tensor:
+        if self.args.task == "a":
+            return torch.tensor([0.6603, 2.0600], dtype=torch.float)
+        elif self.args.task == "b":
+            return torch.tensor([0.2641, 9.0323, 1.7610, 2.4034, 8.4084], dtype=torch.float)
+        elif self.args.task == "c":
+            return torch.tensor(
+                [
+                    0.1100,
+                    20.8333,
+                    4.5932,
+                    1.6272,
+                    1.7335,
+                    5.8333,
+                    1.8315,
+                    2.7978,
+                    18.2292,
+                    24.8227,
+                    15.5556,
+                    4.5220,
+                ],
+                dtype=torch.float,
+            )
