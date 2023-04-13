@@ -26,15 +26,6 @@ def main(model_name: str):
     log_dir = helpers.make_log_dir()
     helpers.setup_python_logging(log_dir)
 
-    # Setup WandB logging
-    wandb_logger = WandbLogger(
-        project="EDOS-ift6289",
-        save_dir=log_dir,
-        log_model=True,
-        group="Local Clf Multitask",
-        tags=[model_name],
-    )
-
     logger = logging.getLogger(__name__)
     seed_everything(3454572)
 
@@ -139,6 +130,14 @@ def main(model_name: str):
         ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c4/loss", save_top_k=1, mode="min"),
         EarlyStopping(monitor="val_subtask_c4/loss", patience=3),
     ]
+    # Setup WandB logging
+    wandb_logger = WandbLogger(
+        project="EDOS-ift6289",
+        save_dir=log_dir,
+        log_model=True,
+        group="Local Clf Multitask",
+        tags=[model_name],
+    )
 
     trainer_a = Trainer(
         logger=wandb_logger,

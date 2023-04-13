@@ -58,9 +58,8 @@ class DataModuleTransformerLocal(pl.LightningDataModule):
             interim_data_train["text"] = self.text_preprocessor.transform_series(
                 interim_data_train["text"]
             )
-            interim_data_train = interim_data_train[interim_data_train[self._target_label] != -1]
             interim_data_train = interim_data_train[
-                interim_data_train[self._target_label] in self._get_subtask_targets
+                interim_data_train[self._target_label].isin(self._get_subtask_targets)
             ]
             interim_data_train = interim_data_train.to_numpy()
 
@@ -77,9 +76,8 @@ class DataModuleTransformerLocal(pl.LightningDataModule):
             interim_data_val["text"] = self.text_preprocessor.transform_series(
                 interim_data_val["text"]
             )
-            interim_data_val = interim_data_val[interim_data_val[self._target_label] != -1]
             interim_data_val = interim_data_val[
-                interim_data_val[self._target_label] in self._get_subtask_targets
+                interim_data_val[self._target_label].isin(self._get_subtask_targets)
             ]
             interim_data_val = interim_data_val.to_numpy()
 
@@ -95,9 +93,8 @@ class DataModuleTransformerLocal(pl.LightningDataModule):
             interim_data_test["text"] = self.text_preprocessor.transform_series(
                 interim_data_test["text"]
             )
-            interim_data_test = interim_data_test[interim_data_test[self._target_label] != -1]
             interim_data_test = interim_data_test[
-                interim_data_test[self._target_label] in self._get_subtask_targets
+                interim_data_test[self._target_label].isin(self._get_subtask_targets)
             ]
             interim_data_test = interim_data_test.to_numpy()
 
@@ -158,11 +155,11 @@ class DataModuleTransformerLocal(pl.LightningDataModule):
         :param self: Bind the instance of the class to a function
         :return: The index of the target_col column in the training data
         """
-        if "a" in self.subtask == "a":
+        if "a" in self.subtask:
             return 2
-        elif "b" in self.subtask == "b":
+        elif "b" in self.subtask:
             return 3
-        elif "c" in self.subtask == "c":
+        elif "c" in self.subtask:
             return 4
 
     @property
@@ -174,11 +171,11 @@ class DataModuleTransformerLocal(pl.LightningDataModule):
         :param self: Bind the instance of the class to the method
         :return: The label of the training set for current task
         """
-        if "a" in self.subtask == "a":
+        if "a" in self.subtask:
             return "target_a"
-        elif "b" in self.subtask == "b":
+        elif "b" in self.subtask:
             return "target_b"
-        elif "c" in self.subtask == "c":
+        elif "c" in self.subtask:
             return "target_c"
 
     @property
