@@ -1,12 +1,12 @@
 import logging
-import pprint
 from argparse import Namespace
 
 import torch
-import wandb
 from dotenv import load_dotenv
+from lightning.pytorch import seed_everything
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
 from lightning.pytorch.loggers import WandbLogger
-from pytorch_lightning import Trainer, seed_everything
+from lightning.pytorch.trainer import Trainer
 
 from src.data.datamodule_transformer_local import DataModuleTransformerLocal
 from src.models.transformer_module_local import TransformerModuleLocal
@@ -26,73 +26,6 @@ def main(model_name: str):
     log_dir = helpers.make_log_dir()
     helpers.setup_python_logging(log_dir)
 
-    args_task_a = {
-        "train": True,
-        "eval": True,
-        "task": "a",
-        "architecture": "transformer",
-        "model": model_name,
-        "dropout": 0.1,
-        "optimizer": "AdamW",
-        "lr": 5e-06,
-        "step_scheduler": 5,
-        "n_warmup_steps": 0,
-        "preprocessing_mode": "none",
-        "max_token_length": 128,
-        "batch_size": 16,
-        "num_epoch": 9,
-        "patience": 3,
-        "num_workers": 1,
-        "random_seed": 3454572,
-        "logs_dir": defines.LOG_DIR,
-        "raw_data_dir": defines.RAW_DATA_DIR,
-        "interim_data_dir": defines.INTERIM_DATA_DIR,
-        "processed_data_dir": defines.PROCESSED_DATA_DIR,
-        "log_dir": log_dir,
-    }
-    args_task_b = args_task_a.copy()
-    args_task_c1 = args_task_a.copy()
-    args_task_c2 = args_task_a.copy()
-    args_task_c3 = args_task_a.copy()
-    args_task_c4 = args_task_a.copy()
-    args_task_b["task"] = "b"
-    args_task_c1["task"] = "c"
-    args_task_c2["task"] = "c"
-    args_task_c3["task"] = "c"
-    args_task_c4["task"] = "c"
-    args_task_a = Namespace(**args_task_a)
-    args_task_b = Namespace(**args_task_b)
-    args_task_c1 = Namespace(**args_task_c1)
-    args_task_c2 = Namespace(**args_task_c2)
-    args_task_c3 = Namespace(**args_task_c3)
-    args_task_c4 = Namespace(**args_task_c4)
-    args_task_a.log_dir = log_dir
-    args_wrapper = {
-        "train": True,
-        "eval": True,
-        "task": "multitask",
-        "architecture": "transformer-wrapper",
-        "model": model_name,
-        "dropout": 0.1,
-        "optimizer": "AdamW",
-        "lr": 5e-06,
-        "step_scheduler": 5,
-        "n_warmup_steps": 0,
-        "preprocessing_mode": "none",
-        "max_token_length": 128,
-        "batch_size": 16,
-        "num_epoch": 9,
-        "patience": 3,
-        "num_workers": 1,
-        "random_seed": 3454572,
-        "logs_dir": defines.LOG_DIR,
-        "raw_data_dir": defines.RAW_DATA_DIR,
-        "interim_data_dir": defines.INTERIM_DATA_DIR,
-        "processed_data_dir": defines.PROCESSED_DATA_DIR,
-        "log_dir": log_dir,
-    }
-    args_wrapper = Namespace(**args_wrapper)
-
     # Setup WandB logging
     wandb_logger = WandbLogger(
         project="EDOS-ift6289",
@@ -103,7 +36,7 @@ def main(model_name: str):
     )
 
     logger = logging.getLogger(__name__)
-    seed_everything(args_task_a.random_seed)
+    seed_everything(3454572)
 
     # Build data module
     data_module_task_a = DataModuleTransformerLocal(subtask="a")
@@ -120,18 +53,6 @@ def main(model_name: str):
     data_module_task_c3.setup()
     data_module_task_c4.setup()
 
-    args_task_a.num_target_class = data_module_task_a._num_classes
-    args_task_a.len_train_loader = len(data_module_task_a.train_dataloader())
-    args_task_b.num_target_class = data_module_task_b._num_classes
-    args_task_b.len_train_loader = len(data_module_task_b.train_dataloader())
-    args_task_c1.num_target_class = data_module_task_c1._num_classes
-    args_task_c1.len_train_loader = len(data_module_task_c1.train_dataloader())
-    args_task_c2.num_target_class = data_module_task_c2._num_classes
-    args_task_c2.len_train_loader = len(data_module_task_c2.train_dataloader())
-    args_task_c3.num_target_class = data_module_task_c3._num_classes
-    args_task_c3.len_train_loader = len(data_module_task_c3.train_dataloader())
-    args_task_c4.num_target_class = data_module_task_c4._num_classes
-    args_task_c4.len_train_loader = len(data_module_task_c4.train_dataloader())
     # Build models
     model_task_a = TransformerModuleLocal(
         model=model_name,
@@ -188,49 +109,78 @@ def main(model_name: str):
         optimizer=torch.optim.AdamW,
     )
 
-    lightning_callbacks = helpers.get_lightning_callbacks(args_task_a)
+    lightning_callbacks_a = [
+        ModelSummary(),
+        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_a/loss", save_top_k=1, mode="min"),
+        EarlyStopping(monitor="val_subtask_a/loss", patience=3),
+    ]
+    lightning_callbacks_b = [
+        ModelSummary(),
+        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_b/loss", save_top_k=1, mode="min"),
+        EarlyStopping(monitor="val_subtask_b/loss", patience=3),
+    ]
+    lightning_callbacks_c1 = [
+        ModelSummary(),
+        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c1/loss", save_top_k=1, mode="min"),
+        EarlyStopping(monitor="val_subtask_c1/loss", patience=3),
+    ]
+    lightning_callbacks_c2 = [
+        ModelSummary(),
+        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c2/loss", save_top_k=1, mode="min"),
+        EarlyStopping(monitor="val_subtask_c2/loss", patience=3),
+    ]
+    lightning_callbacks_c3 = [
+        ModelSummary(),
+        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c3/loss", save_top_k=1, mode="min"),
+        EarlyStopping(monitor="val_subtask_c3/loss", patience=3),
+    ]
+    lightning_callbacks_c4 = [
+        ModelSummary(),
+        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c4/loss", save_top_k=1, mode="min"),
+        EarlyStopping(monitor="val_subtask_c4/loss", patience=3),
+    ]
 
     trainer_a = Trainer(
         logger=wandb_logger,
-        callbacks=lightning_callbacks,
+        callbacks=lightning_callbacks_a,
         accelerator="auto",
         devices="auto",
-        max_epochs=args_task_a.num_epoch,
+        max_epochs=9,
     )
     trainer_b = Trainer(
         logger=wandb_logger,
-        callbacks=lightning_callbacks,
+        callbacks=lightning_callbacks_b,
         accelerator="auto",
         devices="auto",
-        max_epochs=args_task_b.num_epoch,
+        max_epochs=9,
     )
     trainer_c1 = Trainer(
         logger=wandb_logger,
-        callbacks=lightning_callbacks,
+        callbacks=lightning_callbacks_c1,
         accelerator="auto",
         devices="auto",
-        max_epochs=args_task_c1.num_epoch,
+        max_epochs=9,
     )
     trainer_c2 = Trainer(
         logger=wandb_logger,
-        callbacks=lightning_callbacks,
+        callbacks=lightning_callbacks_c2,
         accelerator="auto",
         devices="auto",
-        max_epochs=args_task_c2.num_epoch,
+        max_epochs=9,
     )
     trainer_c3 = Trainer(
         logger=wandb_logger,
-        callbacks=lightning_callbacks,
+        callbacks=lightning_callbacks_c3,
         accelerator="auto",
         devices="auto",
-        max_epochs=args_task_c3.num_epoch,
+        max_epochs=9,
     )
     trainer_c4 = Trainer(
         logger=wandb_logger,
-        callbacks=lightning_callbacks,
+        callbacks=lightning_callbacks_c4,
         accelerator="auto",
         devices="auto",
-        max_epochs=args_task_c4.num_epoch,
+        max_epochs=9,
     )
 
     # Train
