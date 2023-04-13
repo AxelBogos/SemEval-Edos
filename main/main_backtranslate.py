@@ -45,6 +45,16 @@ def backtranslate_dataset(dataset):
     return backtranslated_dataset
 
 def backtranslate_example(row):
+    """
+        This function takes a row from a dataset and backtranslates the 'text' column using the
+        backtranslate function. It then constructs a new dictionary containing the original
+        'rewire_id', backtranslated 'text', and the original target labels ('target_a', 'target_b', and 'target_c').
+
+        :param row: Tuple[int, pd.Series]: A tuple containing the index and the data of the row.
+            The data should contain the columns 'rewire_id', 'text', 'target_a', 'target_b', and 'target_c'.
+        :return: Dict[str, Union[int, str]]: A dictionary containing the 'rewire_id', backtranslated 'text',
+            and the original target labels ('target_a', 'target_b', and 'target_c').
+    """
     idx, data = row
 
     rewire_id = data['rewire_id']
