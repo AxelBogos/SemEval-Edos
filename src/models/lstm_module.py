@@ -1,6 +1,6 @@
 from typing import Any, List
 
-import pytorch_lightning as pl
+import lightning as pl
 import torch
 from torchmetrics import MaxMetric, MeanMetric
 from torchmetrics.classification import MulticlassF1Score
@@ -15,6 +15,7 @@ class LSTMModule(pl.LightningModule):
         super().__init__()
         self.args = args
         self.optimizer = optimizer
+        self.save_hyperparameters()
 
         # Embedding
         self.embedding_layer = torch.nn.Embedding(
@@ -93,11 +94,9 @@ class LSTMModule(pl.LightningModule):
 
         return {"loss": loss, "preds": preds, "targets": targets}
 
-    def validation_epoch_end(self, outputs: List[Any]):
+    def on_validation_epoch_end(self):
         f1 = self.val_f1.compute()  # get current val f1
         self.val_f1_best(f1)  # update best so far val f1
-        # log `val_f1_best` as a value through `.compute()` method, instead of as a metric object
-        # otherwise metric would be reset by lightning after each epoch
         self.log("val/f1_best", self.val_f1_best.compute(), prog_bar=True)
 
     def test_step(self, batch: Any, batch_idx: int):

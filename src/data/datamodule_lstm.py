@@ -3,7 +3,7 @@ from typing import Optional
 
 import pandas as pd
 import torch
-from pytorch_lightning import LightningDataModule
+from lightning import LightningDataModule
 from torch.utils.data import DataLoader
 from torchtext.vocab import build_vocab_from_iterator
 

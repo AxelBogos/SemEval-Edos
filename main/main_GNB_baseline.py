@@ -56,9 +56,9 @@ def eval_task(
     text_processor = get_text_processor()
 
     # Filter data for the current task
-    train = train[train[target_label] != 0]
-    val = val[val[target_label] != 0]
-    test = test[test[target_label] != 0]
+    train = train[train[target_label] != -1]
+    val = val[val[target_label] != -1]
+    test = test[test[target_label] != -1]
 
     # Apply text processing and convert to np array
     X_train, y_train = np.array(text_processor.transform_series(train["text"])), np.array(

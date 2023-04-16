@@ -5,16 +5,24 @@ from pathlib import Path
 
 import torch.optim
 import torch.optim as optim
-from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
-from pytorch_lightning.loggers import WandbLogger
+from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
+from lightning.pytorch.loggers import WandbLogger
 
 from src.data import (
     datamodule_lstm,
     datamodule_transformer,
     datamodule_transformer_beamsearch,
+    datamodule_transformer_hierarichal_constrained,
 )
-from src.models import beam_search_transformer_module, lstm_module, transformer_module
+from src.models import (
+    beam_search_transformer_module,
+    hierarichal_constrained_transformer_module,
+    lstm_module,
+    transformer_module,
+)
 from src.utils import defines
+
+# from pytorch_lightning.loggers import WandbLogger
 
 
 def make_data_dirs() -> None:
@@ -129,9 +137,15 @@ def get_model(args, optimizer: torch.optim.Optimizer = None):
     if args.architecture == "lstm":
         return lstm_module.LSTMModule(args=args, optimizer=optimizer)
     elif args.architecture == "transformer":
-        return transformer_module.TransformerModule(args, optimizer=optimizer)
+        return transformer_module.TransformerModule(
+            args, optimizer=optimizer, learning_rate=args.lr
+        )
     elif args.architecture == "transformer-beamsearch":
         return beam_search_transformer_module.BeamSearchTransformerModule(
+            args, optimizer=optimizer
+        )
+    elif args.architecture == "transformer-hierarchical":
+        return hierarichal_constrained_transformer_module.HierarchicalTransformerModule(
             args, optimizer=optimizer
         )
 
@@ -150,6 +164,10 @@ def get_data_module(args):
         return datamodule_transformer.DataModuleTransformer(args)
     elif args.architecture == "transformer-beamsearch":
         return datamodule_transformer_beamsearch.DataModuleTransformerBeamSearch(args)
+    elif args.architecture == "transformer-hierarchical":
+        return datamodule_transformer_hierarichal_constrained.DataModuleTransformerHierarichal(
+            args
+        )
 
 
 def get_optimizer(args):
@@ -166,3 +184,17 @@ def get_optimizer(args):
         optimizer = optim.SGD
 
     return optimizer
+
+
+def get_model_download_links(model_name):
+    if model_name == "distillroberta-base":
+        model_a = "axel-bogos/EDOS-ift6289/model-3ktkppxz:v0"
+        model_b = "axel-bogos/EDOS-ift6289/model-9yuwtdxw:v0"
+        model_c = "axel-bogos/EDOS-ift6289/model-puvcanys:v0"
+    elif model_name == "roberta-base":
+        model_a = "axel-bogos/EDOS-ift6289/model-xbmigcbz:v0"
+        model_b = "axel-bogos/EDOS-ift6289/model-e3l1x1p6:v0"
+        model_c = "axel-bogos/EDOS-ift6289/model-jadamcqs:v0"
+    else:
+        raise ValueError("Invalid model name")
+    return model_a, model_b, model_c

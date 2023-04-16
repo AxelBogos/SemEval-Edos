@@ -22,7 +22,7 @@ VALID_MODEL_CHOICES = (
     "roberta-large",
 )
 VALID_ARCHITECTURE_CHOICES = ("lstm", "transformer", "transformer-beamsearch'")
-VALID_TASK_CHOICES = ("a", "b", "c")
+VALID_TASK_CHOICES = ("a", "b", "c", "multitask")
 VALID_PREPROCESSING_MODE = ("standard", "none")
 VALID_OPTIMIZERS = ("Adam", "AdamW", "SGD")
 VALID_SCHEDULERS = "stepLR"

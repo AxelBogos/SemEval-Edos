@@ -11,32 +11,36 @@ from transformers import (
 )
 
 
-class TransformerModule(pl.LightningModule):
+class TransformerModuleLocal(pl.LightningModule):
     def __init__(
         self,
-        args,
+        model,
+        subtask,
+        num_target_class,
+        len_train_loader,
+        num_epoch,
         learning_rate,
         optimizer: torch.optim.Optimizer,
     ):
         super().__init__()
-        self.args = args
+        self.model = model
+        self.subtask = subtask
+        self.num_target_class = num_target_class
         self.learning_rate = learning_rate
+        self.len_train_loader = len_train_loader
+        self.num_epoch = num_epoch
         self.optimizer = optimizer
         self.save_hyperparameters()
         self.model = AutoModelForSequenceClassification.from_pretrained(
-            args.model, num_labels=args.num_target_class
+            model, num_labels=num_target_class
         )
 
-        self.criterion = (
-            nn.CrossEntropyLoss(weight=self._get_class_weights)
-            if args.weighted_loss
-            else nn.CrossEntropyLoss()
-        )
+        self.criterion = nn.CrossEntropyLoss()
 
         # metric objects for calculating and macro f1 across batches
-        self.train_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
-        self.val_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
-        self.test_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
+        self.train_f1 = MulticlassF1Score(num_classes=self.num_target_class, average="macro")
+        self.val_f1 = MulticlassF1Score(num_classes=self.num_target_class, average="macro")
+        self.test_f1 = MulticlassF1Score(num_classes=self.num_target_class, average="macro")
 
         # for averaging loss across batches
         self.train_loss = MeanMetric()
@@ -69,8 +73,16 @@ class TransformerModule(pl.LightningModule):
         # update and log metrics
         self.train_loss(loss)
         self.train_f1(preds, labels)
-        self.log("train/loss", self.train_loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("train/f1", self.train_f1, on_step=True, on_epoch=True, prog_bar=True)
+        self.log(
+            f"train_{self.subtask}/loss",
+            self.train_loss,
+            on_step=True,
+            on_epoch=True,
+            prog_bar=True,
+        )
+        self.log(
+            f"train_{self.subtask}/f1", self.train_f1, on_step=True, on_epoch=True, prog_bar=True
+        )
 
         return {"loss": loss, "predictions": preds, "labels": labels}
 
@@ -79,54 +91,36 @@ class TransformerModule(pl.LightningModule):
 
         self.val_loss(loss)
         self.val_f1(preds, labels)
-        self.log("val/loss", self.val_loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("val/f1", self.val_f1, on_step=True, on_epoch=True, prog_bar=True)
+        self.log(
+            f"val_{self.subtask}/loss", self.val_loss, on_step=True, on_epoch=True, prog_bar=True
+        )
+        self.log(f"val_{self.subtask}/f1", self.val_f1, on_step=True, on_epoch=True, prog_bar=True)
         return loss
 
     def test_step(self, batch, batch_idx):
         loss, preds, labels = self.model_step(batch)
         self.test_loss(loss)
         self.test_f1(preds, labels)
-        self.log("test/loss", self.test_loss, on_step=True, on_epoch=True, prog_bar=True)
-        self.log("test/f1", self.test_f1, on_step=True, on_epoch=True, prog_bar=True)
+        self.log(
+            f"test_{self.subtask}/loss", self.test_loss, on_step=True, on_epoch=True, prog_bar=True
+        )
+        self.log(
+            f"test_{self.subtask}/f1", self.test_f1, on_step=True, on_epoch=True, prog_bar=True
+        )
         return loss
 
     def on_validation_epoch_end(self):
         f1 = self.val_f1.compute()  # get current val f1
         self.val_f1_best(f1)  # update best so far val f1
-        self.log("val/f1_best", self.val_f1_best.compute(), prog_bar=True)
+        self.log(f"val_{self.subtask}/f1_best", self.val_f1_best.compute(), prog_bar=True)
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.learning_rate)
-        num_training_steps = self.args.num_epoch * self.args.len_train_loader
+        num_training_steps = self.num_epoch * self.len_train_loader
         scheduler = get_scheduler(
             name="linear",
             optimizer=optimizer,
-            num_warmup_steps=self.args.n_warmup_steps,
+            num_warmup_steps=0,
             num_training_steps=num_training_steps,
         )
         return dict(optimizer=optimizer, lr_scheduler=dict(scheduler=scheduler, interval="step"))
-
-    @property
-    def _get_class_weights(self) -> torch.tensor:
-        if self.args.task == "a":
-            return torch.tensor([0.6603, 2.0600], dtype=torch.float)
-        elif self.args.task == "b":
-            return torch.tensor([2.7403, 0.5343, 0.7292, 2.5511], dtype=torch.float)
-        elif self.args.task == "c":
-            return torch.tensor(
-                [
-                    5.5162,
-                    1.2162,
-                    0.4308,
-                    0.4590,
-                    1.5445,
-                    0.4849,
-                    0.7408,
-                    4.8267,
-                    6.5725,
-                    4.1188,
-                    1.1973,
-                ],
-                dtype=torch.float,
-            )
