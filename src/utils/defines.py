@@ -10,6 +10,7 @@ INTERIM_DATA_DIR = Path(ROOT_PATH, "data", "interim")
 PROCESSED_DATA_DIR = Path(ROOT_PATH, "data", "processed")
 AUGMENTED_DATA_DIR = Path(ROOT_PATH, "data", "augmented")
 RAW_DATA_DIR = Path(ROOT_PATH, "data", "raw")
+SAVED_MODEL_DIR = Path(ROOT_PATH, "saved_models")
 DOTENV_FILE = Path(ROOT_PATH, ".env")
 LOG_DIR = Path(ROOT_PATH, "logs")
 VALID_MODEL_CHOICES = (
@@ -22,7 +23,7 @@ VALID_MODEL_CHOICES = (
     "roberta-large",
 )
 VALID_ARCHITECTURE_CHOICES = ("lstm", "transformer", "transformer-beamsearch'")
-VALID_TASK_CHOICES = ("a", "b", "c")
+VALID_TASK_CHOICES = ("a", "b", "c", "multitask")
 VALID_PREPROCESSING_MODE = ("standard", "none")
 VALID_OPTIMIZERS = ("Adam", "AdamW", "SGD")
 VALID_SCHEDULERS = "stepLR"

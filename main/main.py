@@ -2,7 +2,7 @@ import logging
 import pprint
 
 from dotenv import load_dotenv
-from pytorch_lightning import Trainer, seed_everything
+from lightning import Trainer, seed_everything
 
 from src.utils import defines, helpers
 from src.utils.args import parse_args
@@ -43,15 +43,13 @@ def main():
     optimizer = helpers.get_optimizer(args)
     model = helpers.get_model(args, optimizer)
     lightning_callbacks = helpers.get_lightning_callbacks(args)
-
     trainer = Trainer(
         logger=wandb_logger,
         callbacks=lightning_callbacks,
-        accelerator="cpu",
+        accelerator="auto",
         devices="auto",
         max_epochs=args.num_epoch,
     )
-
     # Train
     if args.train:
         trainer.fit(model=model, datamodule=data_module)
