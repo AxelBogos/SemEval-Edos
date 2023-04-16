@@ -32,6 +32,7 @@ def main():
         "Women's football is so shit, they're so slow and clumsy",
         "Women shouldn't show that much skin, it’s their own fault if they get raped",
         "You would sue your own mom over burnt toast. Stay classy beta.",
+        "",
     ]
     selected_example = st.selectbox("Example statements", example_statements)
 
@@ -116,20 +117,20 @@ def load_models():
     model_a = TransformerModule.load_from_checkpoint(
         defines.SAVED_MODEL_DIR / "task_a.ckpt",
         map_location=torch.device("cpu"),
-        args=args_task_a,
-        optimizer=torch.optim.AdamW,
+        # args=args_task_a,
+        # optimizer=torch.optim.AdamW,
     )
     model_b = TransformerModule.load_from_checkpoint(
         defines.SAVED_MODEL_DIR / "task_b.ckpt",
         map_location=torch.device("cpu"),
-        args=args_task_b,
-        optimizer=torch.optim.AdamW,
+        # args=args_task_b,
+        # optimizer=torch.optim.AdamW,
     )
     model_c = TransformerModule.load_from_checkpoint(
         defines.SAVED_MODEL_DIR / "task_c.ckpt",
         map_location=torch.device("cpu"),
-        args=args_task_c,
-        optimizer=torch.optim.AdamW,
+        # args=args_task_c,
+        # optimizer=torch.optim.AdamW,
     )
     return {"Task A": model_a, "Task B": model_b, "Task C": model_c}
 

@@ -22,7 +22,11 @@ class TransformerModule(pl.LightningModule):
             args.model, num_labels=args.num_target_class
         )
         self.optimizer = optimizer
-        self.criterion = nn.CrossEntropyLoss()
+        self.criterion = (
+            nn.CrossEntropyLoss(weight=self._get_class_weights)
+            if args.weighted_loss
+            else nn.CrossEntropyLoss()
+        )
 
         # metric objects for calculating and macro f1 across batches
         self.train_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
@@ -97,3 +101,27 @@ class TransformerModule(pl.LightningModule):
             num_training_steps=num_training_steps,
         )
         return dict(optimizer=optimizer, lr_scheduler=dict(scheduler=scheduler, interval="step"))
+
+    @property
+    def _get_class_weights(self) -> torch.tensor:
+        if self.args.task == "a":
+            return torch.tensor([0.6603, 2.0600], dtype=torch.float)
+        elif self.args.task == "b":
+            return torch.tensor([2.7403, 0.5343, 0.7292, 2.5511], dtype=torch.float)
+        elif self.args.task == "c":
+            return torch.tensor(
+                [
+                    5.5162,
+                    1.2162,
+                    0.4308,
+                    0.4590,
+                    1.5445,
+                    0.4849,
+                    0.7408,
+                    4.8267,
+                    6.5725,
+                    4.1188,
+                    1.1973,
+                ],
+                dtype=torch.float,
+            )
