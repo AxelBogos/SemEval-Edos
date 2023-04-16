@@ -9,6 +9,7 @@ EXTERNAL_DATA_DIR = Path(ROOT_PATH, "data", "external")
 INTERIM_DATA_DIR = Path(ROOT_PATH, "data", "interim")
 PROCESSED_DATA_DIR = Path(ROOT_PATH, "data", "processed")
 RAW_DATA_DIR = Path(ROOT_PATH, "data", "raw")
+SAVED_MODEL_DIR = Path(ROOT_PATH, "saved_models")
 DOTENV_FILE = Path(ROOT_PATH, ".env")
 LOG_DIR = Path(ROOT_PATH, "logs")
 VALID_MODEL_CHOICES = (
