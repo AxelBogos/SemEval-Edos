@@ -30,6 +30,12 @@ def parse_args():
         action="store_true",  # 'store_false' if want default to false
         help="Do Evaluation",
     )
+    parser.add_argument(
+        "--weighted_loss",
+        default=False,
+        action="store_true",  # 'store_false' if want default to false
+        help="Use weighted loss",
+    )
 
     parser.add_argument(
         "--task",

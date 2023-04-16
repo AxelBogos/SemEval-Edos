@@ -11,7 +11,7 @@ from src.data.components.Dataset import GenericDatasetTransformer
 from src.data.text_processing import TextPreprocessor
 
 
-class DataModuleTransformerBeamSearch(pl.LightningDataModule):
+class DataModuleTransformerHierarichal(pl.LightningDataModule):
     def __init__(self, args):
         """The __init__ function is called when the class is instantiated. It sets up the instance
         of the class, and defines all its attributes.
