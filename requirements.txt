@@ -12,6 +12,7 @@ wordcloud
 spacy
 transformers
 SentencePiece # subword tokenization algorithms by Google
+nlpaug # nlp data augmentation library
 
 # --------- pytorch --------- #
 torch>=1.10.0
@@ -34,6 +35,7 @@ rich            # beautiful text formatting in terminal
 pytest          # tests
 Sphinx          # documentation
 python-dotenv   # .env file handling
+tqdm
 # sh            # for running bash commands in some tests (linux/macos only)
 
 # local package

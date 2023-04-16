@@ -1,6 +1,6 @@
 import logging
 
-from src.utils import defines, helpers, interim_preprocessing, raw_data_downloader
+from src.utils import defines, helpers, interim_preprocessing, raw_data_downloader, data_augmentation_preprocessing
 
 
 def main():
@@ -18,6 +18,12 @@ def main():
         defines.RAW_DATA_DIR, defines.INTERIM_DATA_DIR
     )
     interim_processor.run()
+
+    # Augment data
+    data_augmentation_processor = data_augmentation_preprocessing.DataAugmentationProcessor(
+        defines.INTERIM_DATA_DIR, defines.AUGMENTED_DATA_DIR
+    )
+    data_augmentation_processor.run()
 
 
 if __name__ == "__main__":

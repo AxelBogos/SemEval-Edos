@@ -32,6 +32,8 @@ def make_data_dirs() -> None:
         os.mkdir(defines.PROCESSED_DATA_DIR)
     if not defines.EXTERNAL_DATA_DIR.is_dir():
         os.mkdir(defines.EXTERNAL_DATA_DIR)
+    if not defines.AUGMENTED_DATA_DIR.is_dir():
+        os.mkdir(defines.AUGMENTED_DATA_DIR)
 
 
 def setup_python_logging(log_dir: Path = None) -> None:
