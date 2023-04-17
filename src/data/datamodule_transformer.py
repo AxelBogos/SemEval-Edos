@@ -60,7 +60,7 @@ class DataModuleTransformer(pl.LightningDataModule):
             augmented_data_train_backtranslation = pd.read_csv(Path(self.args.augmented_data_dir,
                                                                     "train_augmented_backtranslate_all.csv"))
             augmented_data_train_rand_deletion = pd.read_csv(Path(self.args.augmented_data_dir,
-                                                                  "train_augmented_rand_deletion.csv"))
+                                                                  "train_augmented_random_deletion.csv"))
             augmented_data_train_rand_insertion = pd.read_csv(Path(self.args.augmented_data_dir,
                                                                    "train_augmented_random_insertion_emb.csv"))
             augmented_data_train_rand_swap = pd.read_csv(Path(self.args.augmented_data_dir,
