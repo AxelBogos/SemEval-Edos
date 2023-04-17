@@ -75,7 +75,7 @@ class DataModuleTransformer(pl.LightningDataModule):
                                             augmented_data_train_rand_insertion.sample(orig_len * self.rand_insertion_ratio),
                                             augmented_data_train_rand_swap.sample(orig_len * self.rand_swap_ratio),
                                             augmented_data_train_shuffle_sentence.sample(orig_len * self.shuffle_sentence_ratio),
-                                            augmented_data_train_syn_replacement.sample(orig_len * self.syn_replacement_ratio),
+                                            augmented_data_train_syn_replacement.sample(orig_len * self.syn_replacement_ratio)
                                             ])
 
             interim_data_train["text"] = self.text_preprocessor.transform_series(interim_data_train["text"])
