@@ -42,12 +42,12 @@ class AugmentationPreprocessor:
         self.preprocessing_mode = preprocessing_mode
         self.set_preprocessing_flags(preprocessing_mode)
 
-        # self.get_aug_substitute = naw.ContextualWordEmbsAug(model_path='roberta-large', action="substitute", aug_max=1)
-        # self.get_aug_insert = naw.ContextualWordEmbsAug(model_path='roberta-large', action="insert", aug_max=1)
-        self.get_aug_substitute = naw.ContextualWordEmbsAug(model_path='distilbert-base-uncased', action="substitute",
-                                                            aug_max=1)
-        self.get_aug_insert = naw.ContextualWordEmbsAug(model_path='distilbert-base-uncased', action="insert",
-                                                        aug_max=1)
+        self.get_aug_substitute = naw.ContextualWordEmbsAug(model_path='roberta-large', action="substitute", aug_max=1)
+        self.get_aug_insert = naw.ContextualWordEmbsAug(model_path='roberta-large', action="insert", aug_max=1)
+        # self.get_aug_substitute = naw.ContextualWordEmbsAug(model_path='distilbert-base-uncased', action="substitute",
+        #                                                     aug_max=1)
+        # self.get_aug_insert = naw.ContextualWordEmbsAug(model_path='distilbert-base-uncased', action="insert",
+        #                                                 aug_max=1)
 
     def augment_data_experiment(self, x: str):
         """The transform function takes a string as input and returns a modified string. The

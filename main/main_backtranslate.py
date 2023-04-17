@@ -6,7 +6,6 @@ from tqdm import tqdm
 from transformers import MarianMTModel, MarianTokenizer
 from multiprocessing import Pool
 
-from src.data.text_processing import TextPreprocessor
 from src.utils import defines
 
 
