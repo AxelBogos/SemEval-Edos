@@ -214,3 +214,59 @@ class DataModuleTransformer(pl.LightningDataModule):
             self.rand_swap_ratio = 0.1
             self.shuffle_sentence_ratio = 0.1
             self.syn_replacement_ratio = 0.1
+
+        if experiment == "none":
+            self.backtranslate_ratio = 0
+            self.rand_deletion_ratio = 0
+            self.rand_insertion_ratio = 0
+            self.rand_swap_ratio = 0
+            self.shuffle_sentence_ratio = 0
+            self.syn_replacement_ratio = 0
+
+        if experiment == "backtranslate":
+            self.backtranslate_ratio = 0.5
+            self.rand_deletion_ratio = 0
+            self.rand_insertion_ratio = 0
+            self.rand_swap_ratio = 0
+            self.shuffle_sentence_ratio = 0
+            self.syn_replacement_ratio = 0
+
+        if experiment == "rand_deletion":
+            self.backtranslate_ratio = 0
+            self.rand_deletion_ratio = 0.5
+            self.rand_insertion_ratio = 0
+            self.rand_swap_ratio = 0
+            self.shuffle_sentence_ratio = 0
+            self.syn_replacement_ratio = 0
+
+        if experiment == "rand_insertion":
+            self.backtranslate_ratio = 0
+            self.rand_deletion_ratio = 0
+            self.rand_insertion_ratio = 0.5
+            self.rand_swap_ratio = 0
+            self.shuffle_sentence_ratio = 0
+            self.syn_replacement_ratio = 0
+
+        if experiment == "swap_ratio":
+            self.backtranslate_ratio = 0
+            self.rand_deletion_ratio = 0
+            self.rand_insertion_ratio = 0
+            self.rand_swap_ratio = 0.5
+            self.shuffle_sentence_ratio = 0
+            self.syn_replacement_ratio = 0
+
+        if experiment == "shuffle_sentence":
+            self.backtranslate_ratio = 0
+            self.rand_deletion_ratio = 0
+            self.rand_insertion_ratio = 0
+            self.rand_swap_ratio = 0
+            self.shuffle_sentence_ratio = 0.5
+            self.syn_replacement_ratio = 0
+
+        if experiment == "syn_replacement":
+            self.backtranslate_ratio = 0
+            self.rand_deletion_ratio = 0
+            self.rand_insertion_ratio = 0
+            self.rand_swap_ratio = 0
+            self.shuffle_sentence_ratio = 0
+            self.syn_replacement_ratio = 0.5
