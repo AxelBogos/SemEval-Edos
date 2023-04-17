@@ -4,8 +4,10 @@ import string
 import pandas as pd
 import random
 import spacy
+import numpy as np
 import nlpaug.augmenter.word as naw
 from tqdm import tqdm
+from multiprocessing import Pool
 
 
 class AugmentationPreprocessor:
@@ -42,8 +44,8 @@ class AugmentationPreprocessor:
         self.preprocessing_mode = preprocessing_mode
         self.set_preprocessing_flags(preprocessing_mode)
 
-        self.get_aug_substitute = naw.ContextualWordEmbsAug(model_path='roberta-large', action="substitute", aug_max=1)
-        self.get_aug_insert = naw.ContextualWordEmbsAug(model_path='roberta-large', action="insert", aug_max=1)
+        self.get_aug_substitute = naw.ContextualWordEmbsAug(model_path='roberta-large', action="substitute", aug_max=2)
+        self.get_aug_insert = naw.ContextualWordEmbsAug(model_path='roberta-large', action="insert", aug_max=2)
         # self.get_aug_substitute = naw.ContextualWordEmbsAug(model_path='distilbert-base-uncased', action="substitute",
         #                                                     aug_max=1)
         # self.get_aug_insert = naw.ContextualWordEmbsAug(model_path='distilbert-base-uncased', action="insert",
@@ -75,22 +77,45 @@ class AugmentationPreprocessor:
         return x
 
 
-    def transform_series(self, series_col: pd.Series):
+    # def transform_series(self, series_col: pd.Series):
+    #     """The transform_series function takes a pandas Series object and applies the transform
+    #     function to each element in the series.
+    #
+    #     :param self: Access the class attributes
+    #     :param series_col:pd.Series: Specify the series that we want to transform
+    #     :return: A series with the transform function applied to each element
+    #     """
+    #     # series_col = series_col.apply(self.augment_data_experiment)
+    #     # return series_col
+    #     # Initialize the tqdm progress bar for pandas
+    #     tqdm.pandas(desc=self.preprocessing_mode)
+    #
+    #     # Use progress_apply instead of apply to show the progress bar
+    #     series_col = series_col.progress_apply(self.augment_data_experiment)
+    #     return series_col
+
+    @staticmethod
+    def parallel_augment(args):
+        instance, x = args
+        return instance.augment_data_experiment(x)
+
+    def transform_series(self, series_col: pd.Series, n_workers: int = 3):
         """The transform_series function takes a pandas Series object and applies the transform
         function to each element in the series.
 
         :param self: Access the class attributes
-        :param series_col:pd.Series: Specify the series that we want to transform
+        :param series_col: pd.Series: Specify the series that we want to transform
+        :param n_workers: int: Specify the number of worker processes to use for parallel processing
         :return: A series with the transform function applied to each element
         """
-        # series_col = series_col.apply(self.augment_data_experiment)
-        # return series_col
-        # Initialize the tqdm progress bar for pandas
-        tqdm.pandas(desc=self.preprocessing_mode)
 
-        # Use progress_apply instead of apply to show the progress bar
-        series_col = series_col.progress_apply(self.augment_data_experiment)
-        return series_col
+        with Pool(processes=n_workers) as pool:
+            transformed_data = list(
+                tqdm(pool.imap(AugmentationPreprocessor.parallel_augment, [(self, x) for x in series_col]),
+                     total=len(series_col),
+                     desc=self.preprocessing_mode))
+
+        return pd.Series(transformed_data)
 
     def get_random_swap(self, sentence, n):
         words = sentence.split()

@@ -48,7 +48,7 @@ class DataAugmentationProcessor:
                                                      np.array(full_train_data[target_label_b]), \
                                                      np.array(full_train_data[target_label_c])
 
-        for augmentation_type in augmentation_bank:
+        for augmentation_type in augmentation_bank[:2]:
             data_augment_processor = self.get_data_augment_processor(augmentation_type)
             x_train = np.array(data_augment_processor.transform_series(full_train_data["text"]))
 
