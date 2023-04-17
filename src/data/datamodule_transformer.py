@@ -70,12 +70,12 @@ class DataModuleTransformer(pl.LightningDataModule):
             augmented_data_train_syn_replacement = pd.read_csv(Path(self.args.augmented_data_dir,
                                                                     "train_augmented_synonym_replacement_emb.csv"))
             interim_data_train = pd.concat([data_train,
-                                            augmented_data_train_backtranslation.sample(orig_len*self.backtranslate_ratio),
-                                            augmented_data_train_rand_deletion.sample(orig_len * self.rand_deletion_ratio),
-                                            augmented_data_train_rand_insertion.sample(orig_len * self.rand_insertion_ratio),
-                                            augmented_data_train_rand_swap.sample(orig_len * self.rand_swap_ratio),
-                                            augmented_data_train_shuffle_sentence.sample(orig_len * self.shuffle_sentence_ratio),
-                                            augmented_data_train_syn_replacement.sample(orig_len * self.syn_replacement_ratio)
+                                            augmented_data_train_backtranslation.sample(int(orig_len*self.backtranslate_ratio)),
+                                            augmented_data_train_rand_deletion.sample(int(orig_len * self.rand_deletion_ratio)),
+                                            augmented_data_train_rand_insertion.sample(int(orig_len * self.rand_insertion_ratio)),
+                                            augmented_data_train_rand_swap.sample(int(orig_len * self.rand_swap_ratio)),
+                                            augmented_data_train_shuffle_sentence.sample(int(orig_len * self.shuffle_sentence_ratio)),
+                                            augmented_data_train_syn_replacement.sample(int(orig_len * self.syn_replacement_ratio))
                                             ])
 
             interim_data_train["text"] = self.text_preprocessor.transform_series(interim_data_train["text"])
@@ -270,11 +270,3 @@ class DataModuleTransformer(pl.LightningDataModule):
             self.rand_swap_ratio = 0
             self.shuffle_sentence_ratio = 0
             self.syn_replacement_ratio = 0.5
-
-        if experiment == "test":
-            self.backtranslate_ratio = 0.9
-            self.rand_deletion_ratio = 0.9
-            self.rand_insertion_ratio = 0.9
-            self.rand_swap_ratio = 0.9
-            self.shuffle_sentence_ratio = 0.9
-            self.syn_replacement_ratio = 0.9
