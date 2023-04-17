@@ -77,7 +77,7 @@ class DataModuleTransformer(pl.LightningDataModule):
                                             augmented_data_train_shuffle_sentence.sample(int(orig_len * self.shuffle_sentence_ratio)),
                                             augmented_data_train_syn_replacement.sample(int(orig_len * self.syn_replacement_ratio))
                                             ])
-
+            print(len(interim_data_train))
             interim_data_train["text"] = self.text_preprocessor.transform_series(interim_data_train["text"])
 
             interim_data_train = interim_data_train[interim_data_train[self._target_label] != -1]
