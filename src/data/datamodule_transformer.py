@@ -68,7 +68,7 @@ class DataModuleTransformer(pl.LightningDataModule):
             augmented_data_train_shuffle_sentence = pd.read_csv(Path(self.args.augmented_data_dir,
                                                                      "train_augmented_random_swap.csv"))
             augmented_data_train_syn_replacement = pd.read_csv(Path(self.args.augmented_data_dir,
-                                                                    "train_augmented_train_augmented_synonym_replacement_emb.csv"))
+                                                                    "train_augmented_synonym_replacement_emb.csv"))
             interim_data_train = pd.concat([data_train,
                                             augmented_data_train_backtranslation.sample(orig_len*self.backtranslate_ratio),
                                             augmented_data_train_rand_deletion.sample(orig_len * self.rand_deletion_ratio),
