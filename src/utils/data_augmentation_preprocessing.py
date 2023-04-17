@@ -38,19 +38,22 @@ class DataAugmentationProcessor:
         augmentation_bank = ["synonym_replacement_emb", "random_insertion_emb", "random_swap",
                              "random_deletion", "shuffle_sentence"]
 
+        rewire_id_title = "rewire_id"
         target_label_a = "target_a"
         target_label_b = "target_b"
         target_label_c = "target_c"
 
-        y_train_a, y_train_b, y_train_c = np.array(full_train_data[target_label_a]), \
-                                          np.array(full_train_data[target_label_b]), \
-                                          np.array(full_train_data[target_label_c])
+        rewire_id, y_train_a, y_train_b, y_train_c = np.array(full_train_data[rewire_id_title]),\
+                                                     np.array(full_train_data[target_label_a]), \
+                                                     np.array(full_train_data[target_label_b]), \
+                                                     np.array(full_train_data[target_label_c])
 
         for augmentation_type in augmentation_bank:
             data_augment_processor = self.get_data_augment_processor(augmentation_type)
             x_train = np.array(data_augment_processor.transform_series(full_train_data["text"]))
 
-            train_df = pd.DataFrame({"text": x_train, target_label_a: y_train_a, target_label_b: y_train_b,
+            train_df = pd.DataFrame({rewire_id_title: rewire_id, "text": x_train, target_label_a: y_train_a,
+                                     target_label_b: y_train_b,
                                      target_label_c: y_train_c})
 
             train_df.to_csv(Path(self.augmented_output_dir, f"train_augmented_{augmentation_type}.csv"), index=False)

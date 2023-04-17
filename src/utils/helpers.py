@@ -5,6 +5,7 @@ from pathlib import Path
 
 import torch.optim
 import torch.optim as optim
+import wandb
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
 from lightning.pytorch.loggers import WandbLogger
 
@@ -75,6 +76,9 @@ def setup_wandb(args):
     :param args: Pass in the command line arguments
     :return: A wandblogger object
     """
+    if args.pause_logging:
+        wandb.init(mode="disabled")
+
     wandb_logger = WandbLogger(
         project="EDOS-ift6289",
         save_dir=args.log_dir,

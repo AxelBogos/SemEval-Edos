@@ -31,6 +31,18 @@ class DataModuleTransformer(pl.LightningDataModule):
         # data preparation handlers
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)
 
+        # data augmentation experiments
+        self.experiment = args.data_aug_exp
+        self.set_experiment(args.data_aug_exp)
+
+        # set data augmentations
+        self.backtranslate_ratio = 0
+        self.rand_deletion_ratio = 0
+        self.rand_insertion_ratio = 0
+        self.rand_swap_ratio = 0
+        self.shuffle_sentence_ratio = 0
+        self.syn_replacement_ratio = 0
+
     def setup(self, stage: Optional[str] = None):
 
         """The setup function is called by lightning with both `trainer.fit()` and
@@ -42,10 +54,32 @@ class DataModuleTransformer(pl.LightningDataModule):
         """
 
         if not self.data_train:
-            interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
-            interim_data_train["text"] = self.text_preprocessor.transform_series(
-                interim_data_train["text"]
-            )
+            data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
+            orig_len = len(data_train)
+
+            augmented_data_train_backtranslation = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                                    "train_augmented_backtranslate_all.csv"))
+            augmented_data_train_rand_deletion = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                                  "train_augmented_rand_deletion.csv"))
+            augmented_data_train_rand_insertion = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                                   "train_augmented_random_insertion_emb.csv"))
+            augmented_data_train_rand_swap = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                              "train_augmented_random_swap.csv"))
+            augmented_data_train_shuffle_sentence = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                                     "train_augmented_random_swap.csv"))
+            augmented_data_train_syn_replacement = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                                    "train_augmented_train_augmented_synonym_replacement_emb.csv"))
+            interim_data_train = pd.concat([data_train,
+                                            augmented_data_train_backtranslation.sample(orig_len*self.backtranslate_ratio),
+                                            augmented_data_train_rand_deletion.sample(orig_len * self.rand_deletion_ratio),
+                                            augmented_data_train_rand_insertion.sample(orig_len * self.rand_insertion_ratio),
+                                            augmented_data_train_rand_swap.sample(orig_len * self.rand_swap_ratio),
+                                            augmented_data_train_shuffle_sentence.sample(orig_len * self.shuffle_sentence_ratio),
+                                            augmented_data_train_syn_replacement.sample(orig_len * self.syn_replacement_ratio),
+                                            ])
+
+            interim_data_train["text"] = self.text_preprocessor.transform_series(interim_data_train["text"])
+
             interim_data_train = interim_data_train[interim_data_train[self._target_label] != -1]
             interim_data_train = interim_data_train.to_numpy()
 
@@ -168,3 +202,15 @@ class DataModuleTransformer(pl.LightningDataModule):
             return "target_b"
         elif self.args.task == "c":
             return "target_c"
+
+    def set_experiment(self, experiment: str) -> None:
+        """
+
+        """
+        if experiment == "all":
+            self.backtranslate_ratio = 0.1
+            self.rand_deletion_ratio = 0.1
+            self.rand_insertion_ratio = 0.1
+            self.rand_swap_ratio = 0.1
+            self.shuffle_sentence_ratio = 0.1
+            self.syn_replacement_ratio = 0.1

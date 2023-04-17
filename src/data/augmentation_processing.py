@@ -42,12 +42,12 @@ class AugmentationPreprocessor:
         self.preprocessing_mode = preprocessing_mode
         self.set_preprocessing_flags(preprocessing_mode)
 
-        self.get_aug_substitute = naw.ContextualWordEmbsAug(model_path='roberta-large', action="substitute", aug_max=1)
-        self.get_aug_insert = naw.ContextualWordEmbsAug(model_path='roberta-large', action="insert", aug_max=1)
-        # self.get_aug_substitute = naw.ContextualWordEmbsAug(model_path='distilbert-base-uncased', action="substitute",
-        #                                                     aug_max=2)
-        # self.get_aug_insert = naw.ContextualWordEmbsAug(model_path='distilbert-base-uncased', action="insert",
-        #                                                 aug_max=2)
+        # self.get_aug_substitute = naw.ContextualWordEmbsAug(model_path='roberta-large', action="substitute", aug_max=1)
+        # self.get_aug_insert = naw.ContextualWordEmbsAug(model_path='roberta-large', action="insert", aug_max=1)
+        self.get_aug_substitute = naw.ContextualWordEmbsAug(model_path='distilbert-base-uncased', action="substitute",
+                                                            aug_max=1)
+        self.get_aug_insert = naw.ContextualWordEmbsAug(model_path='distilbert-base-uncased', action="insert",
+                                                        aug_max=1)
 
     def augment_data_experiment(self, x: str):
         """The transform function takes a string as input and returns a modified string. The
@@ -63,9 +63,9 @@ class AugmentationPreprocessor:
         :return: list of tokens
         """
         if self.synonym_replacement:
-            x = self.get_aug_substitute.augment(x)
+            x = self.get_aug_substitute.augment(x)[0]
         if self.random_insertion:
-            x = self.get_aug_insert.augment(x)
+            x = self.get_aug_insert.augment(x)[0]
         if self.random_swap:
             x = self.get_random_swap(x, 1)
         if self.random_deletion:

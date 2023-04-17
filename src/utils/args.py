@@ -127,6 +127,14 @@ def parse_args():
         help="Number workers",
     )
 
+    # --------------- Data Augmentation Experiments Config Arguments ---------------
+    parser.add_argument(
+        "--data_aug_exp",
+        default='all',
+        type=str,
+        help="Experimentation of data augmentation techniques",
+    )
+
     # --------------- IO Arguments ---------------
 
     parser.add_argument(
@@ -149,12 +157,24 @@ def parse_args():
         help="Interim data directory with all datasets",
     )
     parser.add_argument(
+        "--augmented_data_dir",
+        default=defines.AUGMENTED_DATA_DIR,
+        type=Path,
+        help="Interim data directory with all datasets",
+    )
+    parser.add_argument(
         "--processed_data_dir",
         default=defines.PROCESSED_DATA_DIR,
         type=Path,
         help="Processed data directory with all datasets",
     )
-
+    # --------------- Logging Arguments ---------------
+    parser.add_argument(
+        "--pause_logging",
+        default=False,
+        type=bool,
+        help="Pause wandb logging",
+    )
     # --------------- Utils Arguments ---------------
 
     parser.add_argument(
@@ -165,6 +185,7 @@ def parse_args():
     if not _args_sanity_check(args):
         exit()
     return args
+
 
 
 def _args_sanity_check(args) -> bool:
