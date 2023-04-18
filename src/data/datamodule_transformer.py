@@ -271,10 +271,10 @@ class DataModuleTransformer(pl.LightningDataModule):
             self.shuffle_sentence_ratio = 0
             self.syn_replacement_ratio = 0.5
 
-        if experiment == "rand_insertion_1":
+        if experiment == "mix":
             self.backtranslate_ratio = 0
             self.rand_deletion_ratio = 0
-            self.rand_insertion_ratio = 0.8
+            self.rand_insertion_ratio = 0.25
             self.rand_swap_ratio = 0
             self.shuffle_sentence_ratio = 0
-            self.syn_replacement_ratio = 0
+            self.syn_replacement_ratio = 0.25
