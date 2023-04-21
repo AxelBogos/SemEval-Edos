@@ -76,9 +76,6 @@ def setup_wandb(args):
     :param args: Pass in the command line arguments
     :return: A wandblogger object
     """
-    if args.pause_logging:
-        wandb.init(mode="disabled")
-
     wandb_logger = WandbLogger(
         project="EDOS-ift6289",
         save_dir=args.log_dir,
@@ -102,10 +99,10 @@ def get_lightning_callbacks(args):
     callbacks = list()
     callbacks.append(ModelSummary())
     callbacks.append(
-        ModelCheckpoint(dirpath=args.log_dir, monitor="val/f1_epoch", save_top_k=3, mode="max")
+        ModelCheckpoint(dirpath=args.log_dir, monitor="val_f1", save_top_k=3, mode="min")
         # ModelCheckpoint(dirpath=args.log_dir, monitor="val/loss", save_top_k=3, mode="min")
     )
-    callbacks.append(EarlyStopping(monitor="val/f1_epoch", patience=args.patience))
+    callbacks.append(EarlyStopping(monitor="val_f1", patience=args.patience))
     return callbacks
 
 

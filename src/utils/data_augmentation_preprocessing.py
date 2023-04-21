@@ -35,7 +35,7 @@ class DataAugmentationProcessor:
 
         full_train_data = pd.read_csv(Path(self.interim_output_dir, "train.csv"))
 
-        augmentation_bank = ["synonym_replacement_emb", "random_insertion_emb", "random_swap",
+        augmentation_bank = ["random_insertion_emb","synonym_replacement_emb",  "random_swap",
                              "random_deletion", "shuffle_sentence"]
 
         rewire_id_title = "rewire_id"
@@ -48,7 +48,7 @@ class DataAugmentationProcessor:
                                                      np.array(full_train_data[target_label_b]), \
                                                      np.array(full_train_data[target_label_c])
 
-        for augmentation_type in augmentation_bank[:2]:
+        for augmentation_type in augmentation_bank[:1]:
             data_augment_processor = self.get_data_augment_processor(augmentation_type)
             x_train = np.array(data_augment_processor.transform_series(full_train_data["text"]))
 
