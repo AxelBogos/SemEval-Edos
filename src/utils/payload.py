@@ -307,7 +307,7 @@ class PayloadLoader:
             self.b4_aug_insert3_ratio = 1
 
         if experiment == "task-b-syn3-ins3-onlyless":
-            self.b1_aug_swap = 0.5
+            self.b1_aug_swap = 1
             self.b1_aug_syn1_ratio = 0
             self.b1_aug_syn3_ratio = 1
             self.b1_aug_insert1_ratio = 0
@@ -324,9 +324,9 @@ class PayloadLoader:
             self.b3_aug_syn3_ratio = 0
             self.b3_aug_insert1_ratio = 0
             self.b3_aug_insert2_ratio = 0
-            self.b3_aug_insert3_ratio = 0.2
+            self.b3_aug_insert3_ratio = 0
 
-            self.b4_aug_swap = 0.6
+            self.b4_aug_swap = 1
             self.b4_aug_syn1_ratio = 0
             self.b4_aug_syn3_ratio = 1
             self.b4_aug_insert1_ratio = 0
