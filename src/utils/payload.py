@@ -115,7 +115,7 @@ class PayloadLoader:
             b4_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 3]
 
             aug_data_train = pd.concat([
-                b1_aug_swap * self.b1_aug_swap,
+                b1_aug_swap.sample(int(len(b1) * self.b1_aug_swap)),
                 b1_aug_syn1.sample(int(len(b1) * self.b1_aug_syn1_ratio)),
                 b1_aug_syn3.sample(int(len(b1) * self.b1_aug_syn3_ratio)),
                 b1_aug_insertion1.sample(int(len(b1) * self.b1_aug_insert1_ratio)),
@@ -131,7 +131,7 @@ class PayloadLoader:
                 b3_aug_insertion1.sample(int(len(b3) * self.b3_aug_insert1_ratio)),
                 b3_aug_insertion2.sample(int(len(b3) * self.b3_aug_insert2_ratio)),
                 b3_aug_insertion3.sample(int(len(b3) * self.b3_aug_insert3_ratio)),
-                b4_aug_swap * self.b4_aug_swap,
+                b4_aug_swap.sample(int(len(b4) * self.b4_aug_swap)),
                 b4_aug_syn1.sample(int(len(b4) * self.b4_aug_syn1_ratio)),
                 b4_aug_syn3.sample(int(len(b4) * self.b4_aug_syn3_ratio)),
                 b4_aug_insertion1.sample(int(len(b4) * self.b4_aug_insert1_ratio)),
