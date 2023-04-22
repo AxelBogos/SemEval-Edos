@@ -33,8 +33,10 @@ class DataModuleTransformer(pl.LightningDataModule):
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)
 
         # set data augmentations
-        self.rand_insertion_ratio = 0
-        self.syn_replacement_ratio = 0
+        self.rand_insertion_ratio1 = 0
+        self.syn_replacement_ratio1 = 0
+        self.rand_insertion_ratio3 = 0
+        self.syn_replacement_ratio3 = 0
 
         # data augmentation experiments
         self.experiment = args.data_aug_exp
@@ -63,9 +65,17 @@ class DataModuleTransformer(pl.LightningDataModule):
                 train_aug_synonym3 = pd.read_csv(Path(self.args.augmented_data_dir,
                                                       "train_augmented_synonym_replacement_emb.csv"))
 
+                train_aug_insertion1 = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                        "train_augmented_random_insertion_emb_augmax_1.csv"))
+
+                train_aug_synonym1 = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                      "train_augmented_synonym_replacement_emb_augmax_1.csv"))
+
                 interim_data_train = pd.concat([data_train,
-                                                train_aug_insertion3.sample(int(orig_len * self.rand_insertion_ratio)),
-                                                train_aug_synonym3.sample(int(orig_len * self.syn_replacement_ratio))
+                                                train_aug_insertion3.sample(int(orig_len * self.rand_insertion_ratio3)),
+                                                train_aug_synonym3.sample(int(orig_len * self.syn_replacement_ratio3)),
+                                                train_aug_insertion1.sample(int(orig_len * self.rand_insertion_ratio1)),
+                                                train_aug_synonym1.sample(int(orig_len * self.syn_replacement_ratio1)),
                                                 ])
 
             if self.args.task == 'b' or self.args.task == 'c':
@@ -204,10 +214,18 @@ class DataModuleTransformer(pl.LightningDataModule):
             self.rand_insertion_ratio = 0
             self.syn_replacement_ratio = 0
 
-        if experiment == "task-a-rand-insert":
-            self.rand_insertion_ratio = 0.5
-            self.syn_replacement_ratio = 0
+        if experiment == "task-a-rand-insert-3":
+            self.rand_insertion_ratio3 = 0.5
+            self.syn_replacement_ratio3 = 0
 
-        if experiment == "task-a-syn-insert":
-            self.rand_insertion_ratio = 0
-            self.syn_replacement_ratio = 0.5
+        if experiment == "task-a-syn-insert-3":
+            self.rand_insertion_ratio3 = 0
+            self.syn_replacement_ratio3 = 0.5
+
+        if experiment == "task-a-rand-insert-1":
+            self.rand_insertion_ratio1 = 0.5
+            self.syn_replacement_ratio1 = 0
+
+        if experiment == "task-a-syn-insert-1":
+            self.rand_insertion_ratio1 = 0
+            self.syn_replacement_ratio1 = 0.5
