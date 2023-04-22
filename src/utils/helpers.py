@@ -99,7 +99,7 @@ def get_lightning_callbacks(args):
     callbacks = list()
     callbacks.append(ModelSummary())
     callbacks.append(
-        ModelCheckpoint(dirpath=args.log_dir, monitor="val/loss", save_top_k=3, mode="min")
+        ModelCheckpoint(dirpath=args.log_dir, monitor="val/loss", save_top_k=2, mode="min")
         # ModelCheckpoint(dirpath=args.log_dir, monitor="val/loss", save_top_k=3, mode="min")
     )
     callbacks.append(EarlyStopping(monitor="val/loss", patience=args.patience))
