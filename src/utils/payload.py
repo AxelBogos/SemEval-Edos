@@ -72,10 +72,10 @@ class PayloadLoader:
 
             train_task_b = train_df.copy()
             train_task_b = train_task_b.loc[train_task_b['target_b'] != -1]
-            b1 = train_task_b.loc[train_task_b['target_b'] == 1]
-            b2 = train_task_b.loc[train_task_b['target_b'] == 2]
-            b3 = train_task_b.loc[train_task_b['target_b'] == 3]
-            b4 = train_task_b.loc[train_task_b['target_b'] == 4]
+            b1 = train_task_b.loc[train_task_b['target_b'] == 0]
+            b2 = train_task_b.loc[train_task_b['target_b'] == 1]
+            b3 = train_task_b.loc[train_task_b['target_b'] == 2]
+            b4 = train_task_b.loc[train_task_b['target_b'] == 3]
 
             #####################################################################################
             # b1: threats, plans to harm and incitement
