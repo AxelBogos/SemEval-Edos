@@ -33,11 +33,7 @@ class DataModuleTransformer(pl.LightningDataModule):
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)
 
         # set data augmentations
-        self.backtranslate_ratio = 0
-        self.rand_deletion_ratio = 0
         self.rand_insertion_ratio = 0
-        self.rand_swap_ratio = 0
-        self.shuffle_sentence_ratio = 0
         self.syn_replacement_ratio = 0
 
         # data augmentation experiments
@@ -57,7 +53,24 @@ class DataModuleTransformer(pl.LightningDataModule):
 
         if not self.data_train:
 
-            interim_data_train = pd.concat([self.data_train, aug_data.balanced_class()])
+            if self.args.task == 'a':
+                data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
+                orig_len = len(data_train)
+
+                train_aug_insertion3 = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                        "train_augmented_random_insertion_emb.csv"))
+
+                train_aug_synonym3 = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                      "train_augmented_synonym_replacement_emb.csv"))
+
+                interim_data_train = pd.concat([data_train,
+                                                train_aug_insertion3.sample(int(orig_len * self.rand_insertion_ratio)),
+                                                train_aug_synonym3.sample(int(orig_len * self.syn_replacement_ratio))
+                                                ])
+
+            if self.args.task == 'b' or self.args.task == 'c':
+                interim_data_train = pd.concat([self.data_train, aug_data.balanced_class()])
+
             interim_data_train["text"] = self.text_preprocessor.transform_series(interim_data_train["text"])
 
             interim_data_train = interim_data_train[interim_data_train[self._target_label] != -1]
@@ -187,82 +200,14 @@ class DataModuleTransformer(pl.LightningDataModule):
         """
 
         """
-        if experiment == "all":
-            self.backtranslate_ratio = 0.1
-            self.rand_deletion_ratio = 0.1
-            self.rand_insertion_ratio = 0.1
-            self.rand_swap_ratio = 0.1
-            self.shuffle_sentence_ratio = 0.1
-            self.syn_replacement_ratio = 0.1
-
         if experiment == "none":
-            self.backtranslate_ratio = 0
-            self.rand_deletion_ratio = 0
             self.rand_insertion_ratio = 0
-            self.rand_swap_ratio = 0
-            self.shuffle_sentence_ratio = 0
             self.syn_replacement_ratio = 0
 
-        if experiment == "backtranslate":
-            self.backtranslate_ratio = 0.5
-            self.rand_deletion_ratio = 0
-            self.rand_insertion_ratio = 0
-            self.rand_swap_ratio = 0
-            self.shuffle_sentence_ratio = 0
-            self.syn_replacement_ratio = 0
-
-        if experiment == "rand_deletion":
-            self.backtranslate_ratio = 0
-            self.rand_deletion_ratio = 0.5
-            self.rand_insertion_ratio = 0
-            self.rand_swap_ratio = 0
-            self.shuffle_sentence_ratio = 0
-            self.syn_replacement_ratio = 0
-
-        if experiment == "rand_insertion":
-            self.backtranslate_ratio = 0
-            self.rand_deletion_ratio = 0
+        if experiment == "task-a-rand-insert":
             self.rand_insertion_ratio = 0.5
-            self.rand_swap_ratio = 0
-            self.shuffle_sentence_ratio = 0
             self.syn_replacement_ratio = 0
 
-        if experiment == "swap_ratio":
-            self.backtranslate_ratio = 0
-            self.rand_deletion_ratio = 0
+        if experiment == "task-a-syn-insert":
             self.rand_insertion_ratio = 0
-            self.rand_swap_ratio = 0.5
-            self.shuffle_sentence_ratio = 0
-            self.syn_replacement_ratio = 0
-
-        if experiment == "shuffle_sentence":
-            self.backtranslate_ratio = 0
-            self.rand_deletion_ratio = 0
-            self.rand_insertion_ratio = 0
-            self.rand_swap_ratio = 0
-            self.shuffle_sentence_ratio = 0.5
-            self.syn_replacement_ratio = 0
-
-        if experiment == "syn_replacement":
-            self.backtranslate_ratio = 0
-            self.rand_deletion_ratio = 0
-            self.rand_insertion_ratio = 0
-            self.rand_swap_ratio = 0
-            self.shuffle_sentence_ratio = 0
             self.syn_replacement_ratio = 0.5
-
-        if experiment == "mix":
-            self.backtranslate_ratio = 0
-            self.rand_deletion_ratio = 0
-            self.rand_insertion_ratio = 0.25
-            self.rand_swap_ratio = 0
-            self.shuffle_sentence_ratio = 0
-            self.syn_replacement_ratio = 0.25
-
-        if experiment == "rand_insertion_reduced":
-            self.backtranslate_ratio = 0
-            self.rand_deletion_ratio = 0
-            self.rand_insertion_ratio = 0.25
-            self.rand_swap_ratio = 0
-            self.shuffle_sentence_ratio = 0
-            self.syn_replacement_ratio = 0
