@@ -10,7 +10,7 @@ from transformers import AutoTokenizer
 from src.data.components.Dataset import GenericDatasetTransformer
 from src.utils.defines import INTERIM_DATA_DIR, AUGMENTED_DATA_DIR
 from src.data.text_processing import TextPreprocessor
-
+from src.utils.payload import PayloadLoader
 
 class DataModuleTransformer(pl.LightningDataModule):
     def __init__(self, args):
@@ -53,33 +53,11 @@ class DataModuleTransformer(pl.LightningDataModule):
         :param stage: Optional[str]: Determine whether the training is in train or test mode
         :return: A tuple of the train, val and test datasets
         """
+        aug_data = PayloadLoader(self.args)
 
         if not self.data_train:
-            # data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
-            # orig_len = len(data_train)
-            #
-            # augmented_data_train_backtranslation = pd.read_csv(Path(self.args.augmented_data_dir,
-            #                                                         "train_augmented_backtranslate_all.csv"))
-            # augmented_data_train_rand_deletion = pd.read_csv(Path(self.args.augmented_data_dir,
-            #                                                       "train_augmented_random_deletion.csv"))
-            # augmented_data_train_rand_insertion = pd.read_csv(Path(self.args.augmented_data_dir,
-            #                                                        "train_augmented_random_insertion_emb.csv"))
-            # augmented_data_train_rand_swap = pd.read_csv(Path(self.args.augmented_data_dir,
-            #                                                   "train_augmented_random_swap.csv"))
-            # augmented_data_train_shuffle_sentence = pd.read_csv(Path(self.args.augmented_data_dir,
-            #                                                          "train_augmented_random_swap.csv"))
-            # augmented_data_train_syn_replacement = pd.read_csv(Path(self.args.augmented_data_dir,
-            #                                                         "train_augmented_synonym_replacement_emb.csv"))
-            # interim_data_train = pd.concat([data_train,
-            #                                 augmented_data_train_backtranslation.sample(int(orig_len * self.backtranslate_ratio)),
-            #                                 augmented_data_train_rand_deletion.sample(int(orig_len * self.rand_deletion_ratio)),
-            #                                 augmented_data_train_rand_insertion.sample(int(orig_len * self.rand_insertion_ratio)),
-            #                                 augmented_data_train_rand_swap.sample(int(orig_len * self.rand_swap_ratio)),
-            #                                 augmented_data_train_shuffle_sentence.sample(int(orig_len * self.shuffle_sentence_ratio)),
-            #                                 augmented_data_train_syn_replacement.sample(int(orig_len * self.syn_replacement_ratio))
-            #                                 ])
 
-            interim_data_train = pd.read_csv(Path(AUGMENTED_DATA_DIR, "augmented_task_a.csv"))
+            interim_data_train = pd.concat([self.data_train, aug_data.balanced_class()])
             interim_data_train["text"] = self.text_preprocessor.transform_series(interim_data_train["text"])
 
             interim_data_train = interim_data_train[interim_data_train[self._target_label] != -1]
