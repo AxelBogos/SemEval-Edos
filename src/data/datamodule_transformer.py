@@ -79,7 +79,8 @@ class DataModuleTransformer(pl.LightningDataModule):
                                                 ])
 
             if self.args.task == 'b' or self.args.task == 'c':
-                interim_data_train = pd.concat([self.data_train, aug_data.balanced_class()])
+                data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
+                interim_data_train = pd.concat([data_train, aug_data.balanced_class()])
 
             interim_data_train["text"] = self.text_preprocessor.transform_series(interim_data_train["text"])
 

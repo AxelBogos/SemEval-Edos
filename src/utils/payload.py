@@ -53,9 +53,9 @@ class PayloadLoader:
         train_aug_insertion3 = pd.read_csv(Path(self.args.augmented_data_dir,
                                                                 "train_augmented_random_insertion_emb.csv"))
         train_aug_insertion1 = pd.read_csv(Path(self.args.augmented_data_dir,
-                                                                "train_augmented_random_insertion_emb_aug_max1.csv"))
+                                                                "train_augmented_random_insertion_emb_aug_max_1.csv"))
         train_aug_insertion2 = pd.read_csv(Path(self.args.augmented_data_dir,
-                                                                "train_augmented_random_insertion_emb_aug_max2.csv"))
+                                                                "train_augmented_random_insertion_emb_aug_max_2.csv"))
 
         train_rand_swap = pd.read_csv(Path(self.args.augmented_data_dir,
                                                           "train_augmented_random_swap.csv"))
