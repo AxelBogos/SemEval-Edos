@@ -19,6 +19,7 @@ class PayloadLoader:
 
         # set data augmentations
         self.b1_aug_backtranslate = 0
+        self.b1_aug_deletion = 0
         self.b1_aug_swap = 0
         self.b1_aug_syn1_ratio = 0
         self.b1_aug_syn3_ratio = 0
@@ -27,6 +28,7 @@ class PayloadLoader:
         self.b1_aug_insert3_ratio = 0
 
         self.b2_aug_backtranslate = 0
+        self.b2_aug_deletion = 0
         self.b2_aug_syn1_ratio = 0
         self.b2_aug_syn3_ratio = 0
         self.b2_aug_insert1_ratio = 0
@@ -34,6 +36,7 @@ class PayloadLoader:
         self.b2_aug_insert3_ratio = 0
 
         self.b3_aug_backtranslate = 0
+        self.b3_aug_deletion = 0
         self.b3_aug_syn1_ratio = 0
         self.b3_aug_syn3_ratio = 0
         self.b3_aug_insert1_ratio = 0
@@ -41,6 +44,7 @@ class PayloadLoader:
         self.b3_aug_insert3_ratio = 0
 
         self.b4_aug_backtranslate = 0
+        self.b4_aug_deletion = 0
         self.b4_aug_swap = 0
         self.b4_aug_syn1_ratio = 0
         self.b4_aug_syn3_ratio = 0
@@ -72,7 +76,8 @@ class PayloadLoader:
         train_aug_synonym1 = pd.read_csv(Path(self.args.augmented_data_dir,
                                                                  "train_augmented_synonym_replacement_emb_augmax_1.csv"))
 
-
+        train_aug_deletion = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                "train_augmented_random_deletion.csv"))
         if self.args.task == 'b':
             # Each sexist category size
             train_df = pd.read_csv(os.path.join(INTERIM_DATA_DIR, "train.csv"))
@@ -87,6 +92,7 @@ class PayloadLoader:
             #####################################################################################
             # b1: threats, plans to harm and incitement
             b1_aug_backtranslate = train_aug_backtranslate.loc[train_aug_backtranslate['target_b'] == 0]
+            b1_aug_deletion = train_aug_deletion.loc[train_aug_deletion['target_b'] == 0]
 
             b1_aug_syn1 = train_aug_synonym1.loc[train_aug_synonym1['target_b'] == 0]
             b1_aug_syn3 = train_aug_synonym3.loc[train_aug_synonym3['target_b'] == 0]
@@ -99,6 +105,7 @@ class PayloadLoader:
             #####################################################################################
             # b2: derogation
             b2_aug_backtranslate = train_aug_backtranslate.loc[train_aug_backtranslate['target_b'] == 1]
+            b2_aug_deletion = train_aug_deletion.loc[train_aug_deletion['target_b'] == 1]
 
             b2_aug_syn1 = train_aug_synonym1.loc[train_aug_synonym1['target_b'] == 1]
             b2_aug_syn3 = train_aug_synonym3.loc[train_aug_synonym3['target_b'] == 1]
@@ -109,6 +116,7 @@ class PayloadLoader:
             #####################################################################################
             # b3: animosity
             b3_aug_backtranslate = train_aug_backtranslate.loc[train_aug_backtranslate['target_b'] == 2]
+            b3_aug_deletion = train_aug_deletion.loc[train_aug_deletion['target_b'] == 1]
 
             b3_aug_syn1 = train_aug_synonym1.loc[train_aug_synonym1['target_b'] == 2]
             b3_aug_syn3 = train_aug_synonym3.loc[train_aug_synonym3['target_b'] == 2]
@@ -119,6 +127,7 @@ class PayloadLoader:
             #####################################################################################
             # b4: prejudiced discussions
             b4_aug_backtranslate = train_aug_backtranslate.loc[train_aug_backtranslate['target_b'] == 3]
+            b4_aug_deletion = train_aug_deletion.loc[train_aug_deletion['target_b'] == 1]
 
             b4_aug_syn1 = train_aug_synonym1.loc[train_aug_synonym1['target_b'] == 3]
             b4_aug_syn3 = train_aug_synonym3.loc[train_aug_synonym3['target_b'] == 3]
@@ -131,6 +140,7 @@ class PayloadLoader:
 
             aug_data_train = pd.concat([
                 b1_aug_backtranslate.sample(int(len(b1) * self.b1_aug_backtranslate)),
+                b1_aug_deletion.sample(int(len(b1) * self.b1_aug_deletion)),
                 b1_aug_swap.sample(int(len(b1) * self.b1_aug_swap)),
                 b1_aug_syn1.sample(int(len(b1) * self.b1_aug_syn1_ratio)),
                 b1_aug_syn3.sample(int(len(b1) * self.b1_aug_syn3_ratio)),
@@ -138,18 +148,21 @@ class PayloadLoader:
                 b1_aug_insertion2.sample(int(len(b1) * self.b1_aug_insert2_ratio)),
                 b1_aug_insertion3.sample(int(len(b1) * self.b1_aug_insert3_ratio)),
                 b2_aug_backtranslate.sample(int(len(b2) * self.b2_aug_backtranslate)),
+                b2_aug_deletion.sample(int(len(b2) * self.b2_aug_deletion)),
                 b2_aug_syn1.sample(int(len(b2) * self.b2_aug_syn1_ratio)),
                 b2_aug_syn3.sample(int(len(b2) * self.b2_aug_syn3_ratio)),
                 b2_aug_insertion1.sample(int(len(b2) * self.b2_aug_insert1_ratio)),
                 b2_aug_insertion2.sample(int(len(b2) * self.b2_aug_insert2_ratio)),
                 b2_aug_insertion3.sample(int(len(b2) * self.b2_aug_insert3_ratio)),
                 b3_aug_backtranslate.sample(int(len(b3) * self.b3_aug_backtranslate)),
+                b3_aug_deletion.sample(int(len(b3) * self.b3_aug_deletion)),
                 b3_aug_syn1.sample(int(len(b3) * self.b3_aug_syn1_ratio)),
                 b3_aug_syn3.sample(int(len(b3) * self.b3_aug_syn3_ratio)),
                 b3_aug_insertion1.sample(int(len(b3) * self.b3_aug_insert1_ratio)),
                 b3_aug_insertion2.sample(int(len(b3) * self.b3_aug_insert2_ratio)),
                 b3_aug_insertion3.sample(int(len(b3) * self.b3_aug_insert3_ratio)),
                 b4_aug_backtranslate.sample(int(len(b4) * self.b4_aug_backtranslate)),
+                b4_aug_deletion.sample(int(len(b4) * self.b4_aug_deletion)),
                 b4_aug_swap.sample(int(len(b4) * self.b4_aug_swap)),
                 b4_aug_syn1.sample(int(len(b4) * self.b4_aug_syn1_ratio)),
                 b4_aug_syn3.sample(int(len(b4) * self.b4_aug_syn3_ratio)),
@@ -281,3 +294,17 @@ class PayloadLoader:
             self.b4_aug_insert1_ratio = 1
             self.b4_aug_backtranslate = 1
 
+        if experiment == "task-b-syn1-ins1-onlyless":
+            self.b1_aug_swap = 1
+            self.b1_aug_syn1_ratio = 1
+            self.b1_aug_insert1_ratio = 1
+            self.b1_aug_deletion = 0.8
+
+            self.b2_aug_deletion = 0.1
+
+            self.b3_aug_deletion = 0.4
+
+            self.b4_aug_swap = 1
+            self.b4_aug_syn1_ratio = 1
+            self.b4_aug_insert1_ratio = 1
+            self.b4_aug_deletion = 0.7
