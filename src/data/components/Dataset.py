@@ -42,6 +42,9 @@ class GenericDatasetTransformer(Dataset):
             labels = np.array([torch.tensor(lbl, dtype=torch.long) for lbl in labels])
         else:
             labels = torch.tensor(labels, dtype=torch.long)
+
+        print(f"text type: {type(text)}, text value: {text}")  # Add this line to debug
+
         encoding = self.tokenizer.encode_plus(
             text,
             add_special_tokens=True,
