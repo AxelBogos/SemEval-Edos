@@ -135,6 +135,14 @@ def parse_args():
         help="Experimentation of data augmentation techniques",
     )
 
+    parser.add_argument(
+        "--replace",
+        default=False,
+        type=bool,
+        help="Allow or disallow sampling of the same row more than once.",
+    )
+
+
     # --------------- IO Arguments ---------------
 
     parser.add_argument(

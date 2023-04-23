@@ -55,6 +55,7 @@ class PayloadLoader:
         # data augmentation experiments
         self.experiment = args.data_aug_exp
         self.set_experiment(args.data_aug_exp)
+        self.replace = args.replace
 
     def balanced_class(self):
         # load augmented set
@@ -139,36 +140,39 @@ class PayloadLoader:
             b4_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 3]
 
             aug_data_train = pd.concat([
-                b1_aug_backtranslate.sample(int(len(b1) * self.b1_aug_backtranslate)),
-                b1_aug_deletion.sample(int(len(b1) * self.b1_aug_deletion)),
-                b1_aug_swap.sample(int(len(b1) * self.b1_aug_swap)),
-                b1_aug_syn1.sample(int(len(b1) * self.b1_aug_syn1_ratio)),
-                b1_aug_syn3.sample(int(len(b1) * self.b1_aug_syn3_ratio)),
-                b1_aug_insertion1.sample(int(len(b1) * self.b1_aug_insert1_ratio)),
-                b1_aug_insertion2.sample(int(len(b1) * self.b1_aug_insert2_ratio)),
-                b1_aug_insertion3.sample(int(len(b1) * self.b1_aug_insert3_ratio)),
-                b2_aug_backtranslate.sample(int(len(b2) * self.b2_aug_backtranslate)),
-                b2_aug_deletion.sample(int(len(b2) * self.b2_aug_deletion)),
-                b2_aug_syn1.sample(int(len(b2) * self.b2_aug_syn1_ratio)),
-                b2_aug_syn3.sample(int(len(b2) * self.b2_aug_syn3_ratio)),
-                b2_aug_insertion1.sample(int(len(b2) * self.b2_aug_insert1_ratio)),
-                b2_aug_insertion2.sample(int(len(b2) * self.b2_aug_insert2_ratio)),
-                b2_aug_insertion3.sample(int(len(b2) * self.b2_aug_insert3_ratio)),
-                b3_aug_backtranslate.sample(int(len(b3) * self.b3_aug_backtranslate)),
-                b3_aug_deletion.sample(int(len(b3) * self.b3_aug_deletion)),
-                b3_aug_syn1.sample(int(len(b3) * self.b3_aug_syn1_ratio)),
-                b3_aug_syn3.sample(int(len(b3) * self.b3_aug_syn3_ratio)),
-                b3_aug_insertion1.sample(int(len(b3) * self.b3_aug_insert1_ratio)),
-                b3_aug_insertion2.sample(int(len(b3) * self.b3_aug_insert2_ratio)),
-                b3_aug_insertion3.sample(int(len(b3) * self.b3_aug_insert3_ratio)),
-                b4_aug_backtranslate.sample(int(len(b4) * self.b4_aug_backtranslate)),
-                b4_aug_deletion.sample(int(len(b4) * self.b4_aug_deletion)),
-                b4_aug_swap.sample(int(len(b4) * self.b4_aug_swap)),
-                b4_aug_syn1.sample(int(len(b4) * self.b4_aug_syn1_ratio)),
-                b4_aug_syn3.sample(int(len(b4) * self.b4_aug_syn3_ratio)),
-                b4_aug_insertion1.sample(int(len(b4) * self.b4_aug_insert1_ratio)),
-                b4_aug_insertion2.sample(int(len(b4) * self.b4_aug_insert2_ratio)),
-                b4_aug_insertion3.sample(int(len(b4) * self.b4_aug_insert3_ratio)),
+                b1_aug_backtranslate.sample(int(len(b1) * self.b1_aug_backtranslate), self.replace),
+                b1_aug_deletion.sample(int(len(b1) * self.b1_aug_deletion), self.replace),
+                b1_aug_swap.sample(int(len(b1) * self.b1_aug_swap), self.replace),
+                b1_aug_syn1.sample(int(len(b1) * self.b1_aug_syn1_ratio), self.replace),
+                b1_aug_syn3.sample(int(len(b1) * self.b1_aug_syn3_ratio), self.replace),
+                b1_aug_insertion1.sample(int(len(b1) * self.b1_aug_insert1_ratio), self.replace),
+                b1_aug_insertion2.sample(int(len(b1) * self.b1_aug_insert2_ratio), self.replace),
+                b1_aug_insertion3.sample(int(len(b1) * self.b1_aug_insert3_ratio), self.replace),
+
+                b2_aug_backtranslate.sample(int(len(b2) * self.b2_aug_backtranslate), self.replace),
+                b2_aug_deletion.sample(int(len(b2) * self.b2_aug_deletion), self.replace),
+                b2_aug_syn1.sample(int(len(b2) * self.b2_aug_syn1_ratio), self.replace),
+                b2_aug_syn3.sample(int(len(b2) * self.b2_aug_syn3_ratio), self.replace),
+                b2_aug_insertion1.sample(int(len(b2) * self.b2_aug_insert1_ratio), self.replace),
+                b2_aug_insertion2.sample(int(len(b2) * self.b2_aug_insert2_ratio), self.replace),
+                b2_aug_insertion3.sample(int(len(b2) * self.b2_aug_insert3_ratio), self.replace),
+
+                b3_aug_backtranslate.sample(int(len(b3) * self.b3_aug_backtranslate), self.replace),
+                b3_aug_deletion.sample(int(len(b3) * self.b3_aug_deletion), self.replace),
+                b3_aug_syn1.sample(int(len(b3) * self.b3_aug_syn1_ratio), self.replace),
+                b3_aug_syn3.sample(int(len(b3) * self.b3_aug_syn3_ratio), self.replace),
+                b3_aug_insertion1.sample(int(len(b3) * self.b3_aug_insert1_ratio), self.replace),
+                b3_aug_insertion2.sample(int(len(b3) * self.b3_aug_insert2_ratio), self.replace),
+                b3_aug_insertion3.sample(int(len(b3) * self.b3_aug_insert3_ratio), self.replace),
+
+                b4_aug_backtranslate.sample(int(len(b4) * self.b4_aug_backtranslate), self.replace),
+                b4_aug_deletion.sample(int(len(b4) * self.b4_aug_deletion), self.replace),
+                b4_aug_swap.sample(int(len(b4) * self.b4_aug_swap), self.replace),
+                b4_aug_syn1.sample(int(len(b4) * self.b4_aug_syn1_ratio), self.replace),
+                b4_aug_syn3.sample(int(len(b4) * self.b4_aug_syn3_ratio), self.replace),
+                b4_aug_insertion1.sample(int(len(b4) * self.b4_aug_insert1_ratio), self.replace),
+                b4_aug_insertion2.sample(int(len(b4) * self.b4_aug_insert2_ratio), self.replace),
+                b4_aug_insertion3.sample(int(len(b4) * self.b4_aug_insert3_ratio), self.replace),
             ])
             return aug_data_train
 
@@ -197,6 +201,10 @@ class PayloadLoader:
             self.b1_aug_swap = 1
             self.b1_aug_syn1_ratio = 1
             self.b1_aug_insert1_ratio = 1
+
+            self.b2_aug_insert1_ratio = 0.5
+
+            self.b3_aug_insert1_ratio = 0.5
 
             self.b4_aug_swap = 1
             self.b4_aug_syn1_ratio = 1
@@ -258,6 +266,10 @@ class PayloadLoader:
             self.b1_aug_swap = 1
             self.b1_aug_syn3_ratio = 1
             self.b1_aug_insert3_ratio = 1
+
+            self.b2_aug_insert3_ratio = 0.5
+
+            self.b3_aug_insert3_ratio = 0.5
 
             self.b4_aug_swap = 1
             self.b4_aug_syn3_ratio = 1
