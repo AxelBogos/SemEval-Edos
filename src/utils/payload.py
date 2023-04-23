@@ -294,7 +294,7 @@ class PayloadLoader:
             self.b4_aug_insert1_ratio = 1
             self.b4_aug_backtranslate = 1
 
-        if experiment == "task-b-syn1-ins1-onlyless":
+        if experiment == "task-b-syn1-ins1-onlyless-v2":
             self.b1_aug_swap = 1
             self.b1_aug_syn1_ratio = 1
             self.b1_aug_insert1_ratio = 1
