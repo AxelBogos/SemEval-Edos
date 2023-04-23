@@ -43,7 +43,7 @@ class GenericDatasetTransformer(Dataset):
         else:
             labels = torch.tensor(labels, dtype=torch.long)
 
-        print(f"text type: {type(text)}, text value: {text}")  # Add this line to debug
+        text = " ".join(text)
 
         encoding = self.tokenizer.encode_plus(
             text,
