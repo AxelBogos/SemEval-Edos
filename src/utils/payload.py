@@ -265,3 +265,19 @@ class PayloadLoader:
             self.b4_aug_insert3_ratio = 1
             self.b4_aug_backtranslate = 1
 
+        if experiment == "task-b-syn1-ins1-backtrsl-mixed":
+            self.b1_aug_swap = 1
+            self.b1_aug_syn1_ratio = 1
+            self.b1_aug_insert1_ratio = 1
+            self.b1_aug_backtranslate = 1
+
+            self.b2_aug_insert1_ratio = 0.2
+
+            self.b3_aug_syn1_ratio = 0.25
+            self.b3_aug_insert1_ratio = 0.25
+
+            self.b4_aug_swap = 1
+            self.b4_aug_syn1_ratio = 1
+            self.b4_aug_insert1_ratio = 1
+            self.b4_aug_backtranslate = 1
+
