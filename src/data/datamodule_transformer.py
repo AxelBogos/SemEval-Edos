@@ -36,9 +36,11 @@ class DataModuleTransformer(pl.LightningDataModule):
 
         self.b1_aug_insertion_ratio = args.b1_aug_insertion_ratio
         self.b1_aug_syn_ratio = args.b1_aug_syn_ratio
+        self.b1_aug_swap_ratio = args.b1_aug_swap_ratio
 
         self.b4_aug_syn_ratio = args.b4_aug_syn_ratio
         self.b4_aug_insertion_ratio = args.b4_aug_insertion_ratio
+        self.b4_aug_swap_ratio = args.b4_aug_swap_ratio
 
         self.b1_sf_ratio = args.b1_sf
         self.b2_sf_ratio = args.b2_sf
@@ -118,9 +120,11 @@ class DataModuleTransformer(pl.LightningDataModule):
             interim_data_train = pd.concat([train_task_b,
                                             b1_aug_insertion.sample(int(len(b1) * self.b1_aug_insertion_ratio)),
                                             b1_aug_syn.sample(int(len(b1) * self.b1_aug_syn_ratio)),
+                                            b1_aug_swap.sample(int(len(b1) * self.b1_aug_swap_ratio)),
 
                                             b4_aug_syn.sample(int(len(b4) * self.b4_aug_syn_ratio)),
                                             b4_aug_insertion.sample(int(len(b4) * self.b4_aug_insertion_ratio)),
+                                            b4_aug_swap.sample(int(len(b1) * self.b4_aug_swap_ratio)),
 
                                             b1_sf.sample(int(len(b1_sf) * self.b1_sf_ratio)),
                                             b2_sf.sample(int(len(b2_sf) * self.b2_sf_ratio)),
