@@ -42,7 +42,7 @@ def main():
     # Build model
     optimizer = helpers.get_optimizer(args)
     model = helpers.get_model(args, optimizer)
-    lightning_callbacks = helpers.get_lightning_callbacks(args)
+    lightning_callbacks = helpers.get_lightning_callbacks(args, wandb_logger)
     trainer = Trainer(
         logger=wandb_logger,
         callbacks=lightning_callbacks,

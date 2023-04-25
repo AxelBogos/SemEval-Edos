@@ -83,7 +83,7 @@ def setup_wandb(args):
     return wandb_logger
 
 
-def get_lightning_callbacks(args):
+def get_lightning_callbacks(args, wandb_logger):
     """The get_lightning_callbacks function returns a list of callbacks that are used by the
     LightningModule. The ModelSummary callback prints out the model summary to stdout. The
     ModelCheckpoint callback saves checkpoints to disk, and only keeps the best one based on
@@ -96,7 +96,7 @@ def get_lightning_callbacks(args):
     callbacks = list()
     callbacks.append(ModelSummary())
     callbacks.append(
-        ModelCheckpoint(dirpath=args.log_dir, monitor="val/loss", save_top_k=1, mode="min")
+        ModelCheckpoint(dirpath=wandb_logger.experiment.dir, monitor="val/loss", save_top_k=1, mode="min")
     )
     callbacks.append(EarlyStopping(monitor="val/loss", patience=args.patience))
     return callbacks
