@@ -121,25 +121,25 @@ def parse_args():
     )
 
     parser.add_argument(
-        "--b1_aug_insertion",
+        "--b1_aug_insertion_ratio",
         default=0,
         type=float,
     )
 
     parser.add_argument(
-        "--b1_aug_syn",
+        "--b1_aug_syn_ratio",
         default=0,
         type=float,
     )
 
     parser.add_argument(
-        "--b4_aug_syn",
+        "--b4_aug_syn_ratio",
         default=0,
         type=float,
     )
 
     parser.add_argument(
-        "--b4_aug_insertion",
+        "--b4_aug_insertion_ratio",
         default=0,
         type=float,
     )

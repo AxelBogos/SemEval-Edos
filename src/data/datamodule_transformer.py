@@ -34,8 +34,8 @@ class DataModuleTransformer(pl.LightningDataModule):
         # data preparation handlers
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)
 
-        self.b1_aug_insertion_ratio = args.b1_aug_insertion
-        self.b1_aug_syn_ratio = args.b1_aug_syn
+        self.b1_aug_insertion_ratio = args.b1_aug_insertion_ratio
+        self.b1_aug_syn_ratio = args.b1_aug_syn_ratio
 
         self.b4_aug_syn_ratio = args.b4_aug_syn_ratio
         self.b4_aug_insertion_ratio = args.b4_aug_insertion_ratio
