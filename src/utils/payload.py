@@ -117,7 +117,7 @@ class PayloadLoader:
             #####################################################################################
             # b3: animosity
             b3_aug_backtranslate = train_aug_backtranslate.loc[train_aug_backtranslate['target_b'] == 2]
-            b3_aug_deletion = train_aug_deletion.loc[train_aug_deletion['target_b'] == 1]
+            b3_aug_deletion = train_aug_deletion.loc[train_aug_deletion['target_b'] == 2]
 
             b3_aug_syn1 = train_aug_synonym1.loc[train_aug_synonym1['target_b'] == 2]
             b3_aug_syn3 = train_aug_synonym3.loc[train_aug_synonym3['target_b'] == 2]
@@ -128,7 +128,7 @@ class PayloadLoader:
             #####################################################################################
             # b4: prejudiced discussions
             b4_aug_backtranslate = train_aug_backtranslate.loc[train_aug_backtranslate['target_b'] == 3]
-            b4_aug_deletion = train_aug_deletion.loc[train_aug_deletion['target_b'] == 1]
+            b4_aug_deletion = train_aug_deletion.loc[train_aug_deletion['target_b'] == 3]
 
             b4_aug_syn1 = train_aug_synonym1.loc[train_aug_synonym1['target_b'] == 3]
             b4_aug_syn3 = train_aug_synonym3.loc[train_aug_synonym3['target_b'] == 3]
@@ -176,6 +176,9 @@ class PayloadLoader:
             ])
             return aug_data_train
 
+        if self.args.task == 'c':
+            pass
+
     def set_experiment(self, experiment: str) -> None:
         """
 
@@ -201,10 +204,6 @@ class PayloadLoader:
             self.b1_aug_swap = 1
             self.b1_aug_syn1_ratio = 1
             self.b1_aug_insert1_ratio = 1
-
-            self.b2_aug_insert1_ratio = 0.5
-
-            self.b3_aug_insert1_ratio = 0.5
 
             self.b4_aug_swap = 1
             self.b4_aug_syn1_ratio = 1
@@ -266,10 +265,6 @@ class PayloadLoader:
             self.b1_aug_swap = 1
             self.b1_aug_syn3_ratio = 1
             self.b1_aug_insert3_ratio = 1
-
-            self.b2_aug_insert3_ratio = 0.5
-
-            self.b3_aug_insert3_ratio = 0.5
 
             self.b4_aug_swap = 1
             self.b4_aug_syn3_ratio = 1

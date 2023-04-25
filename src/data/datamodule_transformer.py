@@ -78,9 +78,12 @@ class DataModuleTransformer(pl.LightningDataModule):
                                                 train_aug_synonym1.sample(int(orig_len * self.syn_replacement_ratio1)),
                                                 ])
 
-            if self.args.task == 'b' or self.args.task == 'c':
+            if self.args.task == 'b':
                 data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
                 interim_data_train = pd.concat([data_train, aug_data.balanced_class()])
+
+            if self.args.task == 'c' or self.args.data_aug_exp == 'none':
+                interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
 
             interim_data_train["text"] = self.text_preprocessor.transform_series(interim_data_train["text"])
 
