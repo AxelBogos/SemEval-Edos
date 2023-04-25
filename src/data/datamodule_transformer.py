@@ -132,7 +132,7 @@ class DataModuleTransformer(pl.LightningDataModule):
 
                 interim_data_train = pd.concat([train_task_b,
                                                 b1_aug_insertion,
-                                                b1_aug_syn.sample(int(len(b1)*1)),
+                                                b1_aug_syn.sample(int(len(b1)*0)),
                                                 b1_aug_swap.sample(int(len(b1)*0)),
 
                                                 b2_aug_insertion.sample(int(len(b2)*0)),
@@ -141,7 +141,7 @@ class DataModuleTransformer(pl.LightningDataModule):
                                                 b3_aug_insertion.sample(int(len(b3)*0)),
                                                 b3_aug_syn.sample(int(len(b3)*0)),
 
-                                                b4_aug_syn.sample(int(len(b1)*1)),
+                                                b4_aug_syn.sample(int(len(b1)*0)),
                                                 b4_aug_insertion.sample(int(len(b1)*1)),
                                                 b4_aug_swap.sample(int(len(b4)*0)),
 
