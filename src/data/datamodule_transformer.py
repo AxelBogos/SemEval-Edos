@@ -34,6 +34,16 @@ class DataModuleTransformer(pl.LightningDataModule):
         # data preparation handlers
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)
 
+        self.b1_aug_insertion_ratio = args.b1_aug_insertion
+        self.b1_aug_syn_ratio = args.b1_aug_syn
+
+        self.b4_aug_syn_ratio = args.b4_aug_syn_ratio
+        self.b4_aug_insertion_ratio = args.b4_aug_insertion_ratio
+
+        self.b1_sf_ratio = args.b1_sf
+        self.b2_sf_ratio = args.b2_sf
+        self.b3_sf_ratio = args.b3_sf
+        self.b4_sf_ratio = args.b4_sf
     def setup(self, stage: Optional[str] = None):
 
         """The setup function is called by lightning with both `trainer.fit()` and
@@ -106,24 +116,16 @@ class DataModuleTransformer(pl.LightningDataModule):
             #                                 ])
 
             interim_data_train = pd.concat([train_task_b,
-                                            b1_aug_insertion.sample(int(len(b1) * 1)),
-                                            b1_aug_syn.sample(int(len(b1) * 0.5)),
-                                            b1_aug_swap.sample(int(len(b1) * 0)),
+                                            b1_aug_insertion.sample(int(len(b1) * self.b1_aug_insertion_ratio)),
+                                            b1_aug_syn.sample(int(len(b1) * self.b1_aug_syn_ratio)),
 
-                                            b2_aug_insertion.sample(int(len(b2) * 0)),
-                                            b2_aug_syn.sample(int(len(b2) * 0)),
+                                            b4_aug_syn.sample(int(len(b4) * self.b4_aug_syn_ratio)),
+                                            b4_aug_insertion.sample(int(len(b4) * self.b4_aug_insertion_ratio)),
 
-                                            b3_aug_insertion.sample(int(len(b3) * 0)),
-                                            b3_aug_syn.sample(int(len(b3) * 0)),
-
-                                            b4_aug_syn.sample(int(len(b4) * 0.5)),
-                                            b4_aug_insertion.sample(int(len(b4)*1)),
-                                            b4_aug_swap.sample(int(len(b4) * 0)),
-
-                                            b1_sf.sample(int(len(b1_sf) * 1)),
-                                            b2_sf.sample(int(len(b2_sf) * 1)),
-                                            b3_sf.sample(int(len(b3_sf) * 0.5)),
-                                            b4_sf.sample(int(len(b4_sf) * 1))
+                                            b1_sf.sample(int(len(b1_sf) * self.b1_sf_ratio)),
+                                            b2_sf.sample(int(len(b2_sf) * self.b2_sf_ratio)),
+                                            b3_sf.sample(int(len(b3_sf) * self.b3_sf_ratio)),
+                                            b4_sf.sample(int(len(b4_sf) * self.b4_sf_ratio))
                                             ])
 
             interim_data_train["text"] = self.text_preprocessor.transform_series(

@@ -121,6 +121,54 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--b1_aug_insertion",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b1_aug_syn",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b4_aug_syn",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b4_aug_insertion",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b1_sf",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b2_sf",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b3_sf",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b4_sf",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
         "--num_workers",
         default=1,
         type=int,
