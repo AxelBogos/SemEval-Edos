@@ -151,13 +151,11 @@ class DataModuleTransformer(pl.LightningDataModule):
                                                 b4_sf.sample(int(len(b4_sf)*1))])
 
             if self.args.data_aug_exp == 'without_aug':
-                data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
-                train_task = data_train.copy()
-                interim_data_train = train_task.loc[train_task['target_b'] != -1]
+                interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
 
             interim_data_train["text"] = self.text_preprocessor.transform_series(interim_data_train["text"])
 
-            # interim_data_train = interim_data_train[interim_data_train[self._target_label] != -1]
+            interim_data_train = interim_data_train[interim_data_train[self._target_label] != -1]
             interim_data_train = interim_data_train.to_numpy()
 
             self.data_train = GenericDatasetTransformer(
