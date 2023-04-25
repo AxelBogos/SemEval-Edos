@@ -43,44 +43,44 @@ class DataModuleTransformer(pl.LightningDataModule):
         :param stage: Optional[str]: Determine whether the training is in train or test mode
         :return: A tuple of the train, val and test datasets
         """
-        train_aug_insertion = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR,
-                                                       "train_augmented_random_insertion_emb_augmax_1.csv"))
-        train_aug_synonym = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR,
-                                                     "train_augmented_synonym_replacement_emb.csv"))
-        train_rand_swap = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR, "train_augmented_random_swap.csv"))
-        train_self_training = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR, "task_b_GAB_aug.csv"))
+        # train_aug_insertion = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR,
+        #                                                "train_augmented_random_insertion_emb_augmax_1.csv"))
+        # train_aug_synonym = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR,
+        #                                              "train_augmented_synonym_replacement_emb.csv"))
+        # train_rand_swap = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR, "train_augmented_random_swap.csv"))
+        # train_self_training = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR, "task_b_GAB_aug.csv"))
 
         if not self.data_train:
             interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
 
-            train_task_b = interim_data_train.copy()
-            # train_task_b = train_task_b.loc[train_task_b['target_b'] != -1]
-
-            b1 = train_task_b.loc[train_task_b['target_b'] == 0]
-            b1_aug_syn = train_aug_synonym.loc[train_aug_synonym['target_b'] == 0]
-            b1_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 0]
-            b1_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 0]
-            b1_sf = train_self_training.loc[train_self_training['target_b'] == 0]
-            print(f"threats, plans to harm and incitement: {len(b1)}")
-
-            b2 = train_task_b.loc[train_task_b['target_b'] == 1]
-            b2_aug_syn = train_aug_synonym.loc[train_aug_synonym['target_b'] == 1]
-            b2_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 1]
-            b2_sf = train_self_training.loc[train_self_training['target_b'] == 1]
-            print(f"derogation: {len(b2)}")
-
-            b3 = train_task_b.loc[train_task_b['target_b'] == 2]
-            b3_aug_syn = train_aug_synonym.loc[train_aug_synonym['target_b'] == 2]
-            b3_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 2]
-            b3_sf = train_self_training.loc[train_self_training['target_b'] == 2]
-            print(f"animosity: {len(b3)}")
-
-            b4 = train_task_b.loc[train_task_b['target_b'] == 3]
-            b4_aug_syn = train_aug_synonym.loc[train_aug_synonym['target_b'] == 3]
-            b4_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 3]
-            b4_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 3]
-            b4_sf = train_self_training.loc[train_self_training['target_b'] == 3]
-            print(f"prejudiced discussions: {len(b4)}")
+            # train_task_b = interim_data_train.copy()
+            # # train_task_b = train_task_b.loc[train_task_b['target_b'] != -1]
+            #
+            # b1 = train_task_b.loc[train_task_b['target_b'] == 0]
+            # b1_aug_syn = train_aug_synonym.loc[train_aug_synonym['target_b'] == 0]
+            # b1_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 0]
+            # b1_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 0]
+            # b1_sf = train_self_training.loc[train_self_training['target_b'] == 0]
+            # print(f"threats, plans to harm and incitement: {len(b1)}")
+            #
+            # b2 = train_task_b.loc[train_task_b['target_b'] == 1]
+            # b2_aug_syn = train_aug_synonym.loc[train_aug_synonym['target_b'] == 1]
+            # b2_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 1]
+            # b2_sf = train_self_training.loc[train_self_training['target_b'] == 1]
+            # print(f"derogation: {len(b2)}")
+            #
+            # b3 = train_task_b.loc[train_task_b['target_b'] == 2]
+            # b3_aug_syn = train_aug_synonym.loc[train_aug_synonym['target_b'] == 2]
+            # b3_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 2]
+            # b3_sf = train_self_training.loc[train_self_training['target_b'] == 2]
+            # print(f"animosity: {len(b3)}")
+            #
+            # b4 = train_task_b.loc[train_task_b['target_b'] == 3]
+            # b4_aug_syn = train_aug_synonym.loc[train_aug_synonym['target_b'] == 3]
+            # b4_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 3]
+            # b4_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 3]
+            # b4_sf = train_self_training.loc[train_self_training['target_b'] == 3]
+            # print(f"prejudiced discussions: {len(b4)}")
             #
             # print(f"total sexist task b: {len(pd.concat([b1, b2, b3, b4]))}")
             # # dashing-surf-96
@@ -105,26 +105,26 @@ class DataModuleTransformer(pl.LightningDataModule):
             # #                                 b4_sf.sample(int(len(b4_sf) * 1))
             # #                                 ])
             #
-            interim_data_train = pd.concat([train_task_b,
-                                            b1_aug_insertion.sample(int(len(b1) * 0.5)),
-                                            b1_aug_syn.sample(int(len(b1) * 0)),
-                                            b1_aug_swap.sample(int(len(b1) * 0)),
-
-                                            b2_aug_insertion.sample(int(len(b2) * 0)),
-                                            b2_aug_syn.sample(int(len(b2) * 0)),
-
-                                            b3_aug_insertion.sample(int(len(b3) * 0)),
-                                            b3_aug_syn.sample(int(len(b3) * 0)),
-
-                                            b4_aug_syn.sample(int(len(b4) * 0)),
-                                            b4_aug_insertion.sample(int(len(b4)*0.5)),
-                                            b4_aug_swap.sample(int(len(b4) * 0)),
-
-                                            b1_sf.sample(int(len(b1_sf) * 1)),
-                                            b2_sf.sample(int(len(b2_sf) * 0)),
-                                            b3_sf.sample(int(len(b3_sf) * 0)),
-                                            b4_sf.sample(int(len(b4_sf) * 1))
-                                            ])
+            # interim_data_train = pd.concat([train_task_b,
+            #                                 b1_aug_insertion.sample(int(len(b1) * 0.5)),
+            #                                 b1_aug_syn.sample(int(len(b1) * 0)),
+            #                                 b1_aug_swap.sample(int(len(b1) * 0)),
+            #
+            #                                 b2_aug_insertion.sample(int(len(b2) * 0)),
+            #                                 b2_aug_syn.sample(int(len(b2) * 0)),
+            #
+            #                                 b3_aug_insertion.sample(int(len(b3) * 0)),
+            #                                 b3_aug_syn.sample(int(len(b3) * 0)),
+            #
+            #                                 b4_aug_syn.sample(int(len(b4) * 0)),
+            #                                 b4_aug_insertion.sample(int(len(b4)*0.5)),
+            #                                 b4_aug_swap.sample(int(len(b4) * 0)),
+            #
+            #                                 b1_sf.sample(int(len(b1_sf) * 1)),
+            #                                 b2_sf.sample(int(len(b2_sf) * 0)),
+            #                                 b3_sf.sample(int(len(b3_sf) * 0)),
+            #                                 b4_sf.sample(int(len(b4_sf) * 1))
+            #                                 ])
 
             interim_data_train["text"] = self.text_preprocessor.transform_series(
                 interim_data_train["text"]
