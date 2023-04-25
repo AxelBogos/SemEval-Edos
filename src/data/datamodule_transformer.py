@@ -122,7 +122,7 @@ class DataModuleTransformer(pl.LightningDataModule):
 
                                             b1_sf.sample(int(len(b1_sf) * 1)),
                                             b2_sf.sample(int(len(b2_sf) * 1)),
-                                            b3_sf.sample(int(len(b3_sf) * 1)),
+                                            b3_sf.sample(int(len(b3_sf) * 0.5)),
                                             b4_sf.sample(int(len(b4_sf) * 1))
                                             ])
 
