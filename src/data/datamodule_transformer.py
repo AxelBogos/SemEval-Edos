@@ -55,39 +55,105 @@ class DataModuleTransformer(pl.LightningDataModule):
 
         if not self.data_train:
 
-            if self.args.task == 'a':
-                data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
-                orig_len = len(data_train)
+            # if self.args.task == 'a':
+            #     data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
+            #     orig_len = len(data_train)
+            #
+            #     train_aug_insertion3 = pd.read_csv(Path(self.args.augmented_data_dir,
+            #                                             "train_augmented_random_insertion_emb.csv"))
+            #
+            #     train_aug_synonym3 = pd.read_csv(Path(self.args.augmented_data_dir,
+            #                                           "train_augmented_synonym_replacement_emb.csv"))
+            #
+            #     train_aug_insertion1 = pd.read_csv(Path(self.args.augmented_data_dir,
+            #                                             "train_augmented_random_insertion_emb_augmax_1.csv"))
+            #
+            #     train_aug_synonym1 = pd.read_csv(Path(self.args.augmented_data_dir,
+            #                                           "train_augmented_synonym_replacement_emb_augmax_1.csv"))
+            #
+            #     interim_data_train = pd.concat([data_train,
+            #                                     train_aug_insertion3.sample(int(orig_len * self.rand_insertion_ratio3)),
+            #                                     train_aug_synonym3.sample(int(orig_len * self.syn_replacement_ratio3)),
+            #                                     train_aug_insertion1.sample(int(orig_len * self.rand_insertion_ratio1)),
+            #                                     train_aug_synonym1.sample(int(orig_len * self.syn_replacement_ratio1)),
+            #                                     ])
+            #
+            # if self.args.task == 'b' and self.args.data_aug_exp != 'none':
+            #     data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
+            #     interim_data_train = pd.concat([data_train, aug_data.balanced_class()])
+            #
+            # if self.args.task == 'c' or self.args.data_aug_exp == 'none':
+            #     interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
+            # if self.args.task == 'b':
+            data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
+            train_task = data_train.copy()
+            train_task_b = train_task.loc[train_task['target_b'] != -1]
+            orig_len = len(data_train)
 
-                train_aug_insertion3 = pd.read_csv(Path(self.args.augmented_data_dir,
-                                                        "train_augmented_random_insertion_emb.csv"))
+            train_aug_insertion3 = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                    "train_augmented_random_insertion_emb.csv"))
 
-                train_aug_synonym3 = pd.read_csv(Path(self.args.augmented_data_dir,
-                                                      "train_augmented_synonym_replacement_emb.csv"))
+            train_aug_synonym3 = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                  "train_augmented_synonym_replacement_emb.csv"))
 
-                train_aug_insertion1 = pd.read_csv(Path(self.args.augmented_data_dir,
-                                                        "train_augmented_random_insertion_emb_augmax_1.csv"))
+            train_aug_insertion1 = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                    "train_augmented_random_insertion_emb_augmax_1.csv"))
 
-                train_aug_synonym1 = pd.read_csv(Path(self.args.augmented_data_dir,
-                                                      "train_augmented_synonym_replacement_emb_augmax_1.csv"))
+            train_aug_synonym1 = pd.read_csv(Path(self.args.augmented_data_dir,
+                                                  "train_augmented_synonym_replacement_emb_augmax_1.csv"))
 
-                interim_data_train = pd.concat([data_train,
-                                                train_aug_insertion3.sample(int(orig_len * self.rand_insertion_ratio3)),
-                                                train_aug_synonym3.sample(int(orig_len * self.syn_replacement_ratio3)),
-                                                train_aug_insertion1.sample(int(orig_len * self.rand_insertion_ratio1)),
-                                                train_aug_synonym1.sample(int(orig_len * self.syn_replacement_ratio1)),
-                                                ])
+            train_rand_swap = pd.read_csv(Path(self.args.augmented_data_dir, "train_augmented_random_swap.csv"))
 
-            if self.args.task == 'b':
-                data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
-                interim_data_train = pd.concat([data_train, aug_data.balanced_class()])
+            train_gab_aug = pd.read_csv(Path(self.args.augmented_data_dir, "task_b_GAB_aug.csv"))
 
-            if self.args.task == 'c' or self.args.data_aug_exp == 'none':
-                interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
+            b1 = train_task_b.loc[train_task_b['target_b'] == 0]
+            b1_aug_syn = train_aug_synonym1.loc[train_aug_synonym1['target_b'] == 0]
+            b1_aug_insertion = train_aug_insertion1.loc[train_aug_insertion1['target_b'] == 0]
+            b1_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 0]
+            b1_sf = train_gab_aug.loc[train_gab_aug['target_b'] == 0]
+            # print(f"threats, plans to harm and incitement: {len(b1)}")
+
+            b2 = train_task_b.loc[train_task_b['target_b'] == 1]
+            b2_aug_syn = train_aug_synonym1.loc[train_aug_synonym1['target_b'] == 1]
+            b2_aug_insertion = train_aug_insertion1.loc[train_aug_insertion1['target_b'] == 1]
+            b2_sf = train_gab_aug.loc[train_gab_aug['target_b'] == 1]
+            # print(f"derogation: {len(b2)}")
+
+            b3 = train_task_b.loc[train_task_b['target_b'] == 2]
+            b3_aug_syn = train_aug_synonym1.loc[train_aug_synonym1['target_b'] == 2]
+            b3_aug_insertion = train_aug_insertion1.loc[train_aug_insertion1['target_b'] == 2]
+            b3_sf = train_gab_aug.loc[train_gab_aug['target_b'] == 2]
+            # print(f"animosity: {len(b3)}")
+
+            b4 = train_task_b.loc[train_task_b['target_b'] == 3]
+            b4_aug_syn = train_aug_synonym1.loc[train_aug_synonym1['target_b'] == 3]
+            b4_aug_insertion = train_aug_insertion1.loc[train_aug_insertion1['target_b'] == 3]
+            b4_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 3]
+            b4_sf = train_gab_aug.loc[train_gab_aug['target_b'] == 3]
+
+            interim_data_train = pd.concat([train_task_b, b1_aug_insertion,
+                                            b1_aug_syn.sample(int(len(b1)*1)),
+                                            b1_aug_swap.sample(int(len(b1)*0.5)),
+
+                                            b2_aug_insertion.sample(int(len(b2)*0)),
+                                            b2_aug_syn.sample(int(len(b2)*0)),
+
+                                            b3_aug_insertion.sample(int(len(b3)*0)),
+                                            b3_aug_syn.sample(int(len(b3)*0)),
+
+                                            b4_aug_syn.sample(int(len(b1)*1)),
+                                            b4_aug_insertion.sample(int(len(b1)*1)),
+                                            b4_aug_swap.sample(int(len(b4)*0.5)),
+
+                                            b1_sf.sample(int(len(b1_sf)*1)),
+                                            b2_sf.sample(int(len(b2_sf)*1)),
+                                            b3_sf.sample(int(len(b3_sf)*1)),
+                                            b4_sf.sample(int(len(b4_sf)*1))
+                                            ])
 
             interim_data_train["text"] = self.text_preprocessor.transform_series(interim_data_train["text"])
 
-            interim_data_train = interim_data_train[interim_data_train[self._target_label] != -1]
+            # interim_data_train = interim_data_train[interim_data_train[self._target_label] != -1]
             interim_data_train = interim_data_train.to_numpy()
 
             self.data_train = GenericDatasetTransformer(
