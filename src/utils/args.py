@@ -181,6 +181,30 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--b1_sfr",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b2_sfr",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b3_sfr",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b4_sfr",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
         "--num_workers",
         default=1,
         type=int,

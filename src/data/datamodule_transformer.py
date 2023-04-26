@@ -46,6 +46,11 @@ class DataModuleTransformer(pl.LightningDataModule):
         self.b2_sf_ratio = args.b2_sf
         self.b3_sf_ratio = args.b3_sf
         self.b4_sf_ratio = args.b4_sf
+
+        self.b1_sfr_ratio = args.b1_sfr
+        self.b2_sfr_ratio = args.b2_sfr
+        self.b3_sfr_ratio = args.b3_sfr
+        self.b4_sfr_ratio = args.b4_sfr
     def setup(self, stage: Optional[str] = None):
 
         """The setup function is called by lightning with both `trainer.fit()` and
@@ -61,6 +66,8 @@ class DataModuleTransformer(pl.LightningDataModule):
                                                      "train_augmented_synonym_replacement_emb.csv"))
         train_rand_swap = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR, "train_augmented_random_swap.csv"))
         train_self_training = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR, "task_b_GAB_aug.csv"))
+        train_self_training_reddit = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR, "task_b_reddit_aug.csv"))
+
 
         if not self.data_train:
             interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
@@ -73,18 +80,21 @@ class DataModuleTransformer(pl.LightningDataModule):
             b1_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 0]
             b1_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 0]
             b1_sf = train_self_training.loc[train_self_training['target_b'] == 0]
+            b1_sfr = train_self_training_reddit.loc[train_self_training_reddit['target_b'] == 0]
             print(f"threats, plans to harm and incitement: {len(b1)}")
 
             b2 = train_task_b.loc[train_task_b['target_b'] == 1]
             b2_aug_syn = train_aug_synonym.loc[train_aug_synonym['target_b'] == 1]
             b2_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 1]
             b2_sf = train_self_training.loc[train_self_training['target_b'] == 1]
+            b2_sfr = train_self_training_reddit.loc[train_self_training_reddit['target_b'] == 1]
             print(f"derogation: {len(b2)}")
 
             b3 = train_task_b.loc[train_task_b['target_b'] == 2]
             b3_aug_syn = train_aug_synonym.loc[train_aug_synonym['target_b'] == 2]
             b3_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 2]
             b3_sf = train_self_training.loc[train_self_training['target_b'] == 2]
+            b3_sfr = train_self_training_reddit.loc[train_self_training_reddit['target_b'] == 2]
             print(f"animosity: {len(b3)}")
 
             b4 = train_task_b.loc[train_task_b['target_b'] == 3]
@@ -92,6 +102,7 @@ class DataModuleTransformer(pl.LightningDataModule):
             b4_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 3]
             b4_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 3]
             b4_sf = train_self_training.loc[train_self_training['target_b'] == 3]
+            b4_sfr = train_self_training_reddit.loc[train_self_training_reddit['target_b'] == 3]
             print(f"prejudiced discussions: {len(b4)}")
 
             print(f"total sexist task b: {len(pd.concat([b1, b2, b3, b4]))}")
@@ -129,7 +140,12 @@ class DataModuleTransformer(pl.LightningDataModule):
                                             b1_sf.sample(int(len(b1_sf) * self.b1_sf_ratio)),
                                             b2_sf.sample(int(len(b2_sf) * self.b2_sf_ratio)),
                                             b3_sf.sample(int(len(b3_sf) * self.b3_sf_ratio)),
-                                            b4_sf.sample(int(len(b4_sf) * self.b4_sf_ratio))
+                                            b4_sf.sample(int(len(b4_sf) * self.b4_sf_ratio)),
+
+                                            b1_sfr.sample(int(len(b1_sfr) * self.b1_sfr_ratio)),
+                                            b2_sfr.sample(int(len(b2_sfr) * self.b2_sfr_ratio)),
+                                            b3_sfr.sample(int(len(b3_sfr) * self.b3_sfr_ratio)),
+                                            b4_sfr.sample(int(len(b4_sfr) * self.b4_sfr_ratio))
                                             ])
 
             interim_data_train["text"] = self.text_preprocessor.transform_series(
