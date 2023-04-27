@@ -177,7 +177,6 @@ def main(model_name: str):
     trainer_c4.fit(model_task_c4, datamodule=data_module_task_c4)
 
     # Test
-    trainer_a.test(model_task_a, datamodule=data_module_task_a)
 
 
 if __name__ == "__main__":

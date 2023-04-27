@@ -12,6 +12,10 @@ class HierarchicalTransformerModule(pl.LightningModule):
         model: str,
         learning_rate: float,
         optimizer: torch.optim.Optimizer,
+        classifier_a: nn.Module,
+        classifier_b: nn.Module,
+        classifier_c: nn.Module,
+        freeze_classification_heads: bool = False,
     ):
         super().__init__()
         self.automatic_optimization = False
@@ -19,13 +23,17 @@ class HierarchicalTransformerModule(pl.LightningModule):
         self.model = model
         self.learning_rate = learning_rate
         self.save_hyperparameters()
-        (
-            self.feature_extractor,
-            self.classifier_a,
-            self.classifier_b,
-            self.classifier_c,
-        ) = self.define_models(self.model)
+        self.feature_extractor = AutoModelForSequenceClassification.from_pretrained(
+            model
+        ).base_model
+        self.classifier_a = classifier_a
+        self.classifier_b = classifier_b
+        self.classifier_c = classifier_c
         self.freeze_module(self.feature_extractor)
+        if freeze_classification_heads:
+            self.freeze_module(self.classifier_a)
+            self.freeze_module(self.classifier_b)
+            self.freeze_module(self.classifier_c)
 
         self.criterion_a = nn.CrossEntropyLoss()
         self.criterion_b = nn.CrossEntropyLoss()
@@ -60,7 +68,6 @@ class HierarchicalTransformerModule(pl.LightningModule):
         self.val_f1_best_c = MaxMetric()
 
     def forward(self, input_ids, attention_mask):
-        # input_ids = input_ids.long()
         features = self.feature_extractor(input_ids, attention_mask).last_hidden_state
         logits_a = self.classifier_a(features)
         logits_b = self.classifier_b(features)
@@ -76,7 +83,6 @@ class HierarchicalTransformerModule(pl.LightningModule):
         return loss_a, loss_b, loss_c
 
     def model_step(self, batch):
-        # Unpack the batch
         input_ids = batch["input_ids"]
         attention_mask = batch["attention_mask"]
         labels = batch["labels"]
@@ -222,20 +228,6 @@ class HierarchicalTransformerModule(pl.LightningModule):
         optimizer_b = self.optimizer(self.classifier_b.parameters(), lr=self.learning_rate)
         optimizer_c = self.optimizer(self.classifier_c.parameters(), lr=self.learning_rate)
         return optimizer_a, optimizer_b, optimizer_c
-
-    @staticmethod
-    def define_models(model):
-        feature_extractor = AutoModelForSequenceClassification.from_pretrained(model).base_model
-        classifier_a = AutoModelForSequenceClassification.from_pretrained(
-            model, num_labels=2
-        ).classifier
-        classifier_b = AutoModelForSequenceClassification.from_pretrained(
-            model, num_labels=5
-        ).classifier
-        classifier_c = AutoModelForSequenceClassification.from_pretrained(
-            model, num_labels=12
-        ).classifier
-        return feature_extractor, classifier_a, classifier_b, classifier_c
 
     @staticmethod
     def freeze_module(module):
