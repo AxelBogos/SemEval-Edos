@@ -90,8 +90,8 @@ def get_lightning_callbacks(args):
     return callbacks
 
 
-def _get_time():
-    """The _get_time function returns the current time in a string format.
+def get_time():
+    """The get_time function returns the current time in a string format.
 
     :return: A string with the current time in this format: YYYY-MM-DD-HH-MM-SS
     """
@@ -105,7 +105,7 @@ def make_log_dir() -> Path:
 
     :return: A path to a new directory
     """
-    log_dir_path = Path(defines.LOG_DIR, _get_time())
+    log_dir_path = Path(defines.LOG_DIR, get_time())
     if not defines.LOG_DIR.is_dir():
         os.mkdir(defines.LOG_DIR)
     os.mkdir(log_dir_path)
