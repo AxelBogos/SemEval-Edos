@@ -1,47 +1,41 @@
 # --------- General ML/DS Libraries --------- #
 jupyter
-gdown~=4.6.2
-pandas~=1.5.3
-scikit-learn~=1.2.1
+gdown
+pandas
+scikit-learn
 matplotlib
 seaborn
-shap~=0.41.0
-streamlit~=1.16.0
+shap
+streamlit
 
 
 # --------- NLP libraries --------- #
 wordcloud
-spacy~=3.5.0
-transformers~=4.27.4
+spacy
+transformers
 
 # --------- pytorch --------- #
 torch>=1.10.0
 torchvision>=0.11.0
-lightning~=2.0.1.post0
+lightning
 torchmetrics==0.11.0
-torchtext~=0.14.1
+torchtext
 
 
 # --------- loggers --------- #
-wandb~=0.14.2
+wandb
 # neptune-client
 # mlflow
 # comet-ml
 
 # --------- Utils --------- #
-pyrootutils~=1.0.4
+pyrootutils     # standardizing the project root setup
 pre-commit      # hooks for applying linters on commit
 rich            # beautiful text formatting in terminal
 pytest          # tests
 Sphinx          # documentation
-python-dotenv~=0.21.1
+python-dotenv   # .env file handling
 # sh            # for running bash commands in some tests (linux/macos only)
 
 # local package
  -e .
-
-numpy~=1.24.2
-tqdm~=4.64.1
-scipy~=1.10.0
-sklearn~=0.0.post1
-setuptools~=67.1.0
