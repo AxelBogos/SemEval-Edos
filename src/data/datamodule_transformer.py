@@ -40,6 +40,10 @@ class DataModuleTransformer(pl.LightningDataModule):
         self.b1_sfr_insertion_ratio = args.b1_sfr_insertion_ratio
         self.b1_aug_swap_ratio = args.b1_aug_swap_ratio
 
+        self.b2_aug_insertion_ratio = args.b2_aug_insertion_ratio
+
+        self.b3_aug_insertion_ratio = args.b3_aug_insertion_ratio
+
         self.b4_aug_syn_ratio = args.b4_aug_syn_ratio
         self.b4_aug_insertion_ratio = args.b4_aug_insertion_ratio
         self.b4_sfr_syn_ratio = args.b4_sfr_syn_ratio
@@ -147,6 +151,10 @@ class DataModuleTransformer(pl.LightningDataModule):
                                             b1_aug_insertion.sample(int(len(b1) * self.b1_aug_insertion_ratio)),
                                             b1_aug_syn.sample(int(len(b1) * self.b1_aug_syn_ratio)),
                                             b1_aug_swap.sample(int(len(b1) * self.b1_aug_swap_ratio)),
+
+                                            b2_aug_insertion.sample(int(len(b2) * self.b2_aug_insertion_ratio)),
+
+                                            b3_aug_insertion.sample(int(len(b3) * self.b3_aug_insertion_ratio)),
 
                                             b4_aug_syn.sample(int(len(b4) * self.b4_aug_syn_ratio)),
                                             b4_aug_insertion.sample(int(len(b4) * self.b4_aug_insertion_ratio)),
