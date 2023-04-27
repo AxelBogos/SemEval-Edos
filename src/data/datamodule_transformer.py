@@ -34,12 +34,16 @@ class DataModuleTransformer(pl.LightningDataModule):
         # data preparation handlers
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)
 
-        self.b1_aug_insertion_ratio = args.b1_aug_insertion_ratio
         self.b1_aug_syn_ratio = args.b1_aug_syn_ratio
+        self.b1_aug_insertion_ratio = args.b1_aug_insertion_ratio
+        self.b1_sfr_syn_ratio = args.b1_sfr_syn_ratio
+        self.b1_sfr_insertion_ratio = args.b1_sfr_insertion_ratio
         self.b1_aug_swap_ratio = args.b1_aug_swap_ratio
 
         self.b4_aug_syn_ratio = args.b4_aug_syn_ratio
         self.b4_aug_insertion_ratio = args.b4_aug_insertion_ratio
+        self.b4_sfr_syn_ratio = args.b4_sfr_syn_ratio
+        self.b4_sfr_insertion_ratio = args.b4_sfr_insertion_ratio
         self.b4_aug_swap_ratio = args.b4_aug_swap_ratio
 
         self.b1_sf_ratio = args.b1_sf
@@ -67,7 +71,10 @@ class DataModuleTransformer(pl.LightningDataModule):
         train_rand_swap = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR, "train_augmented_random_swap.csv"))
         train_self_training = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR, "task_b_GAB_aug.csv"))
         train_self_training_reddit = pd.read_csv(os.path.join(AUGMENTED_DATA_DIR, "task_b_reddit_aug.csv"))
-
+        train_aug_insertion_sf = pd.read_csv(
+            os.path.join(AUGMENTED_DATA_DIR, "sf_train_augmented_random_insertion_emb.csv"))
+        train_aug_synonym_sf = pd.read_csv(
+            os.path.join(AUGMENTED_DATA_DIR, "sf_train_augmented_synonym_replacement_emb.csv"))
 
         if not self.data_train:
             interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
@@ -81,6 +88,8 @@ class DataModuleTransformer(pl.LightningDataModule):
             b1_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 0]
             b1_sf = train_self_training.loc[train_self_training['target_b'] == 0]
             b1_sfr = train_self_training_reddit.loc[train_self_training_reddit['target_b'] == 0]
+            b1_sfr_insert = train_aug_insertion_sf.loc[train_aug_insertion_sf['target_b'] == 0]
+            b1_sfr_syn = train_aug_synonym_sf.loc[train_aug_synonym_sf['target_b'] == 0]
             print(f"threats, plans to harm and incitement: {len(b1)}")
 
             b2 = train_task_b.loc[train_task_b['target_b'] == 1]
@@ -88,6 +97,8 @@ class DataModuleTransformer(pl.LightningDataModule):
             b2_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 1]
             b2_sf = train_self_training.loc[train_self_training['target_b'] == 1]
             b2_sfr = train_self_training_reddit.loc[train_self_training_reddit['target_b'] == 1]
+            b2_sfr_insert = train_aug_insertion_sf.loc[train_aug_insertion_sf['target_b'] == 1]
+            b2_sfr_syn = train_aug_synonym_sf.loc[train_aug_synonym_sf['target_b'] == 1]
             print(f"derogation: {len(b2)}")
 
             b3 = train_task_b.loc[train_task_b['target_b'] == 2]
@@ -95,6 +106,8 @@ class DataModuleTransformer(pl.LightningDataModule):
             b3_aug_insertion = train_aug_insertion.loc[train_aug_insertion['target_b'] == 2]
             b3_sf = train_self_training.loc[train_self_training['target_b'] == 2]
             b3_sfr = train_self_training_reddit.loc[train_self_training_reddit['target_b'] == 2]
+            b3_sfr_insert = train_aug_insertion_sf.loc[train_aug_insertion_sf['target_b'] == 2]
+            b3_sfr_syn = train_aug_synonym_sf.loc[train_aug_synonym_sf['target_b'] == 2]
             print(f"animosity: {len(b3)}")
 
             b4 = train_task_b.loc[train_task_b['target_b'] == 3]
@@ -103,6 +116,8 @@ class DataModuleTransformer(pl.LightningDataModule):
             b4_aug_swap = train_rand_swap.loc[train_rand_swap['target_b'] == 3]
             b4_sf = train_self_training.loc[train_self_training['target_b'] == 3]
             b4_sfr = train_self_training_reddit.loc[train_self_training_reddit['target_b'] == 3]
+            b4_sfr_insert = train_aug_insertion_sf.loc[train_aug_insertion_sf['target_b'] == 3]
+            b4_sfr_syn = train_aug_synonym_sf.loc[train_aug_synonym_sf['target_b'] == 3]
             print(f"prejudiced discussions: {len(b4)}")
 
             print(f"total sexist task b: {len(pd.concat([b1, b2, b3, b4]))}")
@@ -136,6 +151,11 @@ class DataModuleTransformer(pl.LightningDataModule):
                                             b4_aug_syn.sample(int(len(b4) * self.b4_aug_syn_ratio)),
                                             b4_aug_insertion.sample(int(len(b4) * self.b4_aug_insertion_ratio)),
                                             b4_aug_swap.sample(int(len(b1) * self.b4_aug_swap_ratio)),
+
+                                            b1_sfr_insert.sample(int(len(b1_sfr_insert) * self.b1_sfr_insertion_ratio)),
+                                            b1_sfr_syn.sample(int(len(b1_sfr_syn) * self.b1_sfr_syn_ratio)),
+                                            b4_sfr_insert.sample(int(len(b4_sfr_insert) * self.b4_sfr_insertion_ratio)),
+                                            b4_sfr_syn.sample(int(len(b4_sfr_syn) * self.b4_sfr_syn_ratio)),
 
                                             b1_sf.sample(int(len(b1_sf) * self.b1_sf_ratio)),
                                             b2_sf.sample(int(len(b2_sf) * self.b2_sf_ratio)),

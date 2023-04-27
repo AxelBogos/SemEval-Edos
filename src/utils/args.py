@@ -157,6 +157,30 @@ def parse_args():
     )
 
     parser.add_argument(
+        "--b1_sfr_insertion_ratio",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b1_sfr_syn_ratio",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b4_sfr_syn_ratio",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
+        "--b4_sfr_insertion_ratio",
+        default=0,
+        type=float,
+    )
+
+    parser.add_argument(
         "--b1_sf",
         default=0,
         type=float,
