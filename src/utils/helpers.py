@@ -8,21 +8,9 @@ import torch.optim as optim
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
 from lightning.pytorch.loggers import WandbLogger
 
-from src.data import (
-    datamodule_lstm,
-    datamodule_transformer,
-    datamodule_transformer_beamsearch,
-    datamodule_transformer_hierarichal_constrained,
-)
-from src.models import (
-    beam_search_transformer_module,
-    hierarichal_constrained_transformer_module,
-    lstm_module,
-    transformer_module,
-)
+from src.data import datamodule_lstm, datamodule_transformer
+from src.models import lstm_module, transformer_module
 from src.utils import defines
-
-# from pytorch_lightning.loggers import WandbLogger
 
 
 def make_data_dirs() -> None:
@@ -140,14 +128,6 @@ def get_model(args, optimizer: torch.optim.Optimizer = None):
         return transformer_module.TransformerModule(
             args, optimizer=optimizer, learning_rate=args.lr
         )
-    elif args.architecture == "transformer-beamsearch":
-        return beam_search_transformer_module.BeamSearchTransformerModule(
-            args, optimizer=optimizer
-        )
-    elif args.architecture == "transformer-hierarchical":
-        return hierarichal_constrained_transformer_module.HierarchicalTransformerModule(
-            args, optimizer=optimizer
-        )
 
 
 def get_data_module(args):
@@ -162,12 +142,6 @@ def get_data_module(args):
         return datamodule_lstm.DataModuleLSTM(args)
     elif args.architecture == "transformer":
         return datamodule_transformer.DataModuleTransformer(args)
-    elif args.architecture == "transformer-beamsearch":
-        return datamodule_transformer_beamsearch.DataModuleTransformerBeamSearch(args)
-    elif args.architecture == "transformer-hierarchical":
-        return datamodule_transformer_hierarichal_constrained.DataModuleTransformerHierarichal(
-            args
-        )
 
 
 def get_optimizer(args):
