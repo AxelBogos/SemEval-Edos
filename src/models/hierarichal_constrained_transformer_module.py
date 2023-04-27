@@ -9,47 +9,27 @@ from transformers import AutoModelForSequenceClassification, get_scheduler
 class HierarchicalTransformerModule(pl.LightningModule):
     def __init__(
         self,
-        args,
+        model: str,
+        learning_rate: float,
         optimizer: torch.optim.Optimizer,
     ):
         super().__init__()
         self.automatic_optimization = False
-        self.args = args
         self.optimizer = optimizer
+        self.model = model
+        self.learning_rate = learning_rate
         self.save_hyperparameters()
         (
             self.feature_extractor,
             self.classifier_a,
             self.classifier_b,
             self.classifier_c,
-        ) = self.define_models(args)
+        ) = self.define_models(self.model)
         self.freeze_module(self.feature_extractor)
 
-        self.criterion_a = nn.CrossEntropyLoss(
-            weight=torch.tensor([0.6603, 2.0600], dtype=torch.float)
-        )
-        self.criterion_b = nn.CrossEntropyLoss(
-            weight=torch.tensor([0.2641, 9.0323, 1.7610, 2.4034, 8.4084], dtype=torch.float)
-        )
-        self.criterion_c = nn.CrossEntropyLoss(
-            weight=torch.tensor(
-                [
-                    0.1100,
-                    20.8333,
-                    4.5932,
-                    1.6272,
-                    1.7335,
-                    5.8333,
-                    1.8315,
-                    2.7978,
-                    18.2292,
-                    24.8227,
-                    15.5556,
-                    4.5220,
-                ],
-                dtype=torch.float,
-            )
-        )
+        self.criterion_a = nn.CrossEntropyLoss()
+        self.criterion_b = nn.CrossEntropyLoss()
+        self.criterion_c = nn.CrossEntropyLoss()
 
         self.train_f1_a = MulticlassF1Score(num_classes=2, average="macro")
         self.train_f1_b = MulticlassF1Score(num_classes=5, average="macro")
@@ -238,24 +218,22 @@ class HierarchicalTransformerModule(pl.LightningModule):
         return preds_a, preds_b, preds_c
 
     def configure_optimizers(self):
-        optimizer_a = self.optimizer(self.classifier_a.parameters(), lr=self.args.lr)
-        optimizer_b = self.optimizer(self.classifier_b.parameters(), lr=self.args.lr)
-        optimizer_c = self.optimizer(self.classifier_c.parameters(), lr=self.args.lr)
+        optimizer_a = self.optimizer(self.classifier_a.parameters(), lr=self.learning_rate)
+        optimizer_b = self.optimizer(self.classifier_b.parameters(), lr=self.learning_rate)
+        optimizer_c = self.optimizer(self.classifier_c.parameters(), lr=self.learning_rate)
         return optimizer_a, optimizer_b, optimizer_c
 
     @staticmethod
-    def define_models(args):
-        feature_extractor = AutoModelForSequenceClassification.from_pretrained(
-            args.model
-        ).base_model
+    def define_models(model):
+        feature_extractor = AutoModelForSequenceClassification.from_pretrained(model).base_model
         classifier_a = AutoModelForSequenceClassification.from_pretrained(
-            args.model, num_labels=2
+            model, num_labels=2
         ).classifier
         classifier_b = AutoModelForSequenceClassification.from_pretrained(
-            args.model, num_labels=5
+            model, num_labels=5
         ).classifier
         classifier_c = AutoModelForSequenceClassification.from_pretrained(
-            args.model, num_labels=12
+            model, num_labels=12
         ).classifier
         return feature_extractor, classifier_a, classifier_b, classifier_c
 
