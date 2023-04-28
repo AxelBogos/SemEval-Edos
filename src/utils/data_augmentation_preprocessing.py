@@ -59,7 +59,7 @@ class DataAugmentationProcessor:
                                      target_label_b: y_train_b,
                                      target_label_c: y_train_c})
 
-            train_df.to_csv(Path(self.augmented_output_dir, f"sf_train_augmented_{augmentation_type}.csv"), index=False)
+            train_df.to_csv(Path(self.augmented_output_dir, f"sf_train_augmented_{augmentation_type}_augmax_1.csv"), index=False)
 
     def get_data_augment_processor(self, augmentation_type):
         """The get_text_processor function returns a TextPreprocessor object with the following
