@@ -4,39 +4,39 @@ import torch
 import torch.nn as nn
 from torchmetrics import MaxMetric, MeanMetric
 from torchmetrics.classification import MulticlassF1Score
-from transformers import (
-    AutoModelForSequenceClassification,
-    get_linear_schedule_with_warmup,
-    get_scheduler,
-)
+from transformers import AutoModelForSequenceClassification, get_scheduler
 
 
 class TransformerModule(pl.LightningModule):
     def __init__(
         self,
-        args,
-        learning_rate,
-        optimizer: torch.optim.Optimizer = torch.optim.AdamW,
+        model: str,
+        num_target_class: int,
+        learning_rate: float,
+        num_epoch: int,
+        num_warmup_steps: int,
+        len_train_loader: int,
+        optimizer: torch.optim.Optimizer,
     ):
         super().__init__()
-        self.args = args
+        self.model = model
+        self.num_target_class = num_target_class
         self.learning_rate = learning_rate
+        self.num_epoch = num_epoch
+        self.num_warmup_steps = num_warmup_steps
+        self.len_train_loader = len_train_loader
         self.optimizer = optimizer
         self.save_hyperparameters()
         self.model = AutoModelForSequenceClassification.from_pretrained(
-            args.model, num_labels=args.num_target_class
+            self.model, num_labels=self.num_target_class
         )
 
-        self.criterion = (
-            nn.CrossEntropyLoss(weight=self._get_class_weights)
-            if args.weighted_loss
-            else nn.CrossEntropyLoss()
-        )
+        self.criterion = nn.CrossEntropyLoss()
 
         # metric objects for calculating and macro f1 across batches
-        self.train_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
-        self.val_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
-        self.test_f1 = MulticlassF1Score(num_classes=args.num_target_class, average="macro")
+        self.train_f1 = MulticlassF1Score(num_classes=self.num_target_class, average="macro")
+        self.val_f1 = MulticlassF1Score(num_classes=self.num_target_class, average="macro")
+        self.test_f1 = MulticlassF1Score(num_classes=self.num_target_class, average="macro")
 
         # for averaging loss across batches
         self.train_loss = MeanMetric()
@@ -98,35 +98,11 @@ class TransformerModule(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.learning_rate)
-        num_training_steps = self.args.num_epoch * self.args.len_train_loader
+        num_training_steps = self.num_epoch * self.len_train_loader
         scheduler = get_scheduler(
             name="linear",
             optimizer=optimizer,
-            num_warmup_steps=self.args.n_warmup_steps,
+            num_warmup_steps=self.n_warmup_steps,
             num_training_steps=num_training_steps,
         )
         return dict(optimizer=optimizer, lr_scheduler=dict(scheduler=scheduler, interval="step"))
-
-    @property
-    def _get_class_weights(self) -> torch.tensor:
-        if self.args.task == "a":
-            return torch.tensor([0.6603, 2.0600], dtype=torch.float)
-        elif self.args.task == "b":
-            return torch.tensor([2.7403, 0.5343, 0.7292, 2.5511], dtype=torch.float)
-        elif self.args.task == "c":
-            return torch.tensor(
-                [
-                    5.5162,
-                    1.2162,
-                    0.4308,
-                    0.4590,
-                    1.5445,
-                    0.4849,
-                    0.7408,
-                    4.8267,
-                    6.5725,
-                    4.1188,
-                    1.1973,
-                ],
-                dtype=torch.float,
-            )

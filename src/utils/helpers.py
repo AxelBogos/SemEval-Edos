@@ -126,7 +126,13 @@ def get_model(args, optimizer: torch.optim.Optimizer = None):
         return lstm_module.LSTMModule(args=args, optimizer=optimizer)
     elif args.architecture == "transformer":
         return transformer_module.TransformerModule(
-            args, optimizer=optimizer, learning_rate=args.lr
+            model=args.model,
+            num_target_class=args.num_target_class,
+            learning_rate=args.lr,
+            num_epoch=args.num_epoch,
+            num_warmup_steps=args.num_warmup_steps,
+            len_train_loader=args.len_train_loader,
+            optimizer=optimizer,
         )
 
 
