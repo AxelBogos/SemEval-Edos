@@ -56,7 +56,7 @@ def main():
     if args.train:
         trainer.fit(model=model, datamodule=data_module)
 
-    # Eval TODO: handle checkpoint loading
+    # Eval
     if args.eval:
         trainer.test(model=model, datamodule=data_module, ckpt_path="best")
 
