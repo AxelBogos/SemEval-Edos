@@ -102,7 +102,7 @@ class TransformerModule(pl.LightningModule):
         scheduler = get_scheduler(
             name="linear",
             optimizer=optimizer,
-            num_warmup_steps=self.n_warmup_steps,
+            num_warmup_steps=self.num_warmup_steps,
             num_training_steps=num_training_steps,
         )
         return dict(optimizer=optimizer, lr_scheduler=dict(scheduler=scheduler, interval="step"))
