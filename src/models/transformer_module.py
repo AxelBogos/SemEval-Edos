@@ -14,7 +14,7 @@ class TransformerModule(pl.LightningModule):
         num_target_class: int,
         learning_rate: float,
         num_epoch: int,
-        num_warmup_steps: int,
+        n_warmup_steps: int,
         len_train_loader: int,
         optimizer: torch.optim.Optimizer,
     ):
@@ -23,7 +23,7 @@ class TransformerModule(pl.LightningModule):
         self.num_target_class = num_target_class
         self.learning_rate = learning_rate
         self.num_epoch = num_epoch
-        self.num_warmup_steps = num_warmup_steps
+        self.n_warmup_steps = n_warmup_steps
         self.len_train_loader = len_train_loader
         self.optimizer = optimizer
         self.save_hyperparameters()
@@ -102,7 +102,7 @@ class TransformerModule(pl.LightningModule):
         scheduler = get_scheduler(
             name="linear",
             optimizer=optimizer,
-            num_warmup_steps=self.num_warmup_steps,
+            num_warmup_steps=self.n_warmup_steps,
             num_training_steps=num_training_steps,
         )
         return dict(optimizer=optimizer, lr_scheduler=dict(scheduler=scheduler, interval="step"))
