@@ -203,11 +203,13 @@ def get_task_callbacks(
 
 
 def get_log_dirs():
-    log_dir_path_a = Path(defines.LOG_DIR, helpers.get_time(), "a")
+    if not os.path.isdir(defines.LOG_DIR):
+        os.mkdir(defines.LOG_DIR)
+    log_dir_path_a = Path(defines.LOG_DIR, helpers.get_time() + "a")
     os.mkdir(log_dir_path_a)
-    log_dir_path_b = Path(defines.LOG_DIR, helpers.get_time(), "b")
+    log_dir_path_b = Path(defines.LOG_DIR, helpers.get_time() + "b")
     os.mkdir(log_dir_path_b)
-    log_dir_path_c = Path(defines.LOG_DIR, helpers.get_time(), "c")
+    log_dir_path_c = Path(defines.LOG_DIR, helpers.get_time() + "c")
     os.mkdir(log_dir_path_c)
     helpers.setup_python_logging(log_dir_path_a)
     return log_dir_path_a, log_dir_path_b, log_dir_path_c
@@ -218,7 +220,7 @@ def get_task_args(log_dir_path_a, log_dir_path_b, log_dir_path_c, model_name):
         "train": True,
         "eval": True,
         "task": "a",
-        "architecture": "transformer_hierarchal_constrained",
+        "architecture": "transformer",
         "model": model_name,
         "dropout": 0.1,
         "optimizer": "AdamW",
