@@ -151,11 +151,9 @@ def get_trainers(
 
 
 def get_wrapper_models(args_task_a, args_task_b, args_task_c, model_name, model_paths):
-    classifier_a = TransformerModule.load_from_checkpoint(
-        model_paths[0], args=args_task_a, learning_rate=args_task_a.lr
-    )
-    classifier_b = TransformerModule.load_from_checkpoint(model_paths[1], args=args_task_b)
-    classifier_c = TransformerModule.load_from_checkpoint(model_paths[2], args=args_task_c)
+    classifier_a = TransformerModule.load_from_checkpoint(model_paths[0])
+    classifier_b = TransformerModule.load_from_checkpoint(model_paths[1])
+    classifier_c = TransformerModule.load_from_checkpoint(model_paths[2])
     wrapper_model_task_a = HierarchicalTransformerModule(
         model=model_name,
         learning_rate=args_task_a.learning_rate,
