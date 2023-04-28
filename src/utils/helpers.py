@@ -130,7 +130,7 @@ def get_model(args, optimizer: torch.optim.Optimizer = None):
             num_target_class=args.num_target_class,
             learning_rate=args.lr,
             num_epoch=args.num_epoch,
-            num_warmup_steps=args.num_warmup_steps,
+            num_warmup_steps=args.n_warmup_steps,
             len_train_loader=args.len_train_loader,
             optimizer=optimizer,
         )
