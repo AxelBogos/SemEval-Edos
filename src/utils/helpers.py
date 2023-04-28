@@ -71,22 +71,32 @@ def setup_wandb(args):
     return wandb_logger
 
 
-def get_lightning_callbacks(args):
-    """The get_lightning_callbacks function returns a list of callbacks that are used by the
-    LightningModule. The ModelSummary callback prints out the model summary to stdout. The
-    ModelCheckpoint callback saves checkpoints to disk, and only keeps the best one based on
-    validation loss. The EarlyStopping callback stops training if validation loss does not improve
-    after a certain number of epochs.
+def get_lightning_callbacks(
+    log_dir: Path,
+    model_checkpoint_monitor: str,
+    model_checkpoint_mode: str,
+    early_stopping_patience: int,
+):
+    """The get_lightning_callbacks function returns a list of callbacks that can be used in the
+    Trainer.
 
-    :param args: Pass in the arguments from the command line
+    :param log_dir:Path: Define the directory where the model checkpoints will be saved
+    :param model_checkpoint_monitor:str: Monitor the metric that we want to use for saving the model
+    :param model_checkpoint_mode:str: Determine how the model is saved
+    :param early_stopping_patience:int: Determine how many epochs to wait before stopping the training
     :return: A list of callbacks
     """
     callbacks = list()
     callbacks.append(ModelSummary())
     callbacks.append(
-        ModelCheckpoint(dirpath=args.log_dir, monitor="val/loss", save_top_k=1, mode="min")
+        ModelCheckpoint(
+            dirpath=log_dir,
+            monitor=model_checkpoint_monitor,
+            save_top_k=1,
+            mode=model_checkpoint_mode,
+        )
     )
-    callbacks.append(EarlyStopping(monitor="val/loss", patience=args.patience))
+    callbacks.append(EarlyStopping(monitor="val/loss", patience=early_stopping_patience))
     return callbacks
 
 
