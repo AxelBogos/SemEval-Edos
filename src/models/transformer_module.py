@@ -16,7 +16,7 @@ class TransformerModule(pl.LightningModule):
         self,
         args,
         learning_rate,
-        optimizer: torch.optim.Optimizer,
+        optimizer: torch.optim.Optimizer = torch.optim.AdamW,
     ):
         super().__init__()
         self.args = args
