@@ -178,13 +178,13 @@ def get_optimizer(args):
 
 def get_model_download_links(model_name):
     if model_name == "distillroberta-base":
-        model_a = "axel-bogos/EDOS-ift6289/model-3ktkppxz:v0"
-        model_b = "axel-bogos/EDOS-ift6289/model-9yuwtdxw:v0"
-        model_c = "axel-bogos/EDOS-ift6289/model-puvcanys:v0"
+        model_a = "axel-bogos/EDOS-ift6289/model-t7y8oy8u:v0"
+        model_b = "axel-bogos/EDOS-ift6289/model-g5w2beck:v0"
+        model_c = "axel-bogos/EDOS-ift6289/model-eu1j2viv:v0"
     elif model_name == "roberta-base":
-        model_a = "axel-bogos/EDOS-ift6289/model-xbmigcbz:v0"
-        model_b = "axel-bogos/EDOS-ift6289/model-e3l1x1p6:v0"
-        model_c = "axel-bogos/EDOS-ift6289/model-jadamcqs:v0"
+        model_a = "axel-bogos/EDOS-ift6289/model-rn477e90:v0"
+        model_b = "axel-bogos/EDOS-ift6289/model-q4twdy6m:v0"
+        model_c = "axel-bogos/EDOS-ift6289/model-hsf7y76o:v0"
     else:
         raise ValueError("Invalid model name")
     return model_a, model_b, model_c
