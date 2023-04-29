@@ -10,6 +10,9 @@ from lightning import Trainer, seed_everything
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
 from lightning.pytorch.loggers import WandbLogger
 
+from src.data.datamodule_transformer_hierarichal_constrained import (
+    DataModuleTransformerHierarichal,
+)
 from src.models.hierarichal_constrained_transformer_module import (
     HierarchicalTransformerModule,
 )
@@ -142,9 +145,9 @@ def main(model_name: str):
 
 
 def get_wrapper_models(args_task_a, args_task_b, args_task_c, model_name, model_paths):
-    classifier_a = TransformerModule.load_from_checkpoint(model_paths[0])
-    classifier_b = TransformerModule.load_from_checkpoint(model_paths[1])
-    classifier_c = TransformerModule.load_from_checkpoint(model_paths[2])
+    classifier_a = TransformerModule.load_from_checkpoint(model_paths[0]).model.classifier
+    classifier_b = TransformerModule.load_from_checkpoint(model_paths[1]).model.classifier
+    classifier_c = TransformerModule.load_from_checkpoint(model_paths[2]).model.classifier
     wrapper_model_task_a = HierarchicalTransformerModule(
         model=model_name,
         learning_rate=args_task_a.lr,
@@ -223,4 +226,4 @@ def get_task_args(log_dir_path_a, log_dir_path_b, log_dir_path_c, model_name):
 
 
 if __name__ == "__main__":
-    main("distillroberta-base")
+    main("distilroberta-base")

@@ -46,10 +46,6 @@ class DataModuleTransformerHierarichal(pl.LightningDataModule):
             interim_data_train["text"] = self.text_preprocessor.transform_series(
                 interim_data_train["text"]
             )
-            # Add 1 to all labels
-            interim_data_train["target_b"] = interim_data_train["target_b"] + 1
-            interim_data_train["target_c"] = interim_data_train["target_c"] + 1
-
             interim_data_train = interim_data_train.to_numpy()
 
             self.data_train = GenericDatasetTransformer(
@@ -67,8 +63,6 @@ class DataModuleTransformerHierarichal(pl.LightningDataModule):
             )
 
             # Add 1 to all labels
-            interim_data_val["target_b"] = interim_data_val["target_b"] + 1
-            interim_data_val["target_c"] = interim_data_val["target_c"] + 1
             interim_data_val = interim_data_val.to_numpy()
 
             self.data_val = GenericDatasetTransformer(
@@ -83,9 +77,6 @@ class DataModuleTransformerHierarichal(pl.LightningDataModule):
             interim_data_test["text"] = self.text_preprocessor.transform_series(
                 interim_data_test["text"]
             )
-            # Add 1 to all labels
-            interim_data_test["target_b"] = interim_data_test["target_b"] + 1
-            interim_data_test["target_c"] = interim_data_test["target_c"] + 1
             interim_data_test = interim_data_test.to_numpy()
 
             self.data_test = GenericDatasetTransformer(
@@ -133,75 +124,6 @@ class DataModuleTransformerHierarichal(pl.LightningDataModule):
             batch_size=self.args.batch_size,
             num_workers=self.args.num_workers,
         )
-
-    @staticmethod
-    def custom_collate_fn(batch):
-        task_a_batch = {
-            "text": [],
-            "input_ids": torch.empty(size=(0, 128)),
-            "attention_mask": torch.empty(size=(0, 128)),
-            "labels": torch.empty(0),
-        }
-        task_b_batch = {
-            "text": [],
-            "input_ids": torch.empty(size=(0, 128)),
-            "attention_mask": torch.empty(size=(0, 128)),
-            "labels": torch.empty(0),
-        }
-        task_c_batch = {
-            "text": [],
-            "input_ids": torch.empty(size=(0, 128)),
-            "attention_mask": torch.empty(size=(0, 128)),
-            "labels": torch.empty(0),
-        }
-        for sample in batch:
-            text, input_ids, attention_mask, labels = sample.values()
-            if labels[0] != -1:
-                task_a_batch["text"].append(text)
-                task_a_batch["input_ids"] = torch.cat(
-                    (task_a_batch["input_ids"], input_ids.unsqueeze(1).T), dim=0
-                )
-                task_a_batch["attention_mask"] = torch.cat(
-                    (task_a_batch["attention_mask"], attention_mask.unsqueeze(1).T), dim=0
-                )
-                task_a_batch["labels"] = torch.cat(
-                    (
-                        task_a_batch["labels"],
-                        torch.tensor(labels[0], dtype=torch.long).unsqueeze(0),
-                    ),
-                    dim=0,
-                )
-            if labels[1] != -1:
-                task_b_batch["text"].append(text)
-                task_b_batch["input_ids"] = torch.cat(
-                    (task_b_batch["input_ids"], input_ids.unsqueeze(1).T), dim=0
-                )
-                task_b_batch["attention_mask"] = torch.cat(
-                    (task_b_batch["attention_mask"], attention_mask.unsqueeze(1).T), dim=0
-                )
-                task_b_batch["labels"] = torch.cat(
-                    (
-                        task_b_batch["labels"],
-                        torch.tensor(labels[1], dtype=torch.long).unsqueeze(0),
-                    ),
-                    dim=0,
-                )
-            if labels[2] != -1:
-                task_c_batch["text"].append(text)
-                task_c_batch["input_ids"] = torch.cat(
-                    (task_c_batch["input_ids"], input_ids.unsqueeze(1).T), dim=0
-                )
-                task_c_batch["attention_mask"] = torch.cat(
-                    (task_c_batch["attention_mask"], attention_mask.unsqueeze(1).T), dim=0
-                )
-                task_c_batch["labels"] = torch.cat(
-                    (
-                        task_c_batch["labels"],
-                        torch.tensor(labels[2], dtype=torch.long).unsqueeze(0),
-                    ),
-                    dim=0,
-                )
-        return task_a_batch, task_b_batch, task_c_batch
 
     @property
     def _num_classes(self):

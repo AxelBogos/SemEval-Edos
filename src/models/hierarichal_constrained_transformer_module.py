@@ -53,9 +53,7 @@ class HierarchicalTransformerModule(pl.LightningModule):
         self.val_loss = MeanMetric()
         self.test_loss = MeanMetric()
 
-        self.val_f1_best_a = MaxMetric()
-        self.val_f1_best_b = MaxMetric()
-        self.val_f1_best_c = MaxMetric()
+        self.val_f1_best = MaxMetric()
         self.save_hyperparameters()
 
     def forward(self, input_ids, attention_mask):
@@ -104,15 +102,11 @@ class HierarchicalTransformerModule(pl.LightningModule):
         labels = batch["labels"]
         full_logits = self(input_ids, attention_mask)
         if self.task == "a":
-            labels = labels[:, 0]
             logits = full_logits[0]
         elif self.task == "b":
-            labels = labels[:, 1]
             logits = full_logits[1]
         elif self.task == "c":
-            labels = labels[:, 2]
             logits = full_logits[2]
-
         loss = self.criterion(logits, labels)
         preds = self.apply_constraints(full_logits)
 

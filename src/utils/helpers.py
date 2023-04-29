@@ -177,7 +177,7 @@ def get_optimizer(args):
 
 
 def get_model_download_links(model_name):
-    if model_name == "distillroberta-base":
+    if model_name == "distilroberta-base":
         model_a = "axel-bogos/EDOS-ift6289/model-t7y8oy8u:v0"
         model_b = "axel-bogos/EDOS-ift6289/model-g5w2beck:v0"
         model_c = "axel-bogos/EDOS-ift6289/model-eu1j2viv:v0"
