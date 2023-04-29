@@ -41,9 +41,9 @@ class HierarchicalTransformerModule(pl.LightningModule):
         if self.task == "a":
             self.num_target_class = 2
         elif self.task == "b":
-            self.num_target_class = 5
+            self.num_target_class = 4
         elif self.task == "c":
-            self.num_target_class = 12
+            self.num_target_class = 11
 
         self.train_f1 = MulticlassF1Score(num_classes=self.num_target_class, average="macro")
         self.val_f1 = MulticlassF1Score(num_classes=self.num_target_class, average="macro")

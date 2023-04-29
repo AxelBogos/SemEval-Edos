@@ -223,4 +223,4 @@ def get_task_args(log_dir_path_a, log_dir_path_b, log_dir_path_c, model_name):
 
 
 if __name__ == "__main__":
-    main("roberta-base")
+    main("distillroberta-base")
