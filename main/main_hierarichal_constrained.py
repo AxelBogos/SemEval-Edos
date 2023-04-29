@@ -50,28 +50,6 @@ def main(model_name: str):
     args_task_c.len_train_loader = len(data_module_task_c.train_dataloader())
 
     seed_everything(args_task_a.random_seed)
-    # Setup WandB logging
-    wandb_logger_a = WandbLogger(
-        project="EDOS-ift6289",
-        save_dir=log_dir_path_a,
-        log_model=True,
-        group="Task a",
-        tags=[model_name],
-    )
-    wandb_logger_b = WandbLogger(
-        project="EDOS-ift6289",
-        save_dir=log_dir_path_b,
-        log_model=True,
-        group="Task b",
-        tags=[model_name],
-    )
-    wandb_logger_c = WandbLogger(
-        project="EDOS-ift6289",
-        save_dir=log_dir_path_c,
-        log_model=True,
-        group="Task c",
-        tags=[model_name],
-    )
 
     download_links = helpers.get_model_download_links(model_name)
     model_paths = list()
@@ -80,74 +58,87 @@ def main(model_name: str):
         artifact = api.artifact(link)
         model_paths.append(artifact.download() + "/model.ckpt")
 
-    lightning_callbacks_a, lightning_callbacks_b, lightning_callbacks_c = get_task_callbacks(
-        args_task_a, args_task_b, args_task_c, log_dir_path_a, log_dir_path_b, log_dir_path_c
-    )
     wrapper_model_task_a, wrapper_model_task_b, wrapper_model_task_c = get_wrapper_models(
         args_task_a, args_task_b, args_task_c, model_name, model_paths
     )
-    trainer_a, trainer_b, trainer_c = get_trainers(
-        args_task_a,
-        args_task_b,
-        args_task_c,
-        lightning_callbacks_a,
-        lightning_callbacks_b,
-        lightning_callbacks_c,
-        wandb_logger_a,
-        wandb_logger_b,
-        wandb_logger_c,
-    )
 
-    # Train
+    # Task A
     if args_task_a.train:
+        # Setup WandB logging
+        wandb_logger_a = WandbLogger(
+            project="EDOS-ift6289",
+            save_dir=log_dir_path_a,
+            log_model=True,
+            group="Task a",
+            tags=[model_name, "hierarchical"],
+        )
+        lightning_callbacks_a = [
+            ModelSummary(),
+            ModelCheckpoint(dirpath=log_dir_path_a, monitor="val/f1", save_top_k=1, mode="max"),
+            EarlyStopping(monitor="val/loss", patience=args_task_a.patience),
+        ]
+        trainer_a = Trainer(
+            logger=wandb_logger_a,
+            callbacks=lightning_callbacks_a,
+            accelerator="auto",
+            devices="auto",
+            max_epochs=args_task_a.num_epoch,
+        )
         trainer_a.fit(model=wrapper_model_task_a, datamodule=data_module_task_a)
-    if args_task_b.train:
-        trainer_b.fit(model=wrapper_model_task_b, datamodule=data_module_task_b)
-    if args_task_c.train:
-        trainer_c.fit(model=wrapper_model_task_c, datamodule=data_module_task_c)
 
-    # Eval
     if args_task_a.eval:
         trainer_a.test(model=wrapper_model_task_a, datamodule=data_module_task_a, ckpt_path="best")
+    wandb.finish()
+
+    # Task B
+    if args_task_b.train:
+        wandb_logger_b = WandbLogger(
+            project="EDOS-ift6289",
+            save_dir=log_dir_path_b,
+            log_model=True,
+            group="Task b",
+            tags=[model_name, "hierarchical"],
+        )
+        lightning_callbacks_b = [
+            ModelSummary(),
+            ModelCheckpoint(dirpath=log_dir_path_b, monitor="val/f1", save_top_k=1, mode="max"),
+            EarlyStopping(monitor="val/loss", patience=args_task_b.patience),
+        ]
+        trainer_b = Trainer(
+            logger=wandb_logger_b,
+            callbacks=lightning_callbacks_b,
+            accelerator="auto",
+            devices="auto",
+            max_epochs=args_task_b.num_epoch,
+        )
+        trainer_b.fit(model=wrapper_model_task_b, datamodule=data_module_task_b)
     if args_task_b.eval:
         trainer_b.test(model=wrapper_model_task_b, datamodule=data_module_task_b, ckpt_path="best")
+    wandb.finish()
+    # Task C
+    if args_task_c.train:
+        wandb_logger_c = WandbLogger(
+            project="EDOS-ift6289",
+            save_dir=log_dir_path_c,
+            log_model=True,
+            group="Task c",
+            tags=[model_name, "hierarchical"],
+        )
+        lightning_callbacks_c = [
+            ModelSummary(),
+            ModelCheckpoint(dirpath=log_dir_path_c, monitor="val/f1", save_top_k=1, mode="max"),
+            EarlyStopping(monitor="val/loss", patience=args_task_c.patience),
+        ]
+        trainer_c = Trainer(
+            logger=wandb_logger_c,
+            callbacks=lightning_callbacks_c,
+            accelerator="auto",
+            devices="auto",
+            max_epochs=args_task_c.num_epoch,
+        )
+        trainer_c.fit(model=wrapper_model_task_c, datamodule=data_module_task_c)
     if args_task_c.eval:
         trainer_c.test(model=wrapper_model_task_c, datamodule=data_module_task_c, ckpt_path="best")
-
-
-def get_trainers(
-    args_task_a,
-    args_task_b,
-    args_task_c,
-    lightning_callbacks_a,
-    lightning_callbacks_b,
-    lightning_callbacks_c,
-    wandb_logger_a,
-    wandb_logger_b,
-    wandb_logger_c,
-):
-    trainer_a = Trainer(
-        logger=wandb_logger_a,
-        callbacks=lightning_callbacks_a,
-        accelerator="auto",
-        devices="auto",
-        max_epochs=args_task_a.num_epoch,
-    )
-    trainer_b = Trainer(
-        logger=wandb_logger_b,
-        callbacks=lightning_callbacks_b,
-        accelerator="auto",
-        devices="auto",
-        max_epochs=args_task_b.num_epoch,
-    )
-    trainer_c = Trainer(
-        logger=wandb_logger_c,
-        callbacks=lightning_callbacks_c,
-        accelerator="auto",
-        devices="auto",
-        max_epochs=args_task_c.num_epoch,
-    )
-    return trainer_a, trainer_b, trainer_c
 
 
 def get_wrapper_models(args_task_a, args_task_b, args_task_c, model_name, model_paths):
@@ -156,7 +147,7 @@ def get_wrapper_models(args_task_a, args_task_b, args_task_c, model_name, model_
     classifier_c = TransformerModule.load_from_checkpoint(model_paths[2])
     wrapper_model_task_a = HierarchicalTransformerModule(
         model=model_name,
-        learning_rate=args_task_a.learning_rate,
+        learning_rate=args_task_a.lr,
         classifier_a=classifier_a,
         classifier_b=classifier_b,
         classifier_c=classifier_c,
@@ -164,7 +155,7 @@ def get_wrapper_models(args_task_a, args_task_b, args_task_c, model_name, model_
     )
     wrapper_model_task_b = HierarchicalTransformerModule(
         model=model_name,
-        learning_rate=args_task_b.learning_rate,
+        learning_rate=args_task_b.lr,
         classifier_a=classifier_a,
         classifier_b=classifier_b,
         classifier_c=classifier_c,
@@ -172,34 +163,13 @@ def get_wrapper_models(args_task_a, args_task_b, args_task_c, model_name, model_
     )
     wrapper_model_task_c = HierarchicalTransformerModule(
         model=model_name,
-        learning_rate=args_task_c.learning_rate,
+        learning_rate=args_task_c.lr,
         classifier_a=classifier_a,
         classifier_b=classifier_b,
         classifier_c=classifier_c,
         task="c",
     )
     return wrapper_model_task_a, wrapper_model_task_b, wrapper_model_task_c
-
-
-def get_task_callbacks(
-    args_task_a, args_task_b, args_task_c, log_dir_path_a, log_dir_path_b, log_dir_path_c
-):
-    lightning_callbacks_a = [
-        ModelSummary(),
-        ModelCheckpoint(dirpath=log_dir_path_a, monitor="val/f1", save_top_k=1, mode="max"),
-        EarlyStopping(monitor="val/loss", patience=args_task_a.patience),
-    ]
-    lightning_callbacks_b = [
-        ModelSummary(),
-        ModelCheckpoint(dirpath=log_dir_path_b, monitor="val/f1", save_top_k=1, mode="max"),
-        EarlyStopping(monitor="val/loss", patience=args_task_b.patience),
-    ]
-    lightning_callbacks_c = [
-        ModelSummary(),
-        ModelCheckpoint(dirpath=log_dir_path_c, monitor="val/f1", save_top_k=1, mode="max"),
-        EarlyStopping(monitor="val/loss", patience=args_task_c.patience),
-    ]
-    return lightning_callbacks_a, lightning_callbacks_b, lightning_callbacks_c
 
 
 def get_log_dirs():
