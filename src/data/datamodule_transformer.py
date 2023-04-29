@@ -182,6 +182,8 @@ class DataModuleTransformer(pl.LightningDataModule):
                                                 b3_sfr.sample(int(len(b3_sfr) * self.b3_sfr_ratio)),
                                                 b4_sfr.sample(int(len(b4_sfr) * self.b4_sfr_ratio))
                                                 ])
+            if self.args.task == 'c':
+                interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
 
             interim_data_train["text"] = self.text_preprocessor.transform_series(
                 interim_data_train["text"]
