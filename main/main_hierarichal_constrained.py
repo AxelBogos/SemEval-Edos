@@ -89,8 +89,8 @@ def main(model_name: str):
         )
         trainer_a.fit(model=wrapper_model_task_a, datamodule=data_module_task_a)
 
-    if args_task_a.eval:
-        trainer_a.test(model=wrapper_model_task_a, datamodule=data_module_task_a, ckpt_path="best")
+    # if args_task_a.eval:
+    #     trainer_a.test(model=wrapper_model_task_a, datamodule=data_module_task_a, ckpt_path="best")
     wandb.finish()
 
     # Task B
@@ -115,8 +115,8 @@ def main(model_name: str):
             max_epochs=args_task_b.num_epoch,
         )
         trainer_b.fit(model=wrapper_model_task_b, datamodule=data_module_task_b)
-    if args_task_b.eval:
-        trainer_b.test(model=wrapper_model_task_b, datamodule=data_module_task_b, ckpt_path="best")
+    # if args_task_b.eval:
+    #     trainer_b.test(model=wrapper_model_task_b, datamodule=data_module_task_b, ckpt_path="best")
     wandb.finish()
     # Task C
     if args_task_c.train:
@@ -140,8 +140,8 @@ def main(model_name: str):
             max_epochs=args_task_c.num_epoch,
         )
         trainer_c.fit(model=wrapper_model_task_c, datamodule=data_module_task_c)
-    if args_task_c.eval:
-        trainer_c.test(model=wrapper_model_task_c, datamodule=data_module_task_c, ckpt_path="best")
+    # if args_task_c.eval:
+    #     trainer_c.test(model=wrapper_model_task_c, datamodule=data_module_task_c, ckpt_path="best")
 
 
 def get_wrapper_models(args_task_a, args_task_b, args_task_c, model_name, model_paths):
