@@ -44,6 +44,14 @@ def main(model_name: str):
     data_module_task_c3.setup()
     data_module_task_c4.setup()
 
+    wandb_logger = WandbLogger(
+        project="EDOS-ift6289",
+        save_dir=log_dir,
+        log_model=True,
+        group="Local Clf Multitask",
+        tags=[model_name, "multitask"],
+    )
+
     # Build models
     model_task_a = TransformerModuleLocal(
         model=model_name,
@@ -132,36 +140,42 @@ def main(model_name: str):
     ]
 
     trainer_a = Trainer(
+        logger=wandb_logger,
         callbacks=lightning_callbacks_a,
         accelerator="auto",
         devices="auto",
         max_epochs=9,
     )
     trainer_b = Trainer(
+        logger=wandb_logger,
         callbacks=lightning_callbacks_b,
         accelerator="auto",
         devices="auto",
         max_epochs=9,
     )
     trainer_c1 = Trainer(
+        logger=wandb_logger,
         callbacks=lightning_callbacks_c1,
         accelerator="auto",
         devices="auto",
         max_epochs=9,
     )
     trainer_c2 = Trainer(
+        logger=wandb_logger,
         callbacks=lightning_callbacks_c2,
         accelerator="auto",
         devices="auto",
         max_epochs=9,
     )
     trainer_c3 = Trainer(
+        logger=wandb_logger,
         callbacks=lightning_callbacks_c3,
         accelerator="auto",
         devices="auto",
         max_epochs=9,
     )
     trainer_c4 = Trainer(
+        logger=wandb_logger,
         callbacks=lightning_callbacks_c4,
         accelerator="auto",
         devices="auto",
