@@ -87,10 +87,10 @@ class DataModuleTransformer(pl.LightningDataModule):
                 interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "task_a_balanced.csv"))
 
             if self.args.task == 'b':
-                interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "task_b_balanced_roberta_large.csv"))
+                interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "task_b_balanced.csv"))
 
             if self.args.task == 'c':
-                interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "train.csv"))
+                interim_data_train = pd.read_csv(Path(self.args.interim_data_dir, "task_c_balanced.csv"))
 
             interim_data_train["text"] = self.text_preprocessor.transform_series(
                 interim_data_train["text"]
