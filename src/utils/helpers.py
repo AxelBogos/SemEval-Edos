@@ -8,21 +8,9 @@ import torch.optim as optim
 from lightning.pytorch.callbacks import EarlyStopping, ModelCheckpoint, ModelSummary
 from lightning.pytorch.loggers import WandbLogger
 
-from src.data import (
-    datamodule_lstm,
-    datamodule_transformer,
-    datamodule_transformer_beamsearch,
-    datamodule_transformer_hierarichal_constrained,
-)
-from src.models import (
-    beam_search_transformer_module,
-    hierarichal_constrained_transformer_module,
-    lstm_module,
-    transformer_module,
-)
+from src.data import datamodule_lstm, datamodule_transformer
+from src.models import lstm_module, transformer_module
 from src.utils import defines
-
-# from pytorch_lightning.loggers import WandbLogger
 
 
 def make_data_dirs() -> None:
@@ -83,27 +71,37 @@ def setup_wandb(args):
     return wandb_logger
 
 
-def get_lightning_callbacks(args):
-    """The get_lightning_callbacks function returns a list of callbacks that are used by the
-    LightningModule. The ModelSummary callback prints out the model summary to stdout. The
-    ModelCheckpoint callback saves checkpoints to disk, and only keeps the best one based on
-    validation loss. The EarlyStopping callback stops training if validation loss does not improve
-    after a certain number of epochs.
+def get_lightning_callbacks(
+    log_dir: Path,
+    model_checkpoint_monitor: str,
+    model_checkpoint_mode: str,
+    early_stopping_patience: int,
+):
+    """The get_lightning_callbacks function returns a list of callbacks that can be used in the
+    Trainer.
 
-    :param args: Pass in the arguments from the command line
+    :param log_dir:Path: Define the directory where the model checkpoints will be saved
+    :param model_checkpoint_monitor:str: Monitor the metric that we want to use for saving the model
+    :param model_checkpoint_mode:str: Determine how the model is saved
+    :param early_stopping_patience:int: Determine how many epochs to wait before stopping the training
     :return: A list of callbacks
     """
     callbacks = list()
     callbacks.append(ModelSummary())
     callbacks.append(
-        ModelCheckpoint(dirpath=args.log_dir, monitor="val/loss", save_top_k=1, mode="min")
+        ModelCheckpoint(
+            dirpath=log_dir,
+            monitor=model_checkpoint_monitor,
+            save_top_k=1,
+            mode=model_checkpoint_mode,
+        )
     )
-    callbacks.append(EarlyStopping(monitor="val/loss", patience=args.patience))
+    callbacks.append(EarlyStopping(monitor="val/loss", patience=early_stopping_patience))
     return callbacks
 
 
-def _get_time():
-    """The _get_time function returns the current time in a string format.
+def get_time():
+    """The get_time function returns the current time in a string format.
 
     :return: A string with the current time in this format: YYYY-MM-DD-HH-MM-SS
     """
@@ -117,7 +115,7 @@ def make_log_dir() -> Path:
 
     :return: A path to a new directory
     """
-    log_dir_path = Path(defines.LOG_DIR, _get_time())
+    log_dir_path = Path(defines.LOG_DIR, get_time())
     if not defines.LOG_DIR.is_dir():
         os.mkdir(defines.LOG_DIR)
     os.mkdir(log_dir_path)
@@ -138,15 +136,13 @@ def get_model(args, optimizer: torch.optim.Optimizer = None):
         return lstm_module.LSTMModule(args=args, optimizer=optimizer)
     elif args.architecture == "transformer":
         return transformer_module.TransformerModule(
-            args, optimizer=optimizer, learning_rate=args.lr
-        )
-    elif args.architecture == "transformer-beamsearch":
-        return beam_search_transformer_module.BeamSearchTransformerModule(
-            args, optimizer=optimizer
-        )
-    elif args.architecture == "transformer-hierarchical":
-        return hierarichal_constrained_transformer_module.HierarchicalTransformerModule(
-            args, optimizer=optimizer
+            model=args.model,
+            num_target_class=args.num_target_class,
+            learning_rate=args.lr,
+            num_epoch=args.num_epoch,
+            n_warmup_steps=args.n_warmup_steps,
+            len_train_loader=args.len_train_loader,
+            optimizer=optimizer,
         )
 
 
@@ -162,12 +158,6 @@ def get_data_module(args):
         return datamodule_lstm.DataModuleLSTM(args)
     elif args.architecture == "transformer":
         return datamodule_transformer.DataModuleTransformer(args)
-    elif args.architecture == "transformer-beamsearch":
-        return datamodule_transformer_beamsearch.DataModuleTransformerBeamSearch(args)
-    elif args.architecture == "transformer-hierarchical":
-        return datamodule_transformer_hierarichal_constrained.DataModuleTransformerHierarichal(
-            args
-        )
 
 
 def get_optimizer(args):
@@ -187,14 +177,14 @@ def get_optimizer(args):
 
 
 def get_model_download_links(model_name):
-    if model_name == "distillroberta-base":
-        model_a = "axel-bogos/EDOS-ift6289/model-3ktkppxz:v0"
-        model_b = "axel-bogos/EDOS-ift6289/model-9yuwtdxw:v0"
-        model_c = "axel-bogos/EDOS-ift6289/model-puvcanys:v0"
+    if model_name == "distilroberta-base":
+        model_a = "axel-bogos/EDOS-ift6289/model-t7y8oy8u:v0"
+        model_b = "axel-bogos/EDOS-ift6289/model-g5w2beck:v0"
+        model_c = "axel-bogos/EDOS-ift6289/model-eu1j2viv:v0"
     elif model_name == "roberta-base":
-        model_a = "axel-bogos/EDOS-ift6289/model-xbmigcbz:v0"
-        model_b = "axel-bogos/EDOS-ift6289/model-e3l1x1p6:v0"
-        model_c = "axel-bogos/EDOS-ift6289/model-jadamcqs:v0"
+        model_a = "axel-bogos/EDOS-ift6289/model-rn477e90:v0"
+        model_b = "axel-bogos/EDOS-ift6289/model-q4twdy6m:v0"
+        model_c = "axel-bogos/EDOS-ift6289/model-hsf7y76o:v0"
     else:
         raise ValueError("Invalid model name")
     return model_a, model_b, model_c
