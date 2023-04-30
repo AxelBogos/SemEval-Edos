@@ -9,209 +9,61 @@ from transformers import AutoModelForSequenceClassification, get_scheduler
 class HierarchicalTransformerModule(pl.LightningModule):
     def __init__(
         self,
-        args,
-        optimizer: torch.optim.Optimizer,
+        model: str,
+        learning_rate: float,
+        classifier_a: nn.Module,
+        classifier_b: nn.Module,
+        classifier_c: nn.Module,
+        task: str,
+        optimizer: torch.optim.Optimizer = torch.optim.AdamW,
+        freeze_classification_heads: bool = False,
     ):
         super().__init__()
         self.automatic_optimization = False
-        self.args = args
         self.optimizer = optimizer
-        self.save_hyperparameters()
-        (
-            self.feature_extractor,
-            self.classifier_a,
-            self.classifier_b,
-            self.classifier_c,
-        ) = self.define_models(args)
+        self.model = model
+        self.learning_rate = learning_rate
+        self.task = task
+        self.feature_extractor = AutoModelForSequenceClassification.from_pretrained(
+            model
+        ).base_model
+        self.classifier_a = classifier_a
+        self.classifier_b = classifier_b
+        self.classifier_c = classifier_c
         self.freeze_module(self.feature_extractor)
+        if freeze_classification_heads:
+            self.freeze_module(self.classifier_a)
+            self.freeze_module(self.classifier_b)
+            self.freeze_module(self.classifier_c)
 
-        self.criterion_a = nn.CrossEntropyLoss(
-            weight=torch.tensor([0.6603, 2.0600], dtype=torch.float)
-        )
-        self.criterion_b = nn.CrossEntropyLoss(
-            weight=torch.tensor([0.2641, 9.0323, 1.7610, 2.4034, 8.4084], dtype=torch.float)
-        )
-        self.criterion_c = nn.CrossEntropyLoss(
-            weight=torch.tensor(
-                [
-                    0.1100,
-                    20.8333,
-                    4.5932,
-                    1.6272,
-                    1.7335,
-                    5.8333,
-                    1.8315,
-                    2.7978,
-                    18.2292,
-                    24.8227,
-                    15.5556,
-                    4.5220,
-                ],
-                dtype=torch.float,
-            )
-        )
+        self.criterion = nn.CrossEntropyLoss()
 
-        self.train_f1_a = MulticlassF1Score(num_classes=2, average="macro")
-        self.train_f1_b = MulticlassF1Score(num_classes=5, average="macro")
-        self.train_f1_c = MulticlassF1Score(num_classes=12, average="macro")
+        if self.task == "a":
+            self.num_target_class = 2
+        elif self.task == "b":
+            self.num_target_class = 4
+        elif self.task == "c":
+            self.num_target_class = 11
 
-        self.val_f1_a = MulticlassF1Score(num_classes=2, average="macro")
-        self.val_f1_b = MulticlassF1Score(num_classes=5, average="macro")
-        self.val_f1_c = MulticlassF1Score(num_classes=12, average="macro")
+        self.train_f1 = MulticlassF1Score(num_classes=self.num_target_class, average="macro")
+        self.val_f1 = MulticlassF1Score(num_classes=self.num_target_class, average="macro")
+        self.test_f1 = MulticlassF1Score(num_classes=self.num_target_class, average="macro")
 
-        self.test_f1_a = MulticlassF1Score(num_classes=2, average="macro")
-        self.test_f1_b = MulticlassF1Score(num_classes=5, average="macro")
-        self.test_f1_c = MulticlassF1Score(num_classes=12, average="macro")
+        self.train_loss = MeanMetric()
+        self.val_loss = MeanMetric()
+        self.test_loss = MeanMetric()
 
-        self.train_loss_a = MeanMetric()
-        self.val_loss_a = MeanMetric()
-        self.test_loss_a = MeanMetric()
-
-        self.train_loss_b = MeanMetric()
-        self.val_loss_b = MeanMetric()
-        self.test_loss_b = MeanMetric()
-
-        self.train_loss_c = MeanMetric()
-        self.val_loss_c = MeanMetric()
-        self.test_loss_c = MeanMetric()
-
-        self.val_f1_best_a = MaxMetric()
-        self.val_f1_best_b = MaxMetric()
-        self.val_f1_best_c = MaxMetric()
+        self.val_f1_best = MaxMetric()
+        self.save_hyperparameters()
 
     def forward(self, input_ids, attention_mask):
-        # input_ids = input_ids.long()
         features = self.feature_extractor(input_ids, attention_mask).last_hidden_state
         logits_a = self.classifier_a(features)
         logits_b = self.classifier_b(features)
         logits_c = self.classifier_c(features)
         return logits_a, logits_b, logits_c
 
-    def compute_losses(self, logits, labels):
-        logits_a, logits_b, logits_c = logits
-        labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
-        loss_a = self.criterion_a(logits_a, labels_a)
-        loss_b = self.criterion_b(logits_b, labels_b)
-        loss_c = self.criterion_c(logits_c, labels_c)
-        return loss_a, loss_b, loss_c
-
-    def model_step(self, batch):
-        # Unpack the batch
-        input_ids = batch["input_ids"]
-        attention_mask = batch["attention_mask"]
-        labels = batch["labels"]
-
-        logits = self(input_ids, attention_mask)
-        losses = self.compute_losses(logits, labels)
-        preds = self.apply_constraints(logits)
-
-        return losses, preds, labels
-
-    def training_step(self, batch, batch_idx):
-        losses, preds, labels = self.model_step(batch)
-        loss_a, loss_b, loss_c = losses
-        preds_a, preds_b, preds_c = preds
-        labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
-        opt_a, opt_b, opt_c = self.optimizers()
-
-        # Log Task A
-        self.train_loss_a(loss_a)
-        self.train_f1_a(preds_a, labels_a)
-        self.log("train/loss_a", self.train_loss_a, on_epoch=True, prog_bar=True)
-        self.log("train/f1_a", self.train_f1_a, on_epoch=True, prog_bar=True)
-
-        # Log Task B
-        self.train_loss_b(loss_b)
-        self.train_f1_b(preds_b, labels_b)
-        self.log("train/loss_b", self.train_loss_b, on_epoch=True, prog_bar=True)
-        self.log("train/f1_b", self.train_f1_b, on_epoch=True, prog_bar=True)
-
-        # Log Task C
-        self.train_loss_c(loss_c)
-        self.train_f1_c(preds_c, labels_c)
-        self.log("train/loss_c", self.train_loss_c, on_epoch=True, prog_bar=True)
-        self.log("train/f1_c", self.train_f1_c, on_epoch=True, prog_bar=True)
-
-        # Optimize
-        opt_a.zero_grad()
-        opt_b.zero_grad()
-        opt_c.zero_grad()
-        self.manual_backward(loss_a)
-        self.manual_backward(loss_b)
-        self.manual_backward(loss_c)
-        opt_a.step()
-        opt_b.step()
-        opt_c.step()
-
-        return {"loss_a": loss_a, "loss_b": loss_b, "loss_c": loss_c}
-
-    def validation_step(self, batch, batch_idx):
-        losses, preds, labels = self.model_step(batch)
-        loss_a, loss_b, loss_c = losses
-        preds_a, preds_b, preds_c = preds
-        labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
-
-        # Log Task A
-        self.val_loss_a(loss_a)
-        self.val_f1_a(preds_a, labels_a)
-        self.log("val/loss_a", self.val_loss_a, on_epoch=True, prog_bar=True)
-        self.log("val/f1_a", self.val_f1_a, on_epoch=True, prog_bar=True)
-
-        # Log Task B
-        self.val_loss_b(loss_b)
-        self.val_f1_b(preds_b, labels_b)
-        self.log("val/loss_b", self.val_loss_b, on_epoch=True, prog_bar=True)
-        self.log("val/f1_b", self.train_f1_b, on_epoch=True, prog_bar=True)
-
-        # Log Task C
-        self.val_loss_c(loss_c)
-        self.val_f1_c(preds_c, labels_c)
-        self.log("val/loss_c", self.val_loss_c, on_epoch=True, prog_bar=True)
-        self.log("val/f1_c", self.val_f1_c, on_epoch=True, prog_bar=True)
-
-        total_loss = loss_a + loss_b + loss_c
-        self.log("val/loss", total_loss, on_epoch=True, prog_bar=True)
-        return {"loss_a": loss_a, "loss_b": loss_b, "loss_c": loss_c}
-
-    def test_step(self, batch, batch_idx):
-        losses, preds, labels = self.model_step(batch)
-        loss_a, loss_b, loss_c = losses
-        preds_a, preds_b, preds_c = preds
-        labels_a, labels_b, labels_c = labels[:, 0], labels[:, 1], labels[:, 2]
-
-        # Log Task A
-        self.test_loss_a(loss_a)
-        self.test_f1_a(preds_a, labels_a)
-        self.log("test/loss_a", self.test_loss_a, on_epoch=True, prog_bar=True)
-        self.log("test/f1_a", self.test_f1_a, on_epoch=True, prog_bar=True)
-
-        # Log Task B
-        self.test_loss_b(loss_b)
-        self.test_f1_b(preds_b, labels_b)
-        self.log("test/loss_b", self.test_loss_b, on_epoch=True, prog_bar=True)
-        self.log("test/f1_b", self.test_f1_b, on_epoch=True, prog_bar=True)
-
-        # Log Task C
-        self.test_loss_c(loss_c)
-        self.test_f1_c(preds_c, labels_c)
-        self.log("test/loss_c", self.test_loss_c, on_epoch=True, prog_bar=True)
-        self.log("test/f1_c", self.test_f1_c, on_epoch=True, prog_bar=True)
-
-        return {"loss_a": loss_a, "loss_b": loss_b, "loss_c": loss_c}
-
-    def on_validation_epoch_end(self):
-        f1_a = self.val_f1_a.compute()
-        f1_b = self.val_f1_b.compute()
-        f1_c = self.val_f1_c.compute()
-        self.val_f1_best_a.update(f1_a)  # update best so far val f1 a
-        self.val_f1_best_b.update(f1_b)  # update best so far val f1 b
-        self.val_f1_best_c.update(f1_c)  # update best so far val f1 c
-        self.log("val/f1_best_a", self.val_f1_best_a.compute(), on_epoch=True, prog_bar=True)
-        self.log("val/f1_best_b", self.val_f1_best_b.compute(), on_epoch=True, prog_bar=True)
-        self.log("val/f1_best_c", self.val_f1_best_c.compute(), on_epoch=True, prog_bar=True)
-
-    @staticmethod
-    def apply_constraints(logits):
+    def apply_constraints(self, logits):
         logits_a, logits_b, logits_c = logits
 
         # Apply the hierarchical constraints for level A and B
@@ -235,29 +87,77 @@ class HierarchicalTransformerModule(pl.LightningModule):
         logits_c[~allowed_indices_c] = float("-inf")
         preds_c = torch.argmax(logits_c, dim=1)
 
-        return preds_a, preds_b, preds_c
+        if self.task == "a":
+            return preds_a
+        elif self.task == "b":
+            return preds_b
+        elif self.task == "c":
+            return preds_c
+        else:
+            raise ValueError("Invalid task")
+
+    def model_step(self, batch):
+        input_ids = batch["input_ids"]
+        attention_mask = batch["attention_mask"]
+        labels = batch["labels"]
+        full_logits = self(input_ids, attention_mask)
+        if self.task == "a":
+            logits = full_logits[0]
+        elif self.task == "b":
+            logits = full_logits[1]
+        elif self.task == "c":
+            logits = full_logits[2]
+        loss = self.criterion(logits, labels)
+        preds = self.apply_constraints(full_logits)
+
+        return loss, preds, labels
+
+    def training_step(self, batch, batch_idx):
+        loss, preds, labels = self.model_step(batch)
+
+        # Log
+        self.train_loss(loss)
+        self.train_f1(preds, labels)
+        self.log("train/loss", self.train_loss, on_epoch=True, prog_bar=True)
+        self.log("train/f1", self.train_f1, on_epoch=True, prog_bar=True)
+
+        return {"loss": loss}
+
+    def validation_step(self, batch, batch_idx):
+        loss, preds, labels = self.model_step(batch)
+
+        # Log
+        self.val_loss(loss)
+        self.val_f1(preds, labels)
+        self.log("val/loss", self.val_loss, on_epoch=True, prog_bar=True)
+        self.log("val/f1", self.val_f1, on_epoch=True, prog_bar=True)
+
+        return {"loss": loss}
+
+    def test_step(self, batch, batch_idx):
+        loss, preds, labels = self.model_step(batch)
+
+        # Log
+        self.test_loss(loss)
+        self.test_f1(preds, labels)
+        self.log("test/loss", self.test_loss, on_epoch=True, prog_bar=True)
+        self.log("test/f1", self.test_f1, on_epoch=True, prog_bar=True)
+
+        return {"loss": loss}
+
+    def on_validation_epoch_end(self):
+        f1 = self.val_f1.compute()
+        self.val_f1_best.update(f1)
+        self.log("val/f1_best", self.val_f1_best.compute(), on_epoch=True, prog_bar=True)
 
     def configure_optimizers(self):
-        optimizer_a = self.optimizer(self.classifier_a.parameters(), lr=self.args.lr)
-        optimizer_b = self.optimizer(self.classifier_b.parameters(), lr=self.args.lr)
-        optimizer_c = self.optimizer(self.classifier_c.parameters(), lr=self.args.lr)
-        return optimizer_a, optimizer_b, optimizer_c
-
-    @staticmethod
-    def define_models(args):
-        feature_extractor = AutoModelForSequenceClassification.from_pretrained(
-            args.model
-        ).base_model
-        classifier_a = AutoModelForSequenceClassification.from_pretrained(
-            args.model, num_labels=2
-        ).classifier
-        classifier_b = AutoModelForSequenceClassification.from_pretrained(
-            args.model, num_labels=5
-        ).classifier
-        classifier_c = AutoModelForSequenceClassification.from_pretrained(
-            args.model, num_labels=12
-        ).classifier
-        return feature_extractor, classifier_a, classifier_b, classifier_c
+        if self.task == "a":
+            optimizer = self.optimizer(self.classifier_a.parameters(), lr=self.learning_rate)
+        elif self.task == "b":
+            optimizer = self.optimizer(self.classifier_b.parameters(), lr=self.learning_rate)
+        elif self.task == "c":
+            optimizer = self.optimizer(self.classifier_c.parameters(), lr=self.learning_rate)
+        return optimizer
 
     @staticmethod
     def freeze_module(module):

@@ -30,46 +30,54 @@ def main(model_name: str):
     seed_everything(3454572)
 
     # Build data module
-    data_module_task_a = DataModuleTransformerLocal(subtask="a")
-    data_module_task_b = DataModuleTransformerLocal(subtask="b")
+    # data_module_task_a = DataModuleTransformerLocal(subtask="a")
+    # data_module_task_b = DataModuleTransformerLocal(subtask="b")
     data_module_task_c1 = DataModuleTransformerLocal(subtask="c1")
     data_module_task_c2 = DataModuleTransformerLocal(subtask="c2")
     data_module_task_c3 = DataModuleTransformerLocal(subtask="c3")
     data_module_task_c4 = DataModuleTransformerLocal(subtask="c4")
 
-    data_module_task_a.setup()
-    data_module_task_b.setup()
+    # data_module_task_a.setup()
+    # data_module_task_b.setup()
     data_module_task_c1.setup()
     data_module_task_c2.setup()
     data_module_task_c3.setup()
     data_module_task_c4.setup()
 
+    wandb_logger = WandbLogger(
+        project="EDOS-ift6289",
+        save_dir=log_dir,
+        log_model=True,
+        group="Local Clf Multitask",
+        tags=[model_name, "multitask"],
+    )
+
     # Build models
-    model_task_a = TransformerModuleLocal(
-        model=model_name,
-        subtask="subtask_a",
-        num_target_class=data_module_task_a._num_classes,
-        len_train_loader=len(data_module_task_a.train_dataloader()),
-        num_epoch=9,
-        learning_rate=5e-06,
-        optimizer=torch.optim.AdamW,
-    )
-    model_task_b = TransformerModuleLocal(
-        model=model_name,
-        subtask="subtask_b",
-        num_target_class=data_module_task_b._num_classes,
-        len_train_loader=len(data_module_task_b.train_dataloader()),
-        num_epoch=9,
-        learning_rate=5e-06,
-        optimizer=torch.optim.AdamW,
-    )
+    # model_task_a = TransformerModuleLocal(
+    #     model=model_name,
+    #     subtask="subtask_a",
+    #     num_target_class=data_module_task_a._num_classes,
+    #     len_train_loader=len(data_module_task_a.train_dataloader()),
+    #     num_epoch=9,
+    #     learning_rate=5e-06,
+    #     optimizer=torch.optim.AdamW,
+    # )
+    # model_task_b = TransformerModuleLocal(
+    #     model=model_name,
+    #     subtask="subtask_b",
+    #     num_target_class=data_module_task_b._num_classes,
+    #     len_train_loader=len(data_module_task_b.train_dataloader()),
+    #     num_epoch=9,
+    #     learning_rate=5e-06,
+    #     optimizer=torch.optim.AdamW,
+    # )
     model_task_c1 = TransformerModuleLocal(
         model=model_name,
         subtask="subtask_c1",
         num_target_class=data_module_task_c1._num_classes,
         len_train_loader=len(data_module_task_c1.train_dataloader()),
         num_epoch=9,
-        learning_rate=5e-06,
+        learning_rate=1e-05,
         optimizer=torch.optim.AdamW,
     )
     model_task_c2 = TransformerModuleLocal(
@@ -78,7 +86,7 @@ def main(model_name: str):
         num_target_class=data_module_task_c2._num_classes,
         len_train_loader=len(data_module_task_c2.train_dataloader()),
         num_epoch=9,
-        learning_rate=5e-06,
+        learning_rate=1e-05,
         optimizer=torch.optim.AdamW,
     )
     model_task_c3 = TransformerModuleLocal(
@@ -87,7 +95,7 @@ def main(model_name: str):
         num_target_class=data_module_task_c3._num_classes,
         len_train_loader=len(data_module_task_c3.train_dataloader()),
         num_epoch=9,
-        learning_rate=5e-06,
+        learning_rate=1e-05,
         optimizer=torch.optim.AdamW,
     )
     model_task_c4 = TransformerModuleLocal(
@@ -96,63 +104,55 @@ def main(model_name: str):
         num_target_class=data_module_task_c4._num_classes,
         len_train_loader=len(data_module_task_c4.train_dataloader()),
         num_epoch=9,
-        learning_rate=5e-06,
+        learning_rate=1e-05,
         optimizer=torch.optim.AdamW,
     )
 
-    lightning_callbacks_a = [
-        ModelSummary(),
-        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_a/loss", save_top_k=1, mode="min"),
-        EarlyStopping(monitor="val_subtask_a/loss", patience=3),
-    ]
-    lightning_callbacks_b = [
-        ModelSummary(),
-        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_b/loss", save_top_k=1, mode="min"),
-        EarlyStopping(monitor="val_subtask_b/loss", patience=3),
-    ]
+    # lightning_callbacks_a = [
+    #     ModelSummary(),
+    #     ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_a/f1", save_top_k=1, mode="max"),
+    #     EarlyStopping(monitor="val_subtask_a/loss", patience=3),
+    # ]
+    # lightning_callbacks_b = [
+    #     ModelSummary(),
+    #     ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_b/f1", save_top_k=1, mode="max"),
+    #     EarlyStopping(monitor="val_subtask_b/loss", patience=3),
+    # ]
     lightning_callbacks_c1 = [
         ModelSummary(),
-        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c1/loss", save_top_k=1, mode="min"),
+        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c1/f1", save_top_k=1, mode="max"),
         EarlyStopping(monitor="val_subtask_c1/loss", patience=3),
     ]
     lightning_callbacks_c2 = [
         ModelSummary(),
-        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c2/loss", save_top_k=1, mode="min"),
+        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c2/f1", save_top_k=1, mode="max"),
         EarlyStopping(monitor="val_subtask_c2/loss", patience=3),
     ]
     lightning_callbacks_c3 = [
         ModelSummary(),
-        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c3/loss", save_top_k=1, mode="min"),
+        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c3/f1", save_top_k=1, mode="max"),
         EarlyStopping(monitor="val_subtask_c3/loss", patience=3),
     ]
     lightning_callbacks_c4 = [
         ModelSummary(),
-        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c4/loss", save_top_k=1, mode="min"),
+        ModelCheckpoint(dirpath=log_dir, monitor="val_subtask_c4/f1", save_top_k=1, mode="max"),
         EarlyStopping(monitor="val_subtask_c4/loss", patience=3),
     ]
-    # Setup WandB logging
-    wandb_logger = WandbLogger(
-        project="EDOS-ift6289",
-        save_dir=log_dir,
-        log_model=True,
-        group="Local Clf Multitask",
-        tags=[model_name],
-    )
 
-    trainer_a = Trainer(
-        logger=wandb_logger,
-        callbacks=lightning_callbacks_a,
-        accelerator="auto",
-        devices="auto",
-        max_epochs=9,
-    )
-    trainer_b = Trainer(
-        logger=wandb_logger,
-        callbacks=lightning_callbacks_b,
-        accelerator="auto",
-        devices="auto",
-        max_epochs=9,
-    )
+    # trainer_a = Trainer(
+    #     logger=wandb_logger,
+    #     callbacks=lightning_callbacks_a,
+    #     accelerator="auto",
+    #     devices="auto",
+    #     max_epochs=9,
+    # )
+    # trainer_b = Trainer(
+    #     logger=wandb_logger,
+    #     callbacks=lightning_callbacks_b,
+    #     accelerator="auto",
+    #     devices="auto",
+    #     max_epochs=9,
+    # )
     trainer_c1 = Trainer(
         logger=wandb_logger,
         callbacks=lightning_callbacks_c1,
@@ -183,13 +183,15 @@ def main(model_name: str):
     )
 
     # Train
-    trainer_a.fit(model_task_a, datamodule=data_module_task_a)
-    trainer_b.fit(model_task_b, datamodule=data_module_task_b)
+    # trainer_a.fit(model_task_a, datamodule=data_module_task_a)
+    # trainer_b.fit(model_task_b, datamodule=data_module_task_b)
     trainer_c1.fit(model_task_c1, datamodule=data_module_task_c1)
     trainer_c2.fit(model_task_c2, datamodule=data_module_task_c2)
     trainer_c3.fit(model_task_c3, datamodule=data_module_task_c3)
     trainer_c4.fit(model_task_c4, datamodule=data_module_task_c4)
 
+    # Test
+
 
 if __name__ == "__main__":
-    main("distilroberta-base")
+    main("roberta-base")
