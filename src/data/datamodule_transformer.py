@@ -8,8 +8,9 @@ from torch.utils.data import DataLoader
 from transformers import AutoTokenizer
 
 from src.data.components.Dataset import GenericDatasetTransformer
+from src.utils.defines import INTERIM_DATA_DIR, AUGMENTED_DATA_DIR
 from src.data.text_processing import TextPreprocessor
-
+from src.utils.payload import PayloadLoader
 
 class DataModuleTransformer(pl.LightningDataModule):
     def __init__(self, args):
@@ -30,6 +31,16 @@ class DataModuleTransformer(pl.LightningDataModule):
 
         # data preparation handlers
         self.text_preprocessor = TextPreprocessor(preprocessing_mode=self.args.preprocessing_mode)
+
+        # set data augmentations
+        self.rand_insertion_ratio1 = 0
+        self.syn_replacement_ratio1 = 0
+        self.rand_insertion_ratio3 = 0
+        self.syn_replacement_ratio3 = 0
+
+        # data augmentation experiments
+        self.experiment = args.data_aug_exp
+        self.set_experiment(args.data_aug_exp)
 
     def setup(self, stage: Optional[str] = None):
 
@@ -168,3 +179,27 @@ class DataModuleTransformer(pl.LightningDataModule):
             return "target_b"
         elif self.args.task == "c":
             return "target_c"
+
+    def set_experiment(self, experiment: str) -> None:
+        """
+
+        """
+        if experiment == "none":
+            self.rand_insertion_ratio = 0
+            self.syn_replacement_ratio = 0
+
+        if experiment == "task-a-rand-insert-3":
+            self.rand_insertion_ratio3 = 0.5
+            self.syn_replacement_ratio3 = 0
+
+        if experiment == "task-a-syn-insert-3":
+            self.rand_insertion_ratio3 = 0
+            self.syn_replacement_ratio3 = 0.5
+
+        if experiment == "task-a-rand-insert-1":
+            self.rand_insertion_ratio1 = 0.5
+            self.syn_replacement_ratio1 = 0
+
+        if experiment == "task-a-syn-insert-1":
+            self.rand_insertion_ratio1 = 0
+            self.syn_replacement_ratio1 = 0.5
